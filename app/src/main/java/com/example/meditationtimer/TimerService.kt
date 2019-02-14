@@ -13,7 +13,7 @@ import java.util.*
 class TimerService : Service() {
     companion object {
         val NOTIFY_ID = 1
-        val EXTRA_TIMER_LENGTH = "meditationtimer.TIMER_LENGTH"
+//        val EXTRA_TIMER_LENGTH = "meditationtimer.TIMER_LENGTH"
     }
 
     inner class TimerBinder : Binder() {
@@ -28,6 +28,9 @@ class TimerService : Service() {
     lateinit var onTimeChanged : (minutes : Long, seconds : Long) -> Unit
     lateinit var onTimerFinish : () -> Unit
 
+    var isRunning = false
+        private set
+
     fun stopTimerEarly() {
         // cancel the alarm that was scheduled
         alarmManager.cancel(bellIntent)
@@ -36,17 +39,18 @@ class TimerService : Service() {
     }
 
     private fun stopTimer() {
-        Log.v("TimerService", "stopping timer")
         scheduler.cancel()
         scheduler = Timer()
         stopForeground(0)
         notifManager.cancel(NOTIFY_ID)
 
         onTimerFinish()
+
+        isRunning = false
     }
 
-    private fun startTimer(lengthMinutes: Long, lengthSeconds: Long) {
-        Log.v("TimerService", "starting timer")
+    fun startTimer(lengthMinutes: Long, lengthSeconds: Long) {
+        isRunning = true
         val startTime = OffsetDateTime.now()
         val endTime = startTime.plusMinutes(lengthMinutes).plusSeconds(lengthSeconds)
         val endTimeMillis = endTime.toEpochSecond() * 1000

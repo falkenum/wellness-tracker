@@ -1,7 +1,6 @@
 package com.example.meditationtimer
 
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.support.v7.app.AppCompatActivity
@@ -13,6 +12,7 @@ import android.widget.Button
 import android.widget.TextView
 import java.lang.String.format
 import java.util.*
+import kotlin.concurrent.timer
 
 class MainActivity : AppCompatActivity() {
 
@@ -20,21 +20,54 @@ class MainActivity : AppCompatActivity() {
     private var timerService : TimerService? = null
     private lateinit var serviceIntent: Intent
 
+    fun onStartClick(view : View) {
+        setupRunningTimer()
+
+        timerService!!.startTimer(lengthMinutes, 0)
+    }
+
+    fun onStopClick(view : View) {
+        setupStoppedTimer()
+
+        timerService!!.stopTimerEarly()
+    }
+
+    fun onPlusClick(view : View) {
+        lengthMinutes += 1
+        setTimerStr(lengthMinutes, 0)
+    }
+
+    fun onMinusClick(view : View) {
+        if (lengthMinutes > 1) lengthMinutes -= 1
+        setTimerStr(lengthMinutes, 0)
+    }
+
+    fun setupRunningTimer() {
+        setContentView(R.layout.timer_running)
+    }
+
+    fun setupStoppedTimer() {
+        setContentView(R.layout.timer_stopped)
+        setTimerStr(lengthMinutes, 0)
+    }
+
     private val timerConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
             timerService = (binder as TimerService.TimerBinder).getService()
+
+            if (timerService!!.isRunning) {
+                runOnUiThread { setupRunningTimer() }
+            }
+            else {
+                runOnUiThread { setupStoppedTimer() }
+            }
 
             timerService!!.onTimeChanged = { minutes, seconds ->
                 runOnUiThread { setTimerStr(minutes, seconds) }
             }
 
             timerService!!.onTimerFinish = {
-                runOnUiThread {
-                    findViewById<Button>(R.id.minus).visibility = View.VISIBLE
-                    findViewById<Button>(R.id.plus).visibility = View.VISIBLE
-                    findViewById<Button>(R.id.startStop).text = "Start"
-                    resetTimer()
-                }
+                runOnUiThread { setupStoppedTimer() }
             }
         }
 
@@ -44,47 +77,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun setTimerStr(minutes: Long, seconds: Long) {
-        findViewById<TextView>(R.id.timerView).text = format(Locale.ENGLISH, "%02d:%02d", minutes, seconds)
-    }
-
-    fun resetTimer() {
-        findViewById<Button>(R.id.startStop).setOnClickListener {
-            (it as Button).apply {
-                setOnClickListener { timerService!!.stopTimerEarly() }
-                text = "Stop"
-            }
-
-            findViewById<Button>(R.id.minus).visibility = View.GONE
-            findViewById<Button>(R.id.plus).visibility = View.GONE
-
-
-            serviceIntent.putExtra(TimerService.EXTRA_TIMER_LENGTH, lengthMinutes)
-//            timerService!!.startTimer(lengthMinutes, 0)
-
-            startService(serviceIntent)
-        }
-
-
-        findViewById<Button>(R.id.minus).setOnClickListener {
-            if (lengthMinutes > 1) lengthMinutes -= 1
-            setTimerStr(lengthMinutes, 0)
-        }
-
-        findViewById<Button>(R.id.plus).setOnClickListener {
-            lengthMinutes += 1
-            setTimerStr(lengthMinutes, 0)
-        }
-
-        setTimerStr(lengthMinutes, 0)
+        findViewById<TextView>(R.id.timerView).text =
+            format(Locale.ENGLISH, "%02d:%02d", minutes, seconds)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        Log.v("MainActivity", "creating")
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        serviceIntent = Intent(this, TimerService::class.java)
 
-        resetTimer()
+        serviceIntent = Intent(this, TimerService::class.java)
+        startService(serviceIntent)
     }
 
     override fun onStart() {
@@ -96,4 +97,9 @@ class MainActivity : AppCompatActivity() {
         unbindService(timerConnection)
         super.onStop()
     }
+
+//    override fun onDestroy() {
+//        stopService(serviceIntent)
+//        super.onDestroy()
+//    }
 }
