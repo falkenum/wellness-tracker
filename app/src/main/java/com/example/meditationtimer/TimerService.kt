@@ -5,9 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
+import android.util.Log
 import java.lang.String.format
-import java.time.Duration
-import java.time.LocalDateTime
+import java.time.*
 import java.util.*
 
 class TimerService : Service() {
@@ -20,12 +20,22 @@ class TimerService : Service() {
     }
 
     private lateinit var notifManager: NotificationManager
+    private lateinit var alarmManager: AlarmManager
     private lateinit var notifBuilder: Notification.Builder
+    private lateinit var bellIntent : PendingIntent
     private var scheduler = Timer()
     lateinit var onTimeChanged : (minutes : Long, seconds : Long) -> Unit
     lateinit var onTimerFinish : () -> Unit
 
-    fun stopTimer() {
+    fun stopTimerEarly() {
+        // cancel the alarm that was scheduled
+        alarmManager.cancel(bellIntent)
+
+        stopTimer()
+    }
+
+    private fun stopTimer() {
+        Log.v("TimerService", "stopping timer")
         scheduler.cancel()
         scheduler = Timer()
         stopForeground(0)
@@ -35,12 +45,19 @@ class TimerService : Service() {
     }
 
     fun startTimer(lengthMinutes: Long, lengthSeconds: Long) {
-        val startTime = LocalDateTime.now()
+        Log.v("TimerService", "starting timer")
+        val startTime = OffsetDateTime.now()
         val endTime = startTime.plusMinutes(lengthMinutes).plusSeconds(lengthSeconds)
+        val endTimeMillis = endTime.toEpochSecond() * 1000
+
+        // play the bell now at start
+        startService(Intent(applicationContext, BellService::class.java))
+        // set alarm to play bell at the end
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, endTimeMillis, bellIntent)
 
         val timerUpdater = object : TimerTask() {
             override fun run() {
-                val duration = Duration.between(LocalDateTime.now(), endTime)
+                val duration = Duration.between(OffsetDateTime.now(), endTime)
                 // if there is a nanos component, round up
                 val totalSeconds = if (duration.nano > 0) duration.seconds + 1 else duration.seconds
                 val minutes = totalSeconds / 60
@@ -73,11 +90,18 @@ class TimerService : Service() {
         notifManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notifManager.createNotificationChannel(channel)
 
+        bellIntent = PendingIntent.getService(applicationContext, 0,
+            Intent(applicationContext, BellService::class.java), 0)
+
         notifBuilder = Notification.Builder(this, channelId)
             .setSmallIcon(R.drawable.ic_timer_notif)
             .setContentIntent(
                 PendingIntent.getActivity(this, 0,
                     Intent(this, MainActivity::class.java), 0))
+
+
+        // alarm to play the bell at the end
+        alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
     }
 
     override fun onBind(intent: Intent): IBinder {

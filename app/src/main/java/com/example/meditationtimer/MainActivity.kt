@@ -4,10 +4,10 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
-import android.media.MediaPlayer
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.IBinder
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
@@ -16,21 +16,18 @@ import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var mediaPlayer: MediaPlayer
     private var lengthMinutes: Long = 10
-    private var service : TimerService? = null
+    private var timerService : TimerService? = null
 
     private val timerConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
-            service = (binder as TimerService.TimerBinder).getService()
+            timerService = (binder as TimerService.TimerBinder).getService()
 
-            service!!.onTimeChanged = { minutes, seconds ->
+            timerService!!.onTimeChanged = { minutes, seconds ->
                 runOnUiThread { setTimerStr(minutes, seconds) }
             }
 
-            service!!.onTimerFinish = {
-                playBell()
-
+            timerService!!.onTimerFinish = {
                 runOnUiThread {
                     findViewById<Button>(R.id.minus).visibility = View.VISIBLE
                     findViewById<Button>(R.id.plus).visibility = View.VISIBLE
@@ -41,7 +38,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
-            service = null
+            timerService = null
         }
     }
 
@@ -49,24 +46,17 @@ class MainActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.timerView).text = format(Locale.ENGLISH, "%02d:%02d", minutes, seconds)
     }
 
-    fun playBell() {
-        // make sure to start from the beginning
-        mediaPlayer.seekTo(0)
-        mediaPlayer.start()
-    }
-
     fun resetTimer() {
         findViewById<Button>(R.id.startStop).setOnClickListener {
             (it as Button).apply {
-                setOnClickListener { service!!.stopTimer() }
+                setOnClickListener { timerService!!.stopTimerEarly() }
                 text = "Stop"
             }
 
             findViewById<Button>(R.id.minus).visibility = View.GONE
             findViewById<Button>(R.id.plus).visibility = View.GONE
 
-            playBell()
-            service!!.startTimer(lengthMinutes, 0)
+            timerService!!.startTimer(lengthMinutes, 0)
         }
 
 
@@ -84,21 +74,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.v("MainActivity", "creating")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        mediaPlayer = MediaPlayer.create(this, R.raw.bell)
+
+        bindService(Intent(this, TimerService::class.java), timerConnection, Context.BIND_AUTO_CREATE)
 
         resetTimer()
     }
 
-
-    override fun onStart() {
-        super.onStart()
-        bindService(Intent(this, TimerService::class.java), timerConnection, Context.BIND_AUTO_CREATE)
-    }
-
-    override fun onStop() {
-        super.onStop()
+    override fun onDestroy() {
         unbindService(timerConnection)
+        super.onDestroy()
     }
 }
