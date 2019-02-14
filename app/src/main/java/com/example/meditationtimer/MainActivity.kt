@@ -18,6 +18,7 @@ class MainActivity : AppCompatActivity() {
 
     private var lengthMinutes: Long = 10
     private var timerService : TimerService? = null
+    private lateinit var serviceIntent: Intent
 
     private val timerConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
@@ -56,7 +57,11 @@ class MainActivity : AppCompatActivity() {
             findViewById<Button>(R.id.minus).visibility = View.GONE
             findViewById<Button>(R.id.plus).visibility = View.GONE
 
-            timerService!!.startTimer(lengthMinutes, 0)
+
+            serviceIntent.putExtra(TimerService.EXTRA_TIMER_LENGTH, lengthMinutes)
+//            timerService!!.startTimer(lengthMinutes, 0)
+
+            startService(serviceIntent)
         }
 
 
@@ -77,14 +82,18 @@ class MainActivity : AppCompatActivity() {
         Log.v("MainActivity", "creating")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        bindService(Intent(this, TimerService::class.java), timerConnection, Context.BIND_AUTO_CREATE)
+        serviceIntent = Intent(this, TimerService::class.java)
 
         resetTimer()
     }
 
-    override fun onDestroy() {
+    override fun onStart() {
+        super.onStart()
+        bindService(serviceIntent, timerConnection, 0)
+    }
+
+    override fun onStop() {
         unbindService(timerConnection)
-        super.onDestroy()
+        super.onStop()
     }
 }

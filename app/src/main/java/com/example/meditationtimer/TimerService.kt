@@ -13,6 +13,7 @@ import java.util.*
 class TimerService : Service() {
     companion object {
         val NOTIFY_ID = 1
+        val EXTRA_TIMER_LENGTH = "meditationtimer.TIMER_LENGTH"
     }
 
     inner class TimerBinder : Binder() {
@@ -44,7 +45,7 @@ class TimerService : Service() {
         onTimerFinish()
     }
 
-    fun startTimer(lengthMinutes: Long, lengthSeconds: Long) {
+    private fun startTimer(lengthMinutes: Long, lengthSeconds: Long) {
         Log.v("TimerService", "starting timer")
         val startTime = OffsetDateTime.now()
         val endTime = startTime.plusMinutes(lengthMinutes).plusSeconds(lengthSeconds)
