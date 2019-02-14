@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
-import android.util.Log
 import java.lang.String.format
 import java.time.*
 import java.util.*
@@ -13,7 +12,6 @@ import java.util.*
 class TimerService : Service() {
     companion object {
         val NOTIFY_ID = 1
-//        val EXTRA_TIMER_LENGTH = "meditationtimer.TIMER_LENGTH"
     }
 
     inner class TimerBinder : Binder() {

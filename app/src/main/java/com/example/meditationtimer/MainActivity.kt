@@ -6,13 +6,10 @@ import android.content.ServiceConnection
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.IBinder
-import android.util.Log
 import android.view.View
-import android.widget.Button
 import android.widget.TextView
 import java.lang.String.format
 import java.util.*
-import kotlin.concurrent.timer
 
 class MainActivity : AppCompatActivity() {
 
@@ -98,8 +95,4 @@ class MainActivity : AppCompatActivity() {
         super.onStop()
     }
 
-//    override fun onDestroy() {
-//        stopService(serviceIntent)
-//        super.onDestroy()
-//    }
 }
