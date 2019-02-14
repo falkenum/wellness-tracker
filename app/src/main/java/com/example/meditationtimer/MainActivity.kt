@@ -1,14 +1,12 @@
 package com.example.meditationtimer
 
-import android.app.Activity
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.IBinder
-import android.support.constraint.ConstraintLayout
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
@@ -21,27 +19,10 @@ class MainActivity : AppCompatActivity() {
     private var timerService : TimerService? = null
     private lateinit var serviceIntent: Intent
 
-    // making a parent view where I can easily modify the three buttons I need
-    class TimerLayout(context : Activity) : ConstraintLayout(context) {
-        lateinit var plus : Button
-        lateinit var minus : Button
-        lateinit var startStop : Button
-        lateinit var timer : TextView
-        init {
-            context.layoutInflater.inflate(R.layout.activity_main, this)
-            for (i in 0..childCount) when (getChildAt(i).id) {
-                R.id.plus -> plus = getChildAt(i) as Button
-                R.id.minus -> minus = getChildAt(i) as Button
-                R.id.startStop -> startStop = getChildAt(i) as Button
-                R.id.timer -> timer = getChildAt(i) as TextView
-            }
-        }
-
-        fun setTimerStr(minutes: Long, seconds: Long) {
-            timer.text = format(Locale.ENGLISH, "%02d:%02d", minutes, seconds)
-        }
+    fun setTimerStr(minutes: Long, seconds: Long) {
+        findViewById<TextView>(R.id.timer).text =
+            format(Locale.ENGLISH, "%02d:%02d", minutes, seconds)
     }
-    private lateinit var parent: TimerLayout
 
 
     fun onStartClick() {
@@ -58,32 +39,32 @@ class MainActivity : AppCompatActivity() {
 
     fun onPlusClick(view : View) {
         lengthMinutes += 1
-        parent.setTimerStr(lengthMinutes, 0)
+        setTimerStr(lengthMinutes, 0)
     }
 
     fun onMinusClick(view : View) {
         if (lengthMinutes > 1) lengthMinutes -= 1
-        parent.setTimerStr(lengthMinutes, 0)
+        setTimerStr(lengthMinutes, 0)
     }
 
     fun setupRunningTimer() {
-        parent.startStop.apply {
+        findViewById<Button>(R.id.startStop).apply {
             text = "Stop"
             setOnClickListener { onStopClick() }
         }
-        parent.setTimerStr(lengthMinutes, 0)
-        parent.plus.visibility = View.GONE
-        parent.minus.visibility = View.GONE
+
+        findViewById<Button>(R.id.plus).visibility = View.GONE
+        findViewById<Button>(R.id.minus).visibility = View.GONE
     }
 
     fun setupStoppedTimer() {
-        parent.startStop.apply {
+        findViewById<Button>(R.id.startStop).apply {
             text = "Start"
             setOnClickListener { onStartClick() }
         }
-        parent.setTimerStr(lengthMinutes, 0)
-        parent.plus.visibility = View.VISIBLE
-        parent.minus.visibility = View.VISIBLE
+        findViewById<Button>(R.id.plus).visibility = View.VISIBLE
+        findViewById<Button>(R.id.minus).visibility = View.VISIBLE
+        setTimerStr(lengthMinutes, 0)
 
     }
 
@@ -99,7 +80,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             timerService!!.onTimeChanged = { minutes, seconds ->
-                runOnUiThread { parent.setTimerStr(minutes, seconds) }
+                runOnUiThread { setTimerStr(minutes, seconds) }
             }
 
             timerService!!.onTimerFinish = {
@@ -115,8 +96,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        parent = TimerLayout(this)
-        setContentView(parent)
+        setContentView(R.layout.activity_main)
 
         serviceIntent = Intent(this, TimerService::class.java)
         startService(serviceIntent)
