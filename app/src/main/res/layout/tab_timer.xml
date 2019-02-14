@@ -37,7 +37,7 @@
             android:layout_marginStart="8dp" app:layout_constraintBaseline_toBaselineOf="@+id/startStop"
             app:layout_constraintEnd_toStartOf="@+id/startStop"
             app:layout_constraintHorizontal_chainStyle="packed" android:layout_marginEnd="8dp"
-            android:onClick="onMinusClick"/>
+    />
     <Button
             android:text="+1 min"
             android:layout_width="wrap_content"
@@ -47,6 +47,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginStart="8dp"
             app:layout_constraintStart_toEndOf="@+id/startStop"
-            app:layout_constraintBaseline_toBaselineOf="@+id/startStop" android:onClick="onPlusClick"/>
+            app:layout_constraintBaseline_toBaselineOf="@+id/startStop"/>
 
 </android.support.constraint.ConstraintLayout>
