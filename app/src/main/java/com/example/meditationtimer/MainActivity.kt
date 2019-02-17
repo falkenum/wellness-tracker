@@ -56,6 +56,11 @@ class MainActivity : AppCompatActivity() {
             // wait for database to init first
             bindService(timerServiceIntent, timerConnection, 0)
         }.start()
+    }
 
+    override fun onDestroy() {
+        unbindService(timerConnection)
+        super.onDestroy()
     }
 }
+

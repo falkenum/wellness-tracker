@@ -52,9 +52,11 @@ class TimerService : Service() {
         isRunning = false
 
         // save the medititation session
-        val record = Record(Clock.systemDefaultZone().instant(),
+        val record = Record(startTime.toInstant(),
             Duration.between(startTime, endTime))
-        RecordDatabase.add(record)
+        Thread {
+            RecordDatabase.add(record)
+        }.start()
     }
 
     fun startTimer(lengthMinutes: Long, lengthSeconds: Long) {
