@@ -26,12 +26,18 @@ class TimerService : Service() {
     lateinit var onTimeChanged : (minutes : Long, seconds : Long) -> Unit
     lateinit var onTimerFinish : () -> Unit
 
+    private lateinit var startTime: OffsetDateTime
+    private lateinit var endTime: OffsetDateTime
+
     var isRunning = false
         private set
 
     fun stopTimerEarly() {
         // cancel the alarm that was scheduled
         alarmManager.cancel(bellIntent)
+
+        // modify the end time set by startTimer
+        endTime = OffsetDateTime.now()
 
         stopTimer()
     }
@@ -43,14 +49,18 @@ class TimerService : Service() {
         notifManager.cancel(NOTIFY_ID)
 
         onTimerFinish()
-
         isRunning = false
+
+        // save the medititation session
+        val record = Record(Clock.systemDefaultZone().instant(),
+            Duration.between(startTime, endTime))
+        RecordDatabase.add(record)
     }
 
     fun startTimer(lengthMinutes: Long, lengthSeconds: Long) {
         isRunning = true
-        val startTime = OffsetDateTime.now()
-        val endTime = startTime.plusMinutes(lengthMinutes).plusSeconds(lengthSeconds)
+        startTime = OffsetDateTime.now()
+        endTime = startTime.plusMinutes(lengthMinutes).plusSeconds(lengthSeconds)
         val endTimeMillis = endTime.toEpochSecond() * 1000
 
         // play the bell now at start

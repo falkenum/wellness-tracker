@@ -50,8 +50,12 @@ class MainActivity : AppCompatActivity() {
         // this is creating the service if it does not exist
         startService(timerServiceIntent)
 
-        // this is creating a connection to the service
-        bindService(timerServiceIntent, timerConnection, 0)
+        Thread {
+            RecordDatabase.init(this)
+            // this is creating a connection to the service
+            // wait for database to init first
+            bindService(timerServiceIntent, timerConnection, 0)
+        }.start()
+
     }
 }
-
