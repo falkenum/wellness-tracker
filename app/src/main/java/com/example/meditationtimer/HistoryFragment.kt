@@ -1,19 +1,26 @@
 package com.example.meditationtimer
 
 import android.os.Bundle
+import android.support.constraint.ConstraintLayout
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import java.lang.String.format
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.Year
 import java.time.YearMonth
+import java.util.*
 
 class HistoryFragment : Fragment() {
 
+    private lateinit var tabView: View
+    private var yearMonthShown = YearMonth.now()
 
-    fun getCell(cellText : String) : TextView {
+
+    private fun getCell(cellText : String) : TextView {
         return TextView(activity).apply{
             text = cellText
             textAlignment = View.TEXT_ALIGNMENT_CENTER
@@ -23,14 +30,15 @@ class HistoryFragment : Fragment() {
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater,
-                              container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+    private fun makeCalendar() {
+        // set month/year title
+        tabView.findViewById<TextView>(R.id.dateYear).text =
+            format(Locale.ENGLISH, "%s %d", yearMonthShown.month.toString(), yearMonthShown.year)
 
-        val tabView = inflater.inflate(R.layout.tab_history, container, false)
         val calendar = tabView.findViewById<TableLayout>(R.id.calendarTable)
 
-        val yearMonthShown = YearMonth.now()
+        // clear all weeks to start fresh
+        calendar.removeAllViews()
 
         // starting with the first day of the month, we will populate the calendar
         var date = LocalDate.of(yearMonthShown.year, yearMonthShown.month, 1)
@@ -64,7 +72,25 @@ class HistoryFragment : Fragment() {
 
             calendar.addView(rowToAdd)
         }
+    }
 
+    override fun onCreateView(inflater: LayoutInflater,
+                              container: ViewGroup?,
+                              savedInstanceState: Bundle?): View? {
+
+        tabView = inflater.inflate(R.layout.tab_history, container, false)
+
+        tabView.findViewById<TextView>(R.id.calendarLeft).setOnClickListener {
+            yearMonthShown = yearMonthShown.minusMonths(1)
+            activity?.runOnUiThread { makeCalendar() }
+        }
+
+        tabView.findViewById<TextView>(R.id.calendarRight).setOnClickListener {
+            yearMonthShown = yearMonthShown.plusMonths(1)
+            activity?.runOnUiThread { makeCalendar() }
+        }
+
+        makeCalendar()
         return tabView
     }
 }
