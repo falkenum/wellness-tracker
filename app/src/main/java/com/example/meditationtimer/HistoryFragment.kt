@@ -1,5 +1,6 @@
 package com.example.meditationtimer
 
+import android.graphics.drawable.ShapeDrawable
 import android.os.Bundle
 import android.support.constraint.ConstraintLayout
 import android.support.v4.app.Fragment
@@ -13,6 +14,7 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
 import java.util.*
+
 
 class HistoryFragment : Fragment() {
 
@@ -36,6 +38,8 @@ class HistoryFragment : Fragment() {
             format(Locale.ENGLISH, "%s %d", yearMonthShown.month.toString(), yearMonthShown.year)
 
         val calendarTable = tabView.findViewById<TableLayout>(R.id.calendarTable)
+
+
 
         val defaultDaysRow : () -> TableRow = {
             activity!!.layoutInflater.
