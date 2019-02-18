@@ -8,7 +8,7 @@
             android:layout_height="match_parent" app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" android:id="@+id/calendarLayout"
-            android:layout_marginTop="24dp" android:layout_marginEnd="16dp" android:layout_marginStart="16dp"
+            android:layout_marginTop="24dp" android:layout_marginEnd="32dp" android:layout_marginStart="32dp"
             android:layout_marginBottom="16dp">
         <LinearLayout
                 android:orientation="horizontal"
@@ -39,51 +39,51 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" android:layout_weight="1"/>
         </LinearLayout>
+        <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingVertical="10dp" android:id="@+id/daysOfWeekRow">
+            <TextView
+                    android:text="S"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:textAlignment="center" android:textStyle="bold" android:layout_weight="1"/>
+            <TextView
+                    android:text="M"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:textAlignment="center" android:textStyle="bold" android:layout_weight="1"/>
+            <TextView
+                    android:text="T"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:textAlignment="center" android:textStyle="bold" android:layout_weight="1"/>
+            <TextView
+                    android:text="W"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:textAlignment="center" android:textStyle="bold" android:layout_weight="1"/>
+            <TextView
+                    android:text="T"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:textAlignment="center" android:textStyle="bold" android:layout_weight="1"/>
+            <TextView
+                    android:text="F"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:textAlignment="center" android:textStyle="bold" android:layout_weight="1"/>
+            <TextView
+                    android:text="S"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:textAlignment="center" android:textStyle="bold" android:layout_weight="1"/>
+
+        </TableRow>
 
         <TableLayout
                 android:id="@+id/calendarTable"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
-            <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                <TextView
-                        android:text="S"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textAlignment="center" android:textStyle="bold" android:layout_weight="1"/>
-                <TextView
-                        android:text="M"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textAlignment="center" android:textStyle="bold" android:layout_weight="1"/>
-                <TextView
-                        android:text="T"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textAlignment="center" android:textStyle="bold" android:layout_weight="1"/>
-                <TextView
-                        android:text="W"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textAlignment="center" android:textStyle="bold" android:layout_weight="1"/>
-                <TextView
-                        android:text="T"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textAlignment="center" android:textStyle="bold" android:layout_weight="1"/>
-                <TextView
-                        android:text="F"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textAlignment="center" android:textStyle="bold" android:layout_weight="1"/>
-                <TextView
-                        android:text="S"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textAlignment="center" android:textStyle="bold" android:layout_weight="1"/>
-            </TableRow>
-        </TableLayout>
+                android:layout_height="match_parent"/>
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>

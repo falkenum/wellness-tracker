@@ -3,6 +3,7 @@ package com.example.meditationtimer
 import android.os.Bundle
 import android.support.constraint.ConstraintLayout
 import android.support.v4.app.Fragment
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,15 +11,13 @@ import android.widget.*
 import java.lang.String.format
 import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.Year
 import java.time.YearMonth
 import java.util.*
 
 class HistoryFragment : Fragment() {
 
-    private lateinit var tabView: View
+    private lateinit var tabView: ConstraintLayout
     private var yearMonthShown = YearMonth.now()
-
 
     private fun getCell(cellText : String) : TextView {
         return TextView(activity).apply{
@@ -27,6 +26,7 @@ class HistoryFragment : Fragment() {
             layoutParams = TableRow.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT, 1f)
 
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
         }
     }
 
@@ -35,16 +35,21 @@ class HistoryFragment : Fragment() {
         tabView.findViewById<TextView>(R.id.dateYear).text =
             format(Locale.ENGLISH, "%s %d", yearMonthShown.month.toString(), yearMonthShown.year)
 
-        val calendar = tabView.findViewById<TableLayout>(R.id.calendarTable)
+        val calendarTable = tabView.findViewById<TableLayout>(R.id.calendarTable)
+
+        val defaultDaysRow : () -> TableRow = {
+            activity!!.layoutInflater.
+                inflate(R.layout.default_days_row, calendarTable, false) as TableRow
+        }
 
         // clear all weeks to start fresh
-        calendar.removeAllViews()
+        calendarTable.removeAllViews()
 
         // starting with the first day of the month, we will populate the calendar
         var date = LocalDate.of(yearMonthShown.year, yearMonthShown.month, 1)
 
         // add spaces for the days from the previous month to begin the first row
-        var rowToAdd = TableRow(activity).apply {
+        var rowToAdd = defaultDaysRow().apply {
             var dayOfWeek = DayOfWeek.SUNDAY
             while (dayOfWeek != DayOfWeek.from(date)) {
                 addView(getCell(""))
@@ -56,8 +61,8 @@ class HistoryFragment : Fragment() {
             rowToAdd.addView(getCell(date.dayOfMonth.toString()))
             // if saturday, then add to calendar and go to next row
             if (date.dayOfWeek == DayOfWeek.SATURDAY) {
-                calendar.addView(rowToAdd)
-                rowToAdd = TableRow(activity)
+                calendarTable.addView(rowToAdd)
+                rowToAdd = defaultDaysRow()
             }
             date = date.plusDays(1)
         }
@@ -70,16 +75,14 @@ class HistoryFragment : Fragment() {
                 rowToAdd.addView(getCell(""))
             }
 
-            calendar.addView(rowToAdd)
+            calendarTable.addView(rowToAdd)
         }
     }
 
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-
-        tabView = inflater.inflate(R.layout.tab_history, container, false)
-
+        tabView = inflater.inflate(R.layout.tab_history, container, false) as ConstraintLayout
         tabView.findViewById<TextView>(R.id.calendarLeft).setOnClickListener {
             yearMonthShown = yearMonthShown.minusMonths(1)
             activity?.runOnUiThread { makeCalendar() }
