@@ -1,6 +1,6 @@
 package com.example.meditationtimer
 
-import android.graphics.drawable.ShapeDrawable
+import android.graphics.drawable.LayerDrawable
 import android.os.Bundle
 import android.support.constraint.ConstraintLayout
 import android.support.v4.app.Fragment
@@ -14,6 +14,7 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
 import java.util.*
+import kotlin.math.roundToInt
 
 
 class HistoryFragment : Fragment() {
@@ -21,12 +22,26 @@ class HistoryFragment : Fragment() {
     private lateinit var tabView: ConstraintLayout
     private var yearMonthShown = YearMonth.now()
 
+    private fun dpToPx(dp : Int) : Int {
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp.toFloat(),
+            resources.displayMetrics).roundToInt()
+    }
+
     private fun getCell(cellText : String) : TextView {
         return TextView(activity).apply{
             text = cellText
             textAlignment = View.TEXT_ALIGNMENT_CENTER
             layoutParams = TableRow.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT, 1f)
+
+            background = (activity!!.getDrawable(R.drawable.calendar_day_bg) as LayerDrawable).apply {
+                val transparent = 0
+                val opaque = 255
+                val fillLayer = 0
+                val outlineLayer = 1
+
+                getDrawable(fillLayer).alpha = opaque
+            }
 
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
         }
@@ -39,11 +54,12 @@ class HistoryFragment : Fragment() {
 
         val calendarTable = tabView.findViewById<TableLayout>(R.id.calendarTable)
 
-
-
         val defaultDaysRow : () -> TableRow = {
-            activity!!.layoutInflater.
-                inflate(R.layout.default_days_row, calendarTable, false) as TableRow
+            TableRow(activity).apply {
+                // padding between rows
+                val verticalPadding = dpToPx(10)
+                setPaddingRelative(0, verticalPadding, 0, verticalPadding)
+            }
         }
 
         // clear all weeks to start fresh
