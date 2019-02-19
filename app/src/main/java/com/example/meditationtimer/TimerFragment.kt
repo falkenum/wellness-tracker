@@ -82,7 +82,7 @@ class TimerFragment() : Fragment() {
         }
 
         timerService.onTimeChanged = { minutes, seconds ->
-            // if the activity is open, update the time on screen
+            // if the activity is open, update the instant on screen
             activity?.runOnUiThread { setTimerStr(minutes, seconds) }
         }
 

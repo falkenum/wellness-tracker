@@ -16,16 +16,21 @@ import android.widget.TextView
 import java.lang.String.format
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.Year
 import java.time.YearMonth
 import java.util.*
 import kotlin.math.roundToInt
 
 class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout(context, attributeSet) {
 
+    var yearMonthShown : YearMonth = YearMonth.now()
+        private set
+
     private val displayMetrics = resources.displayMetrics
-    private var yearMonthShown = YearMonth.now()
     private var selectedDayView : DayView? = null
-    var onDateSelect : ((LocalDate) -> Unit)? = null
+    var onDaySelect : ((Int) -> Unit)? = null
+    var onDayUnselect : (() -> Unit)? = null
+    var onMonthChange : ((YearMonth) -> Unit)? = null
 
     companion object {
         const val transparent = 0
@@ -41,11 +46,13 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
 
         findViewById<TextView>(R.id.calendarLeft).setOnClickListener {
             yearMonthShown = yearMonthShown.minusMonths(1)
+            onMonthChange?.invoke(yearMonthShown)
             makeCalendar()
         }
 
         findViewById<TextView>(R.id.calendarRight).setOnClickListener {
             yearMonthShown = yearMonthShown.plusMonths(1)
+            onMonthChange?.invoke(yearMonthShown)
             makeCalendar()
         }
 
@@ -58,10 +65,6 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
         }
-    }
-    
-    fun setDayFilled(dayOfMonth : Int, filled : Boolean) {
-        findViewById<DayView>(dayOfMonth).setFilled(filled)
     }
 
     private inner class DayView(val dayOfMonth : Int) : EmptyDayView()  {
@@ -91,6 +94,7 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
                 if (selectedDayView == this) {
                     selectedDayView = null
                     setOutlined(false)
+                    onDayUnselect?.invoke()
                 }
                 else {
                     selectedDayView?.setOutlined(false)
@@ -98,7 +102,7 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
                     setOutlined(true)
 
                     // callback for when a day is picked
-                    onDateSelect?.invoke(LocalDate.of(yearMonthShown.year, yearMonthShown.month, dayOfMonth))
+                    onDaySelect?.invoke(dayOfMonth)
                 }
             }
 
@@ -165,4 +169,9 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
             calendarTable.addView(rowToAdd)
         }
     }
+
+    fun setDayFilled(dayOfMonth : Int, filled : Boolean) {
+        findViewById<DayView>(dayOfMonth).setFilled(filled)
+    }
+
 }

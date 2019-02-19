@@ -36,7 +36,7 @@ class TimerService : Service() {
         // cancel the alarm that was scheduled
         alarmManager.cancel(bellIntent)
 
-        // modify the end time set by startTimer
+        // modify the end instant set by startTimer
         endTime = OffsetDateTime.now()
 
         stopTimer()
@@ -52,8 +52,7 @@ class TimerService : Service() {
         isRunning = false
 
         // save the medititation session
-        val record = Record(startTime.toInstant(),
-            Duration.between(startTime, endTime))
+        val record = MeditationRecord(startTime, Duration.between(startTime, endTime))
         Thread {
             RecordDatabase.add(record)
         }.start()
