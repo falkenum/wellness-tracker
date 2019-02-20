@@ -76,6 +76,14 @@ class HistoryFragment : Fragment() {
         summaryLayout.visibility = View.VISIBLE
     }
 
+    private fun reloadMonthRecords() {
+        // Make an array of lists containing the records for each day of the month
+        monthRecords = Array(calendarView.yearMonthShown.lengthOfMonth())
+        { ArrayList<MeditationRecord>(0) }
+
+        for (record in RecordDatabase.records) addRecordToCalendar(record)
+    }
+
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -89,11 +97,7 @@ class HistoryFragment : Fragment() {
         // by default summary is not visible
         summaryLayout.visibility = View.GONE
 
-        // Make an array of lists containing the records for each day of the month
-        monthRecords = Array(calendarView.yearMonthShown.lengthOfMonth())
-            { ArrayList<MeditationRecord>(0) }
-
-        for (record in RecordDatabase.records) addRecordToCalendar(record)
+        reloadMonthRecords()
 
         // summary view config
         calendarView.onDaySelect = { dayOfMonth ->
@@ -109,6 +113,11 @@ class HistoryFragment : Fragment() {
 
         activity!!.bindService(Intent(activity, TimerService::class.java), timerConnection, 0)
 
+        calendarView.onMonthChange = {
+            summaryLayout.visibility = View.GONE
+            reloadMonthRecords()
+        }
+
         // handle switching month
         // button to add past record
         // deleting records
@@ -122,4 +131,3 @@ class HistoryFragment : Fragment() {
     }
 
 }
-
