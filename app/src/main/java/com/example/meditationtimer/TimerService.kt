@@ -24,7 +24,7 @@ class TimerService : Service() {
     private lateinit var bellIntent : PendingIntent
     private var scheduler = Timer()
     lateinit var onTimeChanged : (minutes : Long, seconds : Long) -> Unit
-    lateinit var onTimerFinish : () -> Unit
+    var onTimerFinishTasks = ArrayList<() -> Unit>()
 
     private lateinit var startTime: OffsetDateTime
     private lateinit var endTime: OffsetDateTime
@@ -48,13 +48,15 @@ class TimerService : Service() {
         stopForeground(0)
         notifManager.cancel(NOTIFY_ID)
 
-        onTimerFinish()
         isRunning = false
 
-        // save the medititation session
+        // save the meditation session
         val record = MeditationRecord(startTime, Duration.between(startTime, endTime))
         Thread {
             RecordDatabase.add(record)
+
+            // once the record is saved, run all the requested callbacks
+            for (task in onTimerFinishTasks) task.invoke()
         }.start()
     }
 

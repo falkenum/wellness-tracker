@@ -64,7 +64,6 @@ abstract class RecordDatabase : RoomDatabase() {
             }
         }
 
-
         fun init(context: Context) {
             synchronized(lock) {
                 instance = Room.databaseBuilder(context.getApplicationContext(),
@@ -74,6 +73,10 @@ abstract class RecordDatabase : RoomDatabase() {
                 dao = instance.drugRecordDao()
                 _records = ArrayList(dao.getAll())
             }
+        }
+
+        fun getLastAdded() : MeditationRecord {
+            return _records.last()
         }
 
         fun add(record : MeditationRecord) {

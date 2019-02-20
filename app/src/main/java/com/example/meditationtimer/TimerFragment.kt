@@ -86,10 +86,9 @@ class TimerFragment() : Fragment() {
             activity?.runOnUiThread { setTimerStr(minutes, seconds) }
         }
 
-        timerService.onTimerFinish = {
+        timerService.onTimerFinishTasks.add {
             // if the activity is open, update the ui for stopped timer
             activity?.runOnUiThread { setupStoppedTimer() }
-
         }
 
         return rootView
