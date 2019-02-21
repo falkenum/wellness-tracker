@@ -46,14 +46,14 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
 
         findViewById<TextView>(R.id.calendarLeft).setOnClickListener {
             yearMonthShown = yearMonthShown.minusMonths(1)
-            onMonthChange?.invoke(yearMonthShown)
             makeCalendar()
+            onMonthChange?.invoke(yearMonthShown)
         }
 
         findViewById<TextView>(R.id.calendarRight).setOnClickListener {
             yearMonthShown = yearMonthShown.plusMonths(1)
-            onMonthChange?.invoke(yearMonthShown)
             makeCalendar()
+            onMonthChange?.invoke(yearMonthShown)
         }
 
         makeCalendar()

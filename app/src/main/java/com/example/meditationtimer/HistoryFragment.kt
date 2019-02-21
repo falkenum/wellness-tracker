@@ -99,26 +99,26 @@ class HistoryFragment : Fragment() {
 
         reloadMonthRecords()
 
-        // summary view config
+
+        // setting up calendar callbacks
         calendarView.onDaySelect = { dayOfMonth ->
             selectedDayOFMonth = dayOfMonth
             showSummaryForDay(dayOfMonth)
         }
 
-        // make summary invisible again when no day is selected
         calendarView.onDayUnselect = {
+            // make summary invisible again when no day is selected
             summaryLayout.visibility = View.GONE
             selectedDayOFMonth = 0
         }
-
-        activity!!.bindService(Intent(activity, TimerService::class.java), timerConnection, 0)
 
         calendarView.onMonthChange = {
             summaryLayout.visibility = View.GONE
             reloadMonthRecords()
         }
 
-        // handle switching month
+        activity!!.bindService(Intent(activity, TimerService::class.java), timerConnection, 0)
+
         // button to add past record
         // deleting records
 
