@@ -25,6 +25,7 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
 
     var yearMonthShown : YearMonth = YearMonth.now()
         private set
+    val lengthOfMonth : Int get() = yearMonthShown.lengthOfMonth()
 
     private val displayMetrics = resources.displayMetrics
     private var selectedDayView : DayView? = null
@@ -170,8 +171,10 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
         }
     }
 
-    fun setDayFilled(dayOfMonth : Int, filled : Boolean) {
-        findViewById<DayView>(dayOfMonth).setFilled(filled)
+    // given day of month, set whether the bg of that day should be filled
+    fun fillDaysBy(pred : (Int) -> Boolean) {
+        for (dayOfMonth in 1..lengthOfMonth) {
+            findViewById<DayView>(dayOfMonth).setFilled(pred(dayOfMonth))
+        }
     }
-
 }

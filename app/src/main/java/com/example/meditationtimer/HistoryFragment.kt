@@ -21,7 +21,9 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import kotlinx.android.synthetic.main.tab_history.*
 import org.w3c.dom.Text
+import java.lang.IllegalStateException
 import java.time.MonthDay
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -32,17 +34,16 @@ class HistoryFragment : Fragment() {
         lateinit var messageStr : String
         lateinit var onConfirmDelete : () -> Unit
 
-
         override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
             return activity!!.let {
                 // Use the Builder class for convenient dialog construction
                 val builder = AlertDialog.Builder(it)
                 builder.setMessage(messageStr)
                     .setPositiveButton("Yes",
-                        DialogInterface.OnClickListener { dialog, id ->
+                        DialogInterface.OnClickListener { _, _ ->
                             onConfirmDelete()
                         })
-                    .setNegativeButton("No", DialogInterface.OnClickListener { id, dialog -> })
+                    .setNegativeButton("No", DialogInterface.OnClickListener { _, _ -> })
                 // Create the AlertDialog object and return it
                 builder.create()
             }
@@ -55,46 +56,32 @@ class HistoryFragment : Fragment() {
     private lateinit var numRecordsView : TextView
     private lateinit var totalTimeView : TextView
     private lateinit var dayInfoLayout : LinearLayout
+    private lateinit var sessionCardsLayout : LinearLayout
     private lateinit var inflater: LayoutInflater
 
-    // because the dayOfMonth can't be 0, this indicates that it has not been set
-    // or that no day is selected
-    private var selectedDayOFMonth : Int = 0
+    // null means no day is selected
+    private var selectedDayOFMonth : Int? = null
+        set(value) {
+            if (value != null && (value < 1 || value > calendarView.lengthOfMonth))
+                throw IllegalStateException("Invalid day $value")
+
+            field = value
+        }
 
     private val timerConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
             val timerServiceBinder = (binder as TimerService.TimerBinder)
 
             timerServiceBinder.getService().onTimerFinishTasks.add {
-                val newRecord = RecordDatabase.getLastAdded()
-
-                // add this to the month records if the new record matches the shown month
-                addRecordToCalendar(newRecord)
-
-                // if the new record is the same as the currently selected day
-                if (newRecord.dateTime.dayOfMonth == selectedDayOFMonth) {
-                    // update the shown summary info
-                    showInfoForDay(selectedDayOFMonth)
+                reloadMonthRecords()
+                activity!!.runOnUiThread {
+                    fillCalendarDays()
+                    showInfoForSelectedDay()
                 }
             }
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
-        }
-    }
-
-    private fun addRecordToCalendar(record: MeditationRecord) {
-        val dateTime = record.dateTime
-
-        // if the record is in the shown month
-        if (YearMonth.from(dateTime) == calendarView.yearMonthShown) {
-            val dayOfMonth = MonthDay.from(dateTime).dayOfMonth
-
-            // add to the appropriate array list, zero indexed for the array
-            monthRecords[dayOfMonth - 1].add(record)
-
-            // fill in the day view background to indicate there is at least one record for that day
-            calendarView.setDayFilled(dayOfMonth, true)
         }
     }
 
@@ -108,10 +95,11 @@ class HistoryFragment : Fragment() {
                 Thread {
                     // delete record
                     RecordDatabase.remove(record)
-                    // reload month records
                     reloadMonthRecords()
-                    // show info for day
-                    activity!!.runOnUiThread { showInfoForDay(selectedDayOFMonth) }
+                    activity!!.runOnUiThread {
+                        fillCalendarDays()
+                        showInfoForSelectedDay()
+                    }
                 }.start()
             }
 
@@ -127,17 +115,22 @@ class HistoryFragment : Fragment() {
         } as CardView
     }
 
-    private fun showInfoForDay(dayOfMonth : Int) {
-        val recordsForDay = monthRecords[dayOfMonth - 1]
+    private fun showInfoForSelectedDay() {
+        if (selectedDayOFMonth == null) {
+            dayInfoLayout.visibility = View.GONE
+            return
+        }
+
+        val recordsForDay = monthRecords[selectedDayOFMonth!! - 1]
         numRecordsView.text = recordsForDay.size.toString()
         totalTimeView.text = recordsForDay.sumBy { it.duration.toMinutes().toInt() }.toString()
 
         // remove all the cards, leave the summaryLayout at the beginning
-        dayInfoLayout.removeViewsInLayout(1, dayInfoLayout.childCount - 1 )
+        sessionCardsLayout.removeAllViews()
 
         // generate a cardview for each session of that day
         for (record in recordsForDay) {
-            dayInfoLayout.addView(getRecordInfoCard(record))
+            sessionCardsLayout.addView(getRecordInfoCard(record))
         }
 
         dayInfoLayout.visibility = View.VISIBLE
@@ -146,9 +139,23 @@ class HistoryFragment : Fragment() {
     private fun reloadMonthRecords() {
         // Make an array of lists containing the records for each day of the month
         monthRecords = Array(calendarView.yearMonthShown.lengthOfMonth())
-        { ArrayList<MeditationRecord>(0) }
+            { ArrayList<MeditationRecord>(0) }
 
-        for (record in RecordDatabase.records) addRecordToCalendar(record)
+        for (record in RecordDatabase.records) {
+            val dateTime = record.dateTime
+
+            // if the record is in the shown month
+            if (YearMonth.from(dateTime) == calendarView.yearMonthShown) {
+                val dayOfMonth = MonthDay.from(dateTime).dayOfMonth
+
+                // add to the appropriate array list, zero indexed for the array
+                monthRecords[dayOfMonth - 1].add(record)
+            }
+        }
+    }
+
+    private fun fillCalendarDays() {
+        calendarView.fillDaysBy { dayOfMonth -> monthRecords[dayOfMonth - 1].size > 0 }
     }
 
     override fun onCreateView(inflaterArg: LayoutInflater,
@@ -159,35 +166,33 @@ class HistoryFragment : Fragment() {
 
         calendarView = tabView.findViewById(R.id.calendarView)
         dayInfoLayout = tabView.findViewById(R.id.dayInfoLayout)
+        sessionCardsLayout = tabView.findViewById(R.id.sessionCardsLayout)
         numRecordsView = tabView.findViewById(R.id.numRecords)
         totalTimeView = tabView.findViewById(R.id.totalTime)
 
-        // by default summary and session cards are not visible
-        dayInfoLayout.visibility = View.GONE
-
         reloadMonthRecords()
+        fillCalendarDays()
+        showInfoForSelectedDay()
 
         // setting up calendar callbacks
         calendarView.onDaySelect = { dayOfMonth ->
             selectedDayOFMonth = dayOfMonth
-            showInfoForDay(dayOfMonth)
+            showInfoForSelectedDay()
         }
 
         calendarView.onDayUnselect = {
             // make summary invisible again when no day is selected
-            dayInfoLayout.visibility = View.GONE
-            selectedDayOFMonth = 0
+            selectedDayOFMonth = null
+            showInfoForSelectedDay()
         }
 
         calendarView.onMonthChange = {
-            dayInfoLayout.visibility = View.GONE
             reloadMonthRecords()
+            fillCalendarDays()
+            showInfoForSelectedDay()
         }
 
         activity!!.bindService(Intent(activity, TimerService::class.java), timerConnection, 0)
-
-        // button to add past record
-        // deleting records
 
         return tabView
     }
