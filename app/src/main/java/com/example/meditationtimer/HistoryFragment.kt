@@ -3,29 +3,31 @@ package com.example.meditationtimer
 import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
-import android.drm.DrmUtils
 import android.os.Bundle
 import android.os.IBinder
 import android.support.constraint.ConstraintLayout
 import android.support.v4.app.Fragment
+import android.support.v7.widget.CardView
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import org.w3c.dom.Text
 import java.time.MonthDay
-import java.time.OffsetDateTime
 import java.time.YearMonth
-import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 class HistoryFragment : Fragment() {
 
     private lateinit var monthRecords : Array< ArrayList<MeditationRecord> >
-    private lateinit var tabView: ConstraintLayout
+    private lateinit var tabView: ScrollView
     private lateinit var calendarView : CalendarView
-    private lateinit var summaryLayout : ConstraintLayout
     private lateinit var numRecordsView : TextView
     private lateinit var totalTimeView : TextView
+    private lateinit var dayInfoLayout : LinearLayout
 
     // because the dayOfMonth can't be 0, this indicates that it has not been set
     // or that no day is selected
@@ -44,8 +46,7 @@ class HistoryFragment : Fragment() {
                 // if the new record is the same as the currently selected day
                 if (newRecord.dateTime.dayOfMonth == selectedDayOFMonth) {
                     // update the shown summary info
-//                    activity!!.runOnUiThread { showSummaryForDay(selectedDayOFMonth) }
-                    showSummaryForDay(selectedDayOFMonth)
+                    showInfoForDay(selectedDayOFMonth)
                 }
             }
         }
@@ -69,11 +70,29 @@ class HistoryFragment : Fragment() {
         }
     }
 
-    private fun showSummaryForDay(dayOfMonth : Int) {
+    private fun showInfoForDay(dayOfMonth : Int) {
         val recordsForDay = monthRecords[dayOfMonth - 1]
         numRecordsView.text = recordsForDay.size.toString()
         totalTimeView.text = recordsForDay.sumBy { it.duration.toMinutes().toInt() }.toString()
-        summaryLayout.visibility = View.VISIBLE
+
+        // remove all the cards
+        dayInfoLayout.removeViewsInLayout(1, dayInfoLayout.childCount - 1 )
+
+        // generate a cardview for each session of that day
+        val inflater = LayoutInflater.from(activity!!)
+
+        for (record in recordsForDay) {
+            val timeStamp = record.dateTime.format(DateTimeFormatter.ofPattern("hh:mm a"))
+            val lengthMinutes = record.duration.toMinutes()
+
+            val card = inflater.inflate(R.layout.session_record_card, dayInfoLayout, false).apply {
+                findViewById<TextView>(R.id.timeStamp).text = "at $timeStamp for $lengthMinutes minutes"
+            }
+
+            dayInfoLayout.addView(card)
+        }
+
+        dayInfoLayout.visibility = View.VISIBLE
     }
 
     private fun reloadMonthRecords() {
@@ -87,33 +106,32 @@ class HistoryFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        tabView = inflater.inflate(R.layout.tab_history, container, false) as ConstraintLayout
+        tabView = inflater.inflate(R.layout.tab_history, container, false) as ScrollView
 
         calendarView = tabView.findViewById(R.id.calendarView)
-        summaryLayout = tabView.findViewById(R.id.summaryLayout)
-        numRecordsView = summaryLayout.findViewById(R.id.numRecords)
-        totalTimeView = summaryLayout.findViewById(R.id.totalTime)
+        dayInfoLayout = tabView.findViewById(R.id.dayInfoLayout)
+        numRecordsView = tabView.findViewById(R.id.numRecords)
+        totalTimeView = tabView.findViewById(R.id.totalTime)
 
-        // by default summary is not visible
-        summaryLayout.visibility = View.GONE
+        // by default summary and session cards are not visible
+        dayInfoLayout.visibility = View.GONE
 
         reloadMonthRecords()
-
 
         // setting up calendar callbacks
         calendarView.onDaySelect = { dayOfMonth ->
             selectedDayOFMonth = dayOfMonth
-            showSummaryForDay(dayOfMonth)
+            showInfoForDay(dayOfMonth)
         }
 
         calendarView.onDayUnselect = {
             // make summary invisible again when no day is selected
-            summaryLayout.visibility = View.GONE
+            dayInfoLayout.visibility = View.GONE
             selectedDayOFMonth = 0
         }
 
         calendarView.onMonthChange = {
-            summaryLayout.visibility = View.GONE
+            dayInfoLayout.visibility = View.GONE
             reloadMonthRecords()
         }
 
