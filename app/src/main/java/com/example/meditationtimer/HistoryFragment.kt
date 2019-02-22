@@ -1,31 +1,22 @@
 package com.example.meditationtimer
 
 import android.app.Dialog
-import android.content.ComponentName
-import android.content.DialogInterface
-import android.content.Intent
-import android.content.ServiceConnection
-import android.icu.text.AlphabeticIndex
+import android.app.TimePickerDialog
+import android.content.*
 import android.os.Bundle
 import android.os.IBinder
-import android.support.constraint.ConstraintLayout
 import android.support.v4.app.DialogFragment
 import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.CardView
-import android.util.TypedValue
+import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.ScrollView
-import android.widget.TextView
-import kotlinx.android.synthetic.main.tab_history.*
+import android.widget.*
 import org.w3c.dom.Text
 import java.lang.IllegalStateException
-import java.time.MonthDay
-import java.time.YearMonth
+import java.time.*
 import java.time.format.DateTimeFormatter
 
 class HistoryFragment : Fragment() {
@@ -44,6 +35,33 @@ class HistoryFragment : Fragment() {
                             onConfirmDelete()
                         })
                     .setNegativeButton("No", DialogInterface.OnClickListener { _, _ -> })
+                // Create the AlertDialog object and return it
+                builder.create()
+            }
+        }
+    }
+
+    class NewRecordDialogFragment() : DialogFragment() {
+        lateinit var onConfirm : (LocalTime, Duration) -> Unit
+
+        override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+            return activity!!.let {
+                // Use the Builder class for convenient dialog construction
+                val builder = AlertDialog.Builder(it)
+
+                val dialogView = LayoutInflater.from(activity!!).
+                    inflate(R.layout.view_new_record_dialog, null, false)
+                val timePicker = dialogView.findViewById<TimePicker>(R.id.timePicker)
+                val durationView = dialogView.findViewById<EditText>(R.id.durationView)
+
+                builder.setView(R.layout.view_new_record_dialog)
+                    .setPositiveButton("Confirm",
+                        DialogInterface.OnClickListener { _, _ ->
+                            val time = LocalTime.of(timePicker.hour, timePicker.minute)
+                            val duration = Duration.ofMinutes(durationView.text.toString().toLong())
+                            onConfirm(time, duration)
+                        })
+                    .setNegativeButton("Cancel", DialogInterface.OnClickListener { _, _ -> })
                 // Create the AlertDialog object and return it
                 builder.create()
             }
@@ -73,10 +91,8 @@ class HistoryFragment : Fragment() {
             val timerServiceBinder = (binder as TimerService.TimerBinder)
 
             timerServiceBinder.getService().onTimerFinishTasks.add {
-                reloadMonthRecords()
-                activity!!.runOnUiThread {
-                    fillCalendarDays()
-                    showInfoForSelectedDay()
+                activity?.runOnUiThread {
+                    refreshTab()
                 }
             }
         }
@@ -90,15 +106,13 @@ class HistoryFragment : Fragment() {
         val lengthMinutes = record.duration.toMinutes()
         val recordStr = "at $timeStamp for $lengthMinutes minutes"
 
-       return inflater.inflate(R.layout.session_record_card, dayInfoLayout, false).apply {
+       return inflater.inflate(R.layout.view_session_record_card, dayInfoLayout, false).apply {
             val deleteAction = {
                 Thread {
                     // delete record
                     RecordDatabase.remove(record)
-                    reloadMonthRecords()
                     activity!!.runOnUiThread {
-                        fillCalendarDays()
-                        showInfoForSelectedDay()
+                        refreshTab()
                     }
                 }.start()
             }
@@ -113,6 +127,26 @@ class HistoryFragment : Fragment() {
             }
 
         } as CardView
+    }
+
+    private fun onDefineNewRecord() {
+        NewRecordDialogFragment().apply {
+            onConfirm = { time, duration ->
+
+                // get complete dateTime based on current selected year, month, and day
+                val yearMonth = calendarView.yearMonthShown
+                val date = LocalDate.of(yearMonth.year, yearMonth.month, selectedDayOFMonth!!)
+                val dateTime = OffsetDateTime.of(date, time, OffsetDateTime.now().offset)
+                Thread {
+                    // add the new record retrieved from the dialog
+                    RecordDatabase.add(MeditationRecord(dateTime, duration))
+
+                    // refresh the views to reflect new data
+                    activity!!.runOnUiThread { refreshTab() }
+                }.start()
+            }
+            show(activity!!.supportFragmentManager, "NewRecordDialog")
+        }
     }
 
     private fun showInfoForSelectedDay() {
@@ -170,10 +204,6 @@ class HistoryFragment : Fragment() {
         numRecordsView = tabView.findViewById(R.id.numRecords)
         totalTimeView = tabView.findViewById(R.id.totalTime)
 
-        reloadMonthRecords()
-        fillCalendarDays()
-        showInfoForSelectedDay()
-
         // setting up calendar callbacks
         calendarView.onDaySelect = { dayOfMonth ->
             selectedDayOFMonth = dayOfMonth
@@ -187,14 +217,27 @@ class HistoryFragment : Fragment() {
         }
 
         calendarView.onMonthChange = {
-            reloadMonthRecords()
-            fillCalendarDays()
-            showInfoForSelectedDay()
+            refreshTab()
+        }
+
+        tabView.findViewById<Button>(R.id.addRecordButton).setOnClickListener {
+            onDefineNewRecord()
         }
 
         activity!!.bindService(Intent(activity, TimerService::class.java), timerConnection, 0)
 
         return tabView
+    }
+
+    override fun onStart() {
+        super.onStart()
+        refreshTab()
+    }
+
+    private fun refreshTab() {
+        reloadMonthRecords()
+        fillCalendarDays()
+        showInfoForSelectedDay()
     }
 
     override fun onDestroyView() {
