@@ -1,17 +1,23 @@
 package com.example.meditationtimer
 
+import android.app.Dialog
 import android.content.ComponentName
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.ServiceConnection
+import android.icu.text.AlphabeticIndex
 import android.os.Bundle
 import android.os.IBinder
 import android.support.constraint.ConstraintLayout
+import android.support.v4.app.DialogFragment
 import android.support.v4.app.Fragment
+import android.support.v7.app.AlertDialog
 import android.support.v7.widget.CardView
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -22,12 +28,34 @@ import java.time.format.DateTimeFormatter
 
 class HistoryFragment : Fragment() {
 
+    class DeleteRecordDialogFragment() : DialogFragment() {
+        lateinit var messageStr : String
+        lateinit var onConfirmDelete : () -> Unit
+
+
+        override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+            return activity!!.let {
+                // Use the Builder class for convenient dialog construction
+                val builder = AlertDialog.Builder(it)
+                builder.setMessage(messageStr)
+                    .setPositiveButton("Yes",
+                        DialogInterface.OnClickListener { dialog, id ->
+                            onConfirmDelete()
+                        })
+                    .setNegativeButton("No", DialogInterface.OnClickListener { id, dialog -> })
+                // Create the AlertDialog object and return it
+                builder.create()
+            }
+        }
+    }
+
     private lateinit var monthRecords : Array< ArrayList<MeditationRecord> >
     private lateinit var tabView: ScrollView
     private lateinit var calendarView : CalendarView
     private lateinit var numRecordsView : TextView
     private lateinit var totalTimeView : TextView
     private lateinit var dayInfoLayout : LinearLayout
+    private lateinit var inflater: LayoutInflater
 
     // because the dayOfMonth can't be 0, this indicates that it has not been set
     // or that no day is selected
@@ -70,26 +98,46 @@ class HistoryFragment : Fragment() {
         }
     }
 
+    private fun getRecordInfoCard(record : MeditationRecord) : CardView {
+        val timeStamp = record.dateTime.format(DateTimeFormatter.ofPattern("hh:mm a"))
+        val lengthMinutes = record.duration.toMinutes()
+        val recordStr = "at $timeStamp for $lengthMinutes minutes"
+
+       return inflater.inflate(R.layout.session_record_card, dayInfoLayout, false).apply {
+            val deleteAction = {
+                Thread {
+                    // delete record
+                    RecordDatabase.remove(record)
+                    // reload month records
+                    reloadMonthRecords()
+                    // show info for day
+                    activity!!.runOnUiThread { showInfoForDay(selectedDayOFMonth) }
+                }.start()
+            }
+
+            findViewById<TextView>(R.id.timeStamp).text = recordStr
+            findViewById<Button>(R.id.deleteButton).setOnClickListener {
+                // confirm that the record should be deleted
+                DeleteRecordDialogFragment().apply {
+                    messageStr = "Delete \"$recordStr\"?"
+                    onConfirmDelete = deleteAction
+                }.show(activity!!.supportFragmentManager, "DeleteRecordConfirmation")
+            }
+
+        } as CardView
+    }
+
     private fun showInfoForDay(dayOfMonth : Int) {
         val recordsForDay = monthRecords[dayOfMonth - 1]
         numRecordsView.text = recordsForDay.size.toString()
         totalTimeView.text = recordsForDay.sumBy { it.duration.toMinutes().toInt() }.toString()
 
-        // remove all the cards
+        // remove all the cards, leave the summaryLayout at the beginning
         dayInfoLayout.removeViewsInLayout(1, dayInfoLayout.childCount - 1 )
 
         // generate a cardview for each session of that day
-        val inflater = LayoutInflater.from(activity!!)
-
         for (record in recordsForDay) {
-            val timeStamp = record.dateTime.format(DateTimeFormatter.ofPattern("hh:mm a"))
-            val lengthMinutes = record.duration.toMinutes()
-
-            val card = inflater.inflate(R.layout.session_record_card, dayInfoLayout, false).apply {
-                findViewById<TextView>(R.id.timeStamp).text = "at $timeStamp for $lengthMinutes minutes"
-            }
-
-            dayInfoLayout.addView(card)
+            dayInfoLayout.addView(getRecordInfoCard(record))
         }
 
         dayInfoLayout.visibility = View.VISIBLE
@@ -103,9 +151,10 @@ class HistoryFragment : Fragment() {
         for (record in RecordDatabase.records) addRecordToCalendar(record)
     }
 
-    override fun onCreateView(inflater: LayoutInflater,
+    override fun onCreateView(inflaterArg: LayoutInflater,
                               container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
+        inflater = inflaterArg
         tabView = inflater.inflate(R.layout.tab_history, container, false) as ScrollView
 
         calendarView = tabView.findViewById(R.id.calendarView)
