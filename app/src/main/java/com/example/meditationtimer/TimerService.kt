@@ -21,7 +21,7 @@ class TimerService : Service() {
     private lateinit var notifManager: NotificationManager
     private lateinit var alarmManager: AlarmManager
     private lateinit var notifBuilder: Notification.Builder
-    private lateinit var bellIntent : PendingIntent
+    private lateinit var bellPendingIntent : PendingIntent
     private var scheduler = Timer()
     lateinit var onTimeChanged : (minutes : Long, seconds : Long) -> Unit
     var onTimerFinishTasks = ArrayList<() -> Unit>()
@@ -34,7 +34,7 @@ class TimerService : Service() {
 
     fun stopTimerEarly() {
         // cancel the alarm that was scheduled
-        alarmManager.cancel(bellIntent)
+        alarmManager.cancel(bellPendingIntent)
 
         // modify the end instant set by startTimer
         endTime = OffsetDateTime.now()
@@ -69,7 +69,7 @@ class TimerService : Service() {
         // play the bell now at start
         startService(Intent(applicationContext, BellService::class.java))
         // set alarm to play bell at the end
-        alarmManager.setExact(AlarmManager.RTC_WAKEUP, endTimeMillis, bellIntent)
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, endTimeMillis, bellPendingIntent)
 
         val timerUpdater = object : TimerTask() {
             override fun run() {
@@ -106,8 +106,8 @@ class TimerService : Service() {
         notifManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notifManager.createNotificationChannel(channel)
 
-        bellIntent = PendingIntent.getService(applicationContext, 0,
-            Intent(applicationContext, BellService::class.java), 0)
+        bellPendingIntent = PendingIntent.getBroadcast(applicationContext, 0,
+            Intent(applicationContext, AlarmReceiver::class.java), 0)
 
         notifBuilder = Notification.Builder(this, channelId)
             .setSmallIcon(R.drawable.ic_timer_notif)

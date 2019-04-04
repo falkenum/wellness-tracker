@@ -1,20 +1,18 @@
 package com.example.meditationtimer
 
 import android.app.Dialog
-import android.app.TimePickerDialog
 import android.content.*
 import android.os.Bundle
 import android.os.IBinder
 import android.support.v4.app.DialogFragment
 import android.support.v4.app.Fragment
+import android.support.v4.app.FragmentManager
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.CardView
-import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import org.w3c.dom.Text
 import java.lang.IllegalStateException
 import java.time.*
 import java.time.format.DateTimeFormatter
@@ -54,13 +52,14 @@ class HistoryFragment : Fragment() {
                 val timePicker = dialogView.findViewById<TimePicker>(R.id.timePicker)
                 val durationView = dialogView.findViewById<EditText>(R.id.durationView)
 
-                builder.setView(R.layout.view_new_record_dialog)
+                builder.setView(dialogView)
                     .setPositiveButton("Confirm",
                         DialogInterface.OnClickListener { _, _ ->
                             val time = LocalTime.of(timePicker.hour, timePicker.minute)
                             val duration = Duration.ofMinutes(durationView.text.toString().toLong())
                             onConfirm(time, duration)
                         })
+                    // default behavior on cancel
                     .setNegativeButton("Cancel", DialogInterface.OnClickListener { _, _ -> })
                 // Create the AlertDialog object and return it
                 builder.create()
@@ -76,6 +75,7 @@ class HistoryFragment : Fragment() {
     private lateinit var dayInfoLayout : LinearLayout
     private lateinit var sessionCardsLayout : LinearLayout
     private lateinit var inflater: LayoutInflater
+    private lateinit var fm: FragmentManager
 
     // null means no day is selected
     private var selectedDayOFMonth : Int? = null
@@ -123,13 +123,13 @@ class HistoryFragment : Fragment() {
                 DeleteRecordDialogFragment().apply {
                     messageStr = "Delete \"$recordStr\"?"
                     onConfirmDelete = deleteAction
-                }.show(activity!!.supportFragmentManager, "DeleteRecordConfirmation")
+                }.show(fm, "DeleteRecordConfirmation")
             }
 
         } as CardView
     }
 
-    private fun onDefineNewRecord() {
+    private fun getNewRecord() {
         NewRecordDialogFragment().apply {
             onConfirm = { time, duration ->
 
@@ -145,7 +145,7 @@ class HistoryFragment : Fragment() {
                     activity!!.runOnUiThread { refreshTab() }
                 }.start()
             }
-            show(activity!!.supportFragmentManager, "NewRecordDialog")
+            show(fm, "NewRecordDialog")
         }
     }
 
@@ -203,6 +203,7 @@ class HistoryFragment : Fragment() {
         sessionCardsLayout = tabView.findViewById(R.id.sessionCardsLayout)
         numRecordsView = tabView.findViewById(R.id.numRecords)
         totalTimeView = tabView.findViewById(R.id.totalTime)
+        fm = activity!!.supportFragmentManager
 
         // setting up calendar callbacks
         calendarView.onDaySelect = { dayOfMonth ->
@@ -217,11 +218,12 @@ class HistoryFragment : Fragment() {
         }
 
         calendarView.onMonthChange = {
+            selectedDayOFMonth = null
             refreshTab()
         }
 
         tabView.findViewById<Button>(R.id.addRecordButton).setOnClickListener {
-            onDefineNewRecord()
+            getNewRecord()
         }
 
         activity!!.bindService(Intent(activity, TimerService::class.java), timerConnection, 0)
