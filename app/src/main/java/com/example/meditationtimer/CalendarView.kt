@@ -2,8 +2,6 @@ package com.example.meditationtimer
 
 import android.content.Context
 import android.graphics.drawable.LayerDrawable
-import android.text.BoringLayout
-import android.text.Layout
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -13,12 +11,9 @@ import android.widget.LinearLayout
 import android.widget.TableLayout
 import android.widget.TableRow
 import android.widget.TextView
-import java.lang.String.format
 import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.Year
 import java.time.YearMonth
-import java.util.*
 import kotlin.math.roundToInt
 
 class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout(context, attributeSet) {
@@ -37,7 +32,8 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
         const val transparent = 0
         const val opaque = 255
         const val fillLayer = 0
-        const val outlineLayer = 1
+        const val selectedDayLayer = 1
+        const val currentDayLayer = 2
     }
 
     init {
@@ -69,23 +65,25 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
     }
 
     private inner class DayView(val dayOfMonth : Int) : EmptyDayView()  {
-
-        fun setFilled(value : Boolean) {
-            (background as LayerDrawable).getDrawable(fillLayer).alpha =
+        private fun setLayer(layer : Int, value : Boolean) {
+            (background as LayerDrawable).getDrawable(layer).alpha =
                 if (value) opaque else transparent
         }
 
-        fun setOutlined(value : Boolean) {
-            (background as LayerDrawable).getDrawable(outlineLayer).alpha =
-                if (value) opaque else transparent
-        }
+        fun setFilled(value : Boolean) = setLayer(fillLayer, value)
+        fun setSelectedDay(value : Boolean) = setLayer(selectedDayLayer, value)
+        fun setCurrentDay(value : Boolean) = setLayer(currentDayLayer, value)
 
         init {
             id = dayOfMonth
             background = context!!.getDrawable(R.drawable.calendar_day_bg)
 
             setFilled(false)
-            setOutlined(false)
+            setSelectedDay(false)
+
+            // set extra outline for today's date
+            val thisDate = LocalDate.of(yearMonthShown.year, yearMonthShown.month, dayOfMonth)
+            setCurrentDay(thisDate == LocalDate.now())
 
             text = dayOfMonth.toString()
             textAlignment = View.TEXT_ALIGNMENT_CENTER
@@ -94,13 +92,13 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
 
                 if (selectedDayView == this) {
                     selectedDayView = null
-                    setOutlined(false)
+                    setSelectedDay(false)
                     onDayUnselect?.invoke()
                 }
                 else {
-                    selectedDayView?.setOutlined(false)
+                    selectedDayView?.setSelectedDay(false)
                     selectedDayView = this
-                    setOutlined(true)
+                    setSelectedDay(true)
 
                     // callback for when a day is picked
                     onDaySelect?.invoke(dayOfMonth)
