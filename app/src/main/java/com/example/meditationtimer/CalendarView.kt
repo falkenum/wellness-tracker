@@ -1,6 +1,7 @@
 package com.example.meditationtimer
 
 import android.content.Context
+import android.graphics.Typeface
 import android.graphics.drawable.LayerDrawable
 import android.util.AttributeSet
 import android.util.TypedValue
@@ -31,7 +32,7 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
     companion object {
         const val transparent = 0
         const val opaque = 255
-        const val fillLayer = 0
+        const val hasEntriesLayer = 0
         const val selectedDayLayer = 1
         const val currentDayLayer = 2
     }
@@ -70,7 +71,7 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
                 if (value) opaque else transparent
         }
 
-        fun setFilled(value : Boolean) = setLayer(fillLayer, value)
+        fun setHasEntries(value : Boolean) = setLayer(hasEntriesLayer, value)
         fun setSelectedDay(value : Boolean) = setLayer(selectedDayLayer, value)
         fun setCurrentDay(value : Boolean) = setLayer(currentDayLayer, value)
 
@@ -78,7 +79,7 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
             id = dayOfMonth
             background = context!!.getDrawable(R.drawable.calendar_day_bg)
 
-            setFilled(false)
+            setHasEntries(false)
             setSelectedDay(false)
 
             // set extra outline for today's date
@@ -104,6 +105,7 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
                     onDaySelect?.invoke(dayOfMonth)
                 }
             }
+            if (dayOfMonth == 1) setTypeface(null, Typeface.BOLD)
 
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
         }
@@ -172,7 +174,7 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
     // given day of month, set whether the bg of that day should be filled
     fun fillDaysBy(pred : (Int) -> Boolean) {
         for (dayOfMonth in 1..lengthOfMonth) {
-            findViewById<DayView>(dayOfMonth).setFilled(pred(dayOfMonth))
+            findViewById<DayView>(dayOfMonth).setHasEntries(pred(dayOfMonth))
         }
     }
 }
