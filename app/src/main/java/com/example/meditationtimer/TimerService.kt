@@ -69,7 +69,7 @@ class TimerService : Service() {
         // play the bell now at start
         startService(Intent(applicationContext, BellService::class.java))
         // set alarm to play bell at the end
-        alarmManager.setExact(AlarmManager.RTC_WAKEUP, endTimeMillis, bellPendingIntent)
+        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, endTimeMillis, bellPendingIntent)
 
         val timerUpdater = object : TimerTask() {
             override fun run() {
@@ -86,7 +86,7 @@ class TimerService : Service() {
                 // otherwise update the notification
                 else {
                     val timerStr = format(Locale.ENGLISH, "%02d:%02d", minutes, seconds)
-                    notifBuilder.setContentText(timerStr)
+                    notifBuilder.setContentText("time remaining: " + timerStr)
                     notifManager.notify(NOTIFY_ID, notifBuilder.build())
                     onTimeChanged(minutes, seconds)
                 }
@@ -111,6 +111,7 @@ class TimerService : Service() {
 
         notifBuilder = Notification.Builder(this, channelId)
             .setSmallIcon(R.drawable.ic_timer_notif)
+            .setContentTitle("Meditating")
             .setContentIntent(
                 PendingIntent.getActivity(this, 0,
                     Intent(this, MainActivity::class.java), 0))
