@@ -86,7 +86,7 @@ class TimerService : Service() {
                 // otherwise update the notification
                 else {
                     val timerStr = format(Locale.ENGLISH, "%02d:%02d", minutes, seconds)
-                    notifBuilder.setContentText("dateTime remaining: " + timerStr)
+                    notifBuilder.setContentText("time remaining: " + timerStr)
                     notifManager.notify(NOTIFY_ID, notifBuilder.build())
                     onTimeChanged(minutes, seconds)
                 }
