@@ -1,8 +1,11 @@
 package com.example.meditationtimer
 
+import android.arch.persistence.db.SupportSQLiteDatabase
 import android.arch.persistence.room.*
+import android.arch.persistence.room.migration.Migration
 import android.content.Context
 import android.support.v7.widget.CardView
+import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
@@ -28,15 +31,15 @@ class TimeConverter {
         return OffsetDateTime.ofInstant(Instant.ofEpochSecond(epochSeconds), ZoneId.systemDefault())
     }
 
-//    @TypeConverter
-//    fun durationToMillis(duration : Duration) : Long {
-//        return duration.toMillis()
-//    }
-//
-//    @TypeConverter
-//    fun millisToDuration(duration : Long) : Duration {
-//        return Duration.ofMillis(duration)
-//    }
+    @TypeConverter
+    fun durationToMillis(duration : Duration) : Long {
+        return duration.toMillis()
+    }
+
+    @TypeConverter
+    fun millisToDuration(duration : Long) : Duration {
+        return Duration.ofMillis(duration)
+    }
 }
 
 class JSONConverter {
@@ -65,6 +68,7 @@ class RecordCardView(context: Context) : CardView(context) {
             var dataStr = ""
             for (key in record.data.keys())
                 dataStr += "$key: ${record.data[key]}\n"
+            text = dataStr
         }
 
         // main data
@@ -85,126 +89,54 @@ data class Record(val dateTime : OffsetDateTime, val type : String, val data : J
     companion object {
         const val MEDITATION = "Meditation"
         fun newMeditation(dateTime: OffsetDateTime, duration: Duration) : Record {
-            return Record(dateTime, MEDITATION).apply { data.put("duration", duration) }
+            return Record(dateTime, MEDITATION).apply { data.put("durationMillis", duration.toMillis()) }
         }
     }
 }
 
-//interface Record {
-//    val dateTime: OffsetDateTime
-//    fun getType() : String
-//    fun getDataView(context: Context) : View
-//    fun normalize() : Record
-//
-//    interface Creator<T : Record> {
-//        fun createFrom(record: Record) : T
-//    }
-//}
-
-//class MeditationRecord(
-//    override val dateTime : OffsetDateTime,
-//    val duration : Duration
-//) : Record {
-//    override fun getType(): String = "Meditation"
-//
-//    override fun getDataView(context: Context): View {
-//        return TextView(context).apply {
-//            text = "duration: ${duration.toMinutes()} minutes"
-//            setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
-//        }
-//    }
-//
-//    override fun normalize(): Record {
-//        TODO()
-//    }
-//
-//    companion object : Record.Creator<MeditationRecord> {
-//        override fun createFrom(record: Record): MeditationRecord {
-//            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-//        }
-//    }
-//}
-//
-//class JournalRecord (
-//    override val dateTime : OffsetDateTime,
-//    val body : String
-//) : Record {
-//    override fun getType(): String = "Journal entry"
-//
-//    override fun getDataView(context: Context): View {
-//        return TextView(context).apply {
-//            text = body
-//        }
-//    }
-//
-//    override fun normalize(): Record {
-//        TODO()
-//    }
-//}
+@TypeConverters(TimeConverter::class)
+@Entity
+class MeditationRecord(
+    @PrimaryKey val dateTime : OffsetDateTime,
+    val duration : Duration
+)
 
 @Dao
 interface RecordDao{
     @Query("SELECT * FROM Record")
     fun getAll() : List<Record>
 
-    @Insert
+    @Query("SELECT * FROM MeditationRecord")
+    fun getAllOld() : List<MeditationRecord>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(record: Record)
 
     @Delete
     fun delete(record: Record)
 }
 
-//@Dao
-//abstract class RecordDao{
-//    @Query("SELECT * FROM JournalRecord")
-//    protected abstract fun getAllJournal(): List<JournalRecord>
-//
-//    @Query("SELECT * FROM MeditationRecord")
-//    protected abstract fun getAllMeditation(): List<MeditationRecord>
-//
-//    @Transaction
-//    fun getAll(): List<Record> {
-//        return ArrayList<Record>(0).apply {
-//            val meditationRecords = getAllMeditation()
-//            val journalRecords = getAllJournal()
-//            addAll(meditationRecords)
-//            addAll(journalRecords)
-//        }.toList()
-//    }
-//
-//    @Insert
-//    protected abstract fun insertMeditation(record: MeditationRecord)
-//
-//    @Insert
-//    protected abstract fun insertJournal(record: JournalRecord)
-//
-//    @Transaction
-//    fun insert(record: Record) {
-//        when (record) {
-//            is MeditationRecord -> insertMeditation(record)
-//            is JournalRecord -> insertJournal(record)
-//            else -> throw Exception("type not implemented")
-//        }
-//    }
-//
-//    @Delete
-//    protected abstract fun deleteMeditation(record: MeditationRecord)
-//
-//    @Delete
-//    protected abstract fun deleteJournal(record: JournalRecord)
-//
-//    @Transaction
-//    fun delete(record: Record) {
-//        when (record) {
-//            is MeditationRecord -> deleteMeditation(record)
-//            is JournalRecord -> deleteJournal(record)
-//            else -> throw Exception("type not implemented")
-//        }
-//    }
-//}
+val MIGRATION_4_5 = object : Migration(4, 5) {
+    override fun migrate(database: SupportSQLiteDatabase) {
 
+        // getting rid of old table
+        database.execSQL("DROP TABLE JournalRecord")
 
-@Database(entities = arrayOf(Record::class), version = 4, exportSchema = false)
+        // creating new record table for all types
+        database.execSQL("CREATE TABLE Record (dateTime INTEGER NOT NULL, type TEXT NOT NULL, data TEXT NOT NULL," +
+                "PRIMARY KEY (dateTime, type))")
+    }
+}
+
+val MIGRATION_3_5 = object : Migration(3, 5) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        // creating new record table for all types
+        database.execSQL("CREATE TABLE Record (dateTime INTEGER NOT NULL, type TEXT NOT NULL, data TEXT NOT NULL," +
+                "PRIMARY KEY (dateTime, type))")
+    }
+}
+
+@Database(entities = arrayOf(Record::class, MeditationRecord::class), version = 5, exportSchema = false)
 abstract class RecordDatabase : RoomDatabase() {
     abstract fun recordDao(): RecordDao
 
@@ -217,7 +149,22 @@ abstract class RecordDatabase : RoomDatabase() {
             instance = Room.databaseBuilder(context.getApplicationContext(),
                 // TODO figure out how to change database name and merge data
                 RecordDatabase::class.java, "meditation-records-db")
+                .addMigrations(MIGRATION_4_5)
+                .addMigrations(MIGRATION_3_5)
                 .build()
+
+            // copy data from old table to new one
+            for (mr in instance.recordDao().getAllOld()) {
+                val dateTime = mr.dateTime
+                val type = Record.MEDITATION
+                val duration = mr.duration
+                val data = JSONObject().apply { put("duration", duration) }
+                println(data.toString())
+
+                val newRecord = Record(dateTime, type, data)
+
+                instance.recordDao().insert(newRecord)
+            }
         }
     }
 }
