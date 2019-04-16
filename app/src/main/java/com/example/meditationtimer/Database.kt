@@ -30,16 +30,6 @@ class TimeConverter {
     fun secondToDateTime(epochSeconds : Long) : OffsetDateTime {
         return OffsetDateTime.ofInstant(Instant.ofEpochSecond(epochSeconds), ZoneId.systemDefault())
     }
-
-    @TypeConverter
-    fun durationToMillis(duration : Duration) : Long {
-        return duration.toMillis()
-    }
-
-    @TypeConverter
-    fun millisToDuration(duration : Long) : Duration {
-        return Duration.ofMillis(duration)
-    }
 }
 
 class JSONConverter {
@@ -94,19 +84,12 @@ data class Record(val dateTime : OffsetDateTime, val type : String, val data : J
     }
 }
 
-@TypeConverters(TimeConverter::class)
-@Entity
-class MeditationRecord(
-    @PrimaryKey val dateTime : OffsetDateTime,
-    val duration : Duration
-)
-
 @Dao
 interface RecordDao{
     @Query("SELECT * FROM Record")
     fun getAll() : List<Record>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert
     fun insert(record: Record)
 
     @Delete
