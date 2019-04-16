@@ -51,9 +51,9 @@ class TimerService : Service() {
         isRunning = false
 
         // save the meditation session
-        val record = MeditationRecord(startTime, Duration.between(startTime, endTime))
+        val record = Record.newMeditation(startTime, Duration.between(startTime, endTime))
         Thread {
-            RecordDatabase.add(record)
+            RecordDatabase.instance.recordDao().insert(record)
 
             // once the record is saved, run all the requested callbacks
             for (task in onTimerFinishTasks) task.invoke()
@@ -86,7 +86,7 @@ class TimerService : Service() {
                 // otherwise update the notification
                 else {
                     val timerStr = format(Locale.ENGLISH, "%02d:%02d", minutes, seconds)
-                    notifBuilder.setContentText("time remaining: " + timerStr)
+                    notifBuilder.setContentText("dateTime remaining: " + timerStr)
                     notifManager.notify(NOTIFY_ID, notifBuilder.build())
                     onTimeChanged(minutes, seconds)
                 }

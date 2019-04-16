@@ -53,21 +53,20 @@ class HistoryFragment : Fragment() {
                 val durationView = dialogView.findViewById<EditText>(R.id.durationView)
 
                 builder.setView(dialogView)
-                    .setPositiveButton("Confirm",
-                        DialogInterface.OnClickListener { _, _ ->
+                    .setPositiveButton("Confirm") { _, _ ->
                             val time = LocalTime.of(timePicker.hour, timePicker.minute)
                             val duration = Duration.ofMinutes(durationView.text.toString().toLong())
                             onConfirm(time, duration)
-                        })
-                    // default behavior on cancel
-                    .setNegativeButton("Cancel", DialogInterface.OnClickListener { _, _ -> })
+                        }
+                    // default behavior on cancel, do nothing
+                    .setNegativeButton("Cancel") { _, _ -> }
                 // Create the AlertDialog object and return it
                 builder.create()
             }
         }
     }
 
-    private lateinit var monthRecords : Array< ArrayList<MeditationRecord> >
+    private lateinit var monthRecords : Array< ArrayList<Record> >
     private lateinit var tabView: ScrollView
     private lateinit var calendarView : CalendarView
     private lateinit var numRecordsView : TextView
@@ -76,6 +75,7 @@ class HistoryFragment : Fragment() {
     private lateinit var sessionCardsLayout : LinearLayout
     private lateinit var inflater: LayoutInflater
     private lateinit var fm: FragmentManager
+    private lateinit var recordDao: RecordDao
 
     // null means no day is selected
     private var selectedDayOFMonth : Int? = null
@@ -91,9 +91,7 @@ class HistoryFragment : Fragment() {
             val timerServiceBinder = (binder as TimerService.TimerBinder)
 
             timerServiceBinder.getService().onTimerFinishTasks.add {
-                activity?.runOnUiThread {
-                    refreshTab()
-                }
+                refreshTab()
             }
         }
 
@@ -101,32 +99,27 @@ class HistoryFragment : Fragment() {
         }
     }
 
-    private fun getRecordInfoCard(record : MeditationRecord) : CardView {
-        val timeStamp = record.dateTime.format(DateTimeFormatter.ofPattern("hh:mm a"))
-        val lengthMinutes = record.duration.toMinutes()
-        val recordStr = "at $timeStamp for $lengthMinutes minutes"
+    private fun getRecordInfoCard(record : Record) : RecordCardView {
 
-       return inflater.inflate(R.layout.view_session_record_card, dayInfoLayout, false).apply {
-            val deleteAction = {
-                Thread {
-                    // delete record
-                    RecordDatabase.remove(record)
-                    activity!!.runOnUiThread {
-                        refreshTab()
-                    }
-                }.start()
-            }
+       return RecordCardView(activity!!).apply {
+           insertRecordData(record)
 
-            findViewById<TextView>(R.id.timeStamp).text = recordStr
-            findViewById<Button>(R.id.deleteButton).setOnClickListener {
-                // confirm that the record should be deleted
-                DeleteRecordDialogFragment().apply {
-                    messageStr = "Delete \"$recordStr\"?"
-                    onConfirmDelete = deleteAction
-                }.show(fm, "DeleteRecordConfirmation")
-            }
+           setOnDelete {
+               val deleteAction = {
+                   Thread {
+                       // delete record
+                       recordDao.delete(record)
+                       refreshTab()
+                   }.start()
+               }
+               // confirm that the record should be deleted
+               DeleteRecordDialogFragment().apply {
+                   messageStr = "Delete?"
+                   onConfirmDelete = deleteAction
+               }.show(fm, "DeleteRecordConfirmation")
+           }
 
-        } as CardView
+        }
     }
 
     private fun getNewRecord() {
@@ -139,10 +132,10 @@ class HistoryFragment : Fragment() {
                 val dateTime = OffsetDateTime.of(date, time, OffsetDateTime.now().offset)
                 Thread {
                     // add the new record retrieved from the dialog
-                    RecordDatabase.add(MeditationRecord(dateTime, duration))
+                    recordDao.insert(Record.newMeditation(dateTime, duration))
 
                     // refresh the views to reflect new data
-                    activity!!.runOnUiThread { refreshTab() }
+                    refreshTab()
                 }.start()
             }
             show(fm, "NewRecordDialog")
@@ -157,7 +150,7 @@ class HistoryFragment : Fragment() {
 
         val recordsForDay = monthRecords[selectedDayOFMonth!! - 1]
         numRecordsView.text = recordsForDay.size.toString()
-        totalTimeView.text = recordsForDay.sumBy { it.duration.toMinutes().toInt() }.toString()
+//        totalTimeView.text = recordsForDay.sumBy { it.duration.toMinutes().toInt() }.toString()
 
         // remove all the cards, leave the summaryLayout at the beginning
         sessionCardsLayout.removeAllViews()
@@ -173,9 +166,9 @@ class HistoryFragment : Fragment() {
     private fun reloadMonthRecords() {
         // Make an array of lists containing the records for each day of the month
         monthRecords = Array(calendarView.yearMonthShown.lengthOfMonth())
-            { ArrayList<MeditationRecord>(0) }
+            { ArrayList<Record>(0) }
 
-        for (record in RecordDatabase.records) {
+        for (record in recordDao.getAll()) {
             val dateTime = record.dateTime
 
             // if the record is in the shown month
@@ -195,6 +188,12 @@ class HistoryFragment : Fragment() {
     override fun onCreateView(inflaterArg: LayoutInflater,
                               container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
+        Thread {
+            // TODO make sure this is done before using meditationRecordDao
+//            meditationRecordDao = RecordDatabase.instance.meditationRecordDao()
+            recordDao = RecordDatabase.instance.recordDao()
+        }.start()
+
         inflater = inflaterArg
         tabView = inflater.inflate(R.layout.tab_history, container, false) as ScrollView
 
@@ -237,9 +236,13 @@ class HistoryFragment : Fragment() {
     }
 
     private fun refreshTab() {
-        reloadMonthRecords()
-        fillCalendarDays()
-        showInfoForSelectedDay()
+        Thread {
+            reloadMonthRecords()
+            activity?.runOnUiThread {
+                fillCalendarDays()
+                showInfoForSelectedDay()
+            }
+        }.start()
     }
 
     override fun onDestroyView() {
