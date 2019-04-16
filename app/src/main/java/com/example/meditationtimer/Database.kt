@@ -106,9 +106,6 @@ interface RecordDao{
     @Query("SELECT * FROM Record")
     fun getAll() : List<Record>
 
-    @Query("SELECT * FROM MeditationRecord")
-    fun getAllOld() : List<MeditationRecord>
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(record: Record)
 
@@ -116,27 +113,13 @@ interface RecordDao{
     fun delete(record: Record)
 }
 
-val MIGRATION_4_5 = object : Migration(4, 5) {
+val MIGRATION_5_6 = object : Migration(5, 6) {
     override fun migrate(database: SupportSQLiteDatabase) {
-
-        // getting rid of old table
-        database.execSQL("DROP TABLE JournalRecord")
-
-        // creating new record table for all types
-        database.execSQL("CREATE TABLE Record (dateTime INTEGER NOT NULL, type TEXT NOT NULL, data TEXT NOT NULL," +
-                "PRIMARY KEY (dateTime, type))")
+        database.execSQL("DROP TABLE MeditationRecord")
     }
 }
 
-val MIGRATION_3_5 = object : Migration(3, 5) {
-    override fun migrate(database: SupportSQLiteDatabase) {
-        // creating new record table for all types
-        database.execSQL("CREATE TABLE Record (dateTime INTEGER NOT NULL, type TEXT NOT NULL, data TEXT NOT NULL," +
-                "PRIMARY KEY (dateTime, type))")
-    }
-}
-
-@Database(entities = arrayOf(Record::class, MeditationRecord::class), version = 5, exportSchema = false)
+@Database(entities = arrayOf(Record::class), version = 6, exportSchema = false)
 abstract class RecordDatabase : RoomDatabase() {
     abstract fun recordDao(): RecordDao
 
@@ -149,22 +132,8 @@ abstract class RecordDatabase : RoomDatabase() {
             instance = Room.databaseBuilder(context.getApplicationContext(),
                 // TODO figure out how to change database name and merge data
                 RecordDatabase::class.java, "meditation-records-db")
-                .addMigrations(MIGRATION_4_5)
-                .addMigrations(MIGRATION_3_5)
+                .addMigrations(MIGRATION_5_6)
                 .build()
-
-            // copy data from old table to new one
-            for (mr in instance.recordDao().getAllOld()) {
-                val dateTime = mr.dateTime
-                val type = Record.MEDITATION
-                val duration = mr.duration
-                val data = JSONObject().apply { put("duration", duration) }
-                println(data.toString())
-
-                val newRecord = Record(dateTime, type, data)
-
-                instance.recordDao().insert(newRecord)
-            }
         }
     }
 }
