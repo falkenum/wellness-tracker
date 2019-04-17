@@ -70,7 +70,6 @@ class HistoryFragment : Fragment() {
     private lateinit var tabView: ScrollView
     private lateinit var calendarView : CalendarView
     private lateinit var numRecordsView : TextView
-    private lateinit var totalTimeView : TextView
     private lateinit var dayInfoLayout : LinearLayout
     private lateinit var sessionCardsLayout : LinearLayout
     private lateinit var inflater: LayoutInflater
@@ -150,7 +149,6 @@ class HistoryFragment : Fragment() {
 
         val recordsForDay = monthRecords[selectedDayOFMonth!! - 1]
         numRecordsView.text = recordsForDay.size.toString()
-//        totalTimeView.text = recordsForDay.sumBy { it.duration.toMinutes().toInt() }.toString()
 
         // remove all the cards, leave the summaryLayout at the beginning
         sessionCardsLayout.removeAllViews()
@@ -201,7 +199,6 @@ class HistoryFragment : Fragment() {
         dayInfoLayout = tabView.findViewById(R.id.dayInfoLayout)
         sessionCardsLayout = tabView.findViewById(R.id.sessionCardsLayout)
         numRecordsView = tabView.findViewById(R.id.numRecords)
-        totalTimeView = tabView.findViewById(R.id.totalTime)
         fm = activity!!.supportFragmentManager
 
         // setting up calendar callbacks

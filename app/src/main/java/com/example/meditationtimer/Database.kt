@@ -13,6 +13,7 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import org.json.JSONObject
+import org.w3c.dom.Text
 import java.time.Duration
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -54,15 +55,13 @@ class RecordCardView(context: Context) : CardView(context) {
         findViewById<TextView>(R.id.recordTitle).text = titleStr
 
         // create a view containing the JSON data
-        val dataView = TextView(context).apply {
+        findViewById<TextView>(R.id.recordDataText).apply {
             var dataStr = ""
             for (key in record.data.keys())
-                dataStr += "$key: ${record.data[key]}\n"
+                dataStr += "$key: ${record.data[key]}"
             text = dataStr
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
         }
-
-        // main data
-        findViewById<LinearLayout>(R.id.recordDataLayout).addView(dataView)
     }
 
     fun setOnDelete(onDelete: () -> Unit) {
@@ -78,8 +77,9 @@ data class Record(val dateTime : OffsetDateTime, val type : String, val data : J
 
     companion object {
         const val MEDITATION = "Meditation"
+
         fun newMeditation(dateTime: OffsetDateTime, duration: Duration) : Record {
-            return Record(dateTime, MEDITATION).apply { data.put("durationMillis", duration.toMillis()) }
+            return Record(dateTime, MEDITATION).apply { data.put("duration", duration) }
         }
     }
 }
