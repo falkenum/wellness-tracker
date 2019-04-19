@@ -39,31 +39,6 @@ class JSONConverter {
 }
 
 
-class RecordCardView(context: Context) : CardView(context) {
-
-    init {
-        // TODO remove redundant CardView in the hierarchy
-        LayoutInflater.from(context).inflate(R.layout.view_session_record_card, this, true)
-    }
-
-    fun insertRecordData(record : Record) {
-
-        val timeStamp = record.dateTime.format(DateTimeFormatter.ofPattern("hh:mm a"))
-        val titleStr = "${record.type} at $timeStamp"
-
-        // title
-        findViewById<TextView>(R.id.recordTitle).text = titleStr
-
-        val dataView = record.getDataView(context)
-        findViewById<LinearLayout>(R.id.recordDataLayout).addView(dataView)
-    }
-
-    fun setOnDelete(onDelete: () -> Unit) {
-        findViewById<Button>(R.id.deleteButton).setOnClickListener {
-            onDelete()
-        }
-    }
-}
 
 @TypeConverters(JSONConverter::class, TimeConverter::class)
 @Entity(primaryKeys = arrayOf("dateTime", "type"))
@@ -84,78 +59,6 @@ open class Record(val dateTime : OffsetDateTime, val type : String, val data : J
             return Record(dateTime, RecordTypes.MOOD).apply {
                 data.put("rating", rating)
             }
-        }
-    }
-}
-
-abstract class RecordDataInputView(context: Context) : FrameLayout(context) {
-    abstract fun getData() : JSONObject
-}
-
-abstract class RecordTypeConfig {
-    abstract fun getDataView(record : Record, context : Context) : View
-    abstract fun getDataInputView(context: Context) : View
-}
-
-class MeditationConfig: RecordTypeConfig() {
-    override fun getDataView(record: Record, context: Context): View {
-        return TextView(context).apply {
-            val duration = Duration.parse(record.data.getString("duration"))
-            text = "duration: ${duration.toMinutes()} min"
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
-        }
-    }
-
-    override fun getDataInputView(context: Context): View {
-        return object : RecordDataInputView(context) {
-            init {
-                LayoutInflater.from(context)
-                    .inflate(R.layout.view_meditation_data_input, this, true)
-                layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
-            }
-            override fun getData(): JSONObject {
-                val durationView = findViewById<TextView>(R.id.durationView)
-                val duration = Duration.ofMinutes(durationView.text.toString().toLong())
-                return JSONObject().apply { put("duration", duration) }
-            }
-        }
-    }
-}
-
-class MoodConfig : RecordTypeConfig() {
-    override fun getDataView(record: Record, context: Context): View {
-        return TextView(context).apply {
-            text = "rating: ${record.data.getInt("rating")}"
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
-        }
-    }
-
-    override fun getDataInputView(context: Context): View {
-        return object : RecordDataInputView(context) {
-            override fun getData(): JSONObject {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
-        }
-    }
-}
-
-class RecordTypes {
-
-    companion object {
-        const val MEDITATION = "Meditation"
-        const val MOOD = "Mood"
-
-        private val recordTypeConfigs : HashMap<String, RecordTypeConfig> = hashMapOf(
-            MEDITATION to MeditationConfig(),
-            MOOD to MoodConfig()
-        )
-
-        fun getTypes() : List<String> {
-            return recordTypeConfigs.keys.toList()
-        }
-
-        fun getDataView(record: Record, context: Context) : View {
-            return recordTypeConfigs[record.type]!!.getDataView(record, context)
         }
     }
 }
