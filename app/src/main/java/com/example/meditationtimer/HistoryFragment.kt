@@ -9,9 +9,12 @@ import android.support.v4.app.DialogFragment
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v7.app.AlertDialog
+import android.text.Layout
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams
 import android.widget.*
 import java.lang.IllegalStateException
 import java.time.*
@@ -40,34 +43,58 @@ class HistoryFragment : Fragment() {
 
     class NewRecordDialogFragment : DialogFragment() {
         lateinit var onConfirm : (LocalTime, Duration) -> Unit
+        lateinit var dialogView : LinearLayout
+        lateinit var confirmButton : Button
+
+        inner class TypeButton(type : String) : Button(activity) {
+            init {
+                text = type
+                setOnClickListener {
+                    // set up the next page
+                    dialogView.removeAllViews()
+
+                    val timePicker = TimePicker(context)
+                    dialogView.addView(timePicker)
+                    val dataView = RecordTypes.getDataInputView(type, context)
+                    dialogView.addView(dataView)
+
+                    // show confirm button
+                    confirmButton.visibility = View.VISIBLE
+                }
+            }
+        }
 
         override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-            return activity!!.let {
-                // Use the Builder class for convenient dialog construction
-                val builder = AlertDialog.Builder(it)
+            val builder = AlertDialog.Builder(activity!!)
 
-//                val dialogView = LayoutInflater.from(it).
-//                    inflate(R.layout.view_new_record_dialog, null, false)
-//                val timePicker = dialogView.findViewById<TimePicker>(R.id.timePicker)
-//                val durationView = dialogView.findViewById<EditText>(R.id.durationView)
-                val dialogView = LinearLayout(context).apply { orientation = LinearLayout.VERTICAL }
-                for (type in RecordTypes.getTypes()) {
-                    Button(context).let {
-                        it.text = type
-                        dialogView.addView(it)
-                    }
-                }
 
-                builder.setView(dialogView)
-                    .setPositiveButton("Confirm") { _, _ ->
+            dialogView = LinearLayout(context).apply {
+                orientation = LinearLayout.VERTICAL
+                layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+
+                for (type in RecordTypes.getTypes())
+                    addView(TypeButton(type))
+            }
+
+            builder.setView(dialogView)
+                .setCancelable(true)
+                .setPositiveButton("Confirm") { _, _ ->
 //                            val time = LocalTime.of(timePicker.hour, timePicker.minute)
 //                            val duration = Duration.ofMinutes(durationView.text.toString().toLong())
 //                            onConfirm(time, duration)
-                        }
-                    // default behavior on cancel, do nothing
-                    .setNegativeButton("Cancel") { _, _ -> }
-                // Create the AlertDialog object and return it
-                builder.create()
+                    }
+                // default behavior on cancel, do nothing
+                .setNegativeButton("Cancel") {_, _ -> }
+
+            // Create the AlertDialog object and return it
+
+            return builder.create().apply {
+                // button isn't available until dialog is shown
+                setOnShowListener {
+                    confirmButton = getButton(AlertDialog.BUTTON_POSITIVE)
+                    // by default have the confirm button be invisible, until on the second page
+                    confirmButton.visibility = GONE
+                }
             }
         }
     }

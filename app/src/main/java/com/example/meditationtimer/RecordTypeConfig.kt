@@ -94,6 +94,10 @@ class RecordTypes {
         fun getDataView(record: Record, context: Context) : View {
             return recordTypeConfigs[record.type]!!.getDataView(record, context)
         }
+
+        fun getDataInputView(type : String, context: Context) : View {
+            return recordTypeConfigs[type]!!.getDataInputView(context)
+        }
     }
 }
 
