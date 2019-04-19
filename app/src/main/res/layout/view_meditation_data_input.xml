@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                             xmlns:app="http://schemas.android.com/apk/res-auto"
+                                             android:layout_width="match_parent"
+                                             android:layout_height="wrap_content">
+    <EditText
+            android:layout_width="36dp"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:ems="10"
+            android:id="@+id/durationView"
+            app:layout_constraintTop_toTopOf="parent" app:layout_constraintEnd_toStartOf="@+id/textView4"
+            app:layout_constraintStart_toEndOf="@+id/textView"
+            app:layout_constraintHorizontal_chainStyle="packed" android:text="10" android:textAlignment="center"/>
+    <TextView
+            android:text="Duration:"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView" app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBaseline_toBaselineOf="@+id/durationView"
+            app:layout_constraintEnd_toStartOf="@+id/durationView"
+            app:layout_constraintHorizontal_chainStyle="packed" android:textSize="18sp" android:layout_marginEnd="8dp"/>
+    <TextView
+            android:text="minutes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView4" app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBaseline_toBaselineOf="@+id/durationView"
+            app:layout_constraintStart_toEndOf="@+id/durationView" android:textSize="18sp"
+            android:layout_marginStart="8dp"/>
+
+
+</android.support.constraint.ConstraintLayout>

@@ -51,7 +51,7 @@ class TimerService : Service() {
         isRunning = false
 
         // save the meditation session
-        val record = Record.newMeditation(startTime, Duration.between(startTime, endTime))
+        val record = Record.newMeditationRecord(startTime, Duration.between(startTime, endTime))
         Thread {
             RecordDatabase.instance.recordDao().insert(record)
 

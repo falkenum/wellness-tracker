@@ -1,6 +1,7 @@
 package com.example.meditationtimer
 
 import android.app.Dialog
+import android.arch.persistence.room.Entity
 import android.content.*
 import android.os.Bundle
 import android.os.IBinder
@@ -8,14 +9,12 @@ import android.support.v4.app.DialogFragment
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v7.app.AlertDialog
-import android.support.v7.widget.CardView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import java.lang.IllegalStateException
 import java.time.*
-import java.time.format.DateTimeFormatter
 
 class HistoryFragment : Fragment() {
 
@@ -39,7 +38,7 @@ class HistoryFragment : Fragment() {
         }
     }
 
-    class NewRecordDialogFragment() : DialogFragment() {
+    class NewRecordDialogFragment : DialogFragment() {
         lateinit var onConfirm : (LocalTime, Duration) -> Unit
 
         override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -47,16 +46,23 @@ class HistoryFragment : Fragment() {
                 // Use the Builder class for convenient dialog construction
                 val builder = AlertDialog.Builder(it)
 
-                val dialogView = LayoutInflater.from(activity!!).
-                    inflate(R.layout.view_new_record_dialog, null, false)
-                val timePicker = dialogView.findViewById<TimePicker>(R.id.timePicker)
-                val durationView = dialogView.findViewById<EditText>(R.id.durationView)
+//                val dialogView = LayoutInflater.from(it).
+//                    inflate(R.layout.view_new_record_dialog, null, false)
+//                val timePicker = dialogView.findViewById<TimePicker>(R.id.timePicker)
+//                val durationView = dialogView.findViewById<EditText>(R.id.durationView)
+                val dialogView = LinearLayout(context).apply { orientation = LinearLayout.VERTICAL }
+                for (type in RecordTypes.getTypes()) {
+                    Button(context).let {
+                        it.text = type
+                        dialogView.addView(it)
+                    }
+                }
 
                 builder.setView(dialogView)
                     .setPositiveButton("Confirm") { _, _ ->
-                            val time = LocalTime.of(timePicker.hour, timePicker.minute)
-                            val duration = Duration.ofMinutes(durationView.text.toString().toLong())
-                            onConfirm(time, duration)
+//                            val time = LocalTime.of(timePicker.hour, timePicker.minute)
+//                            val duration = Duration.ofMinutes(durationView.text.toString().toLong())
+//                            onConfirm(time, duration)
                         }
                     // default behavior on cancel, do nothing
                     .setNegativeButton("Cancel") { _, _ -> }
@@ -131,7 +137,7 @@ class HistoryFragment : Fragment() {
                 val dateTime = OffsetDateTime.of(date, time, OffsetDateTime.now().offset)
                 Thread {
                     // add the new record retrieved from the dialog
-                    recordDao.insert(Record.newMeditation(dateTime, duration))
+                    recordDao.insert(Record.newMeditationRecord(dateTime, duration))
 
                     // refresh the views to reflect new data
                     refreshTab()

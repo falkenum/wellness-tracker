@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Typeface
 import android.graphics.drawable.LayerDrawable
 import android.util.AttributeSet
+import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
@@ -39,8 +40,9 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
 
     init {
         layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
-        orientation = LinearLayout.VERTICAL
+        orientation = VERTICAL
         LayoutInflater.from(context).inflate(R.layout.view_calendar, this, true)
+
 
         findViewById<TextView>(R.id.calendarLeft).setOnClickListener {
             yearMonthShown = yearMonthShown.minusMonths(1)
