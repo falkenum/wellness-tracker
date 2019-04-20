@@ -21,6 +21,7 @@ import android.view.View.GONE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
 import android.widget.*
+import org.json.JSONObject
 import org.w3c.dom.Text
 import java.lang.IllegalStateException
 import java.time.*
@@ -48,9 +49,12 @@ class HistoryFragment : Fragment() {
     }
 
     class NewRecordDialogFragment : DialogFragment() {
-        lateinit var onConfirm : (LocalTime, Duration) -> Unit
+        lateinit var onConfirm : (LocalTime, String, JSONObject) -> Unit
         lateinit var dialogView : LinearLayout
         lateinit var confirmButton : Button
+        lateinit var timePicker: TimePicker
+        lateinit var dataInputView: RecordDataInputView
+        lateinit var chosenType: String
 
         inner class TypeButton(type : String) : Button(activity) {
             init {
@@ -59,13 +63,11 @@ class HistoryFragment : Fragment() {
                 setOnClickListener {
                     // set up the next page
                     dialogView.removeAllViews()
+                    chosenType = type
 
-                    val timePicker = TimePicker(context)
                     dialogView.addView(timePicker)
-                    val dataView = RecordTypes.getDataInputView(type, context)
-                    dialogView.addView(dataView)
-//                    dialogView.setHorizontalGravity(Gravity.CENTER_HORIZONTAL)
-
+                    dataInputView = RecordTypes.getDataInputView(type, context)
+                    dialogView.addView(dataInputView)
 
                     // show confirm button
                     confirmButton.visibility = View.VISIBLE
@@ -85,13 +87,16 @@ class HistoryFragment : Fragment() {
                 for (type in RecordTypes.getTypes())
                     addView(TypeButton(type))
             }
+            timePicker = TimePicker(context)
+
 
             builder.setView(dialogView)
                 .setCancelable(true)
                 .setPositiveButton("Confirm") { _, _ ->
-//                            val time = LocalTime.of(timePicker.hour, timePicker.minute)
-//                            val duration = Duration.ofMinutes(durationView.text.toString().toLong())
-//                            onConfirm(time, duration)
+                        val time = LocalTime.of(timePicker.hour, timePicker.minute)
+                        val data = dataInputView.getData()
+
+                        onConfirm(time, chosenType, data)
                     }
                 // default behavior on cancel, do nothing
                 .setNegativeButton("Cancel") {_, _ -> }
@@ -166,7 +171,7 @@ class HistoryFragment : Fragment() {
 
     private fun getNewRecord() {
         NewRecordDialogFragment().apply {
-            onConfirm = { time, duration ->
+            onConfirm = { time, type, data ->
 
                 // get complete dateTime based on current selected year, month, and day
                 val yearMonth = calendarView.yearMonthShown
@@ -174,7 +179,7 @@ class HistoryFragment : Fragment() {
                 val dateTime = OffsetDateTime.of(date, time, OffsetDateTime.now().offset)
                 Thread {
                     // add the new record retrieved from the dialog
-                    recordDao.insert(Record.newMeditationRecord(dateTime, duration))
+                    recordDao.insert(Record(dateTime, type, data))
 
                     // refresh the views to reflect new data
                     refreshTab()

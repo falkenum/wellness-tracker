@@ -57,7 +57,7 @@ class RatingLayout(context: Context) : LinearLayout(context) {
 
     init {
         orientation = HORIZONTAL
-        layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {asdf
+        layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
 
         // populating with number views
         for (i in 1..5)  addView(NumberView(i))

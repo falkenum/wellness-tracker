@@ -20,16 +20,17 @@ import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+
+abstract class RecordDataInputView(context: Context) : FrameLayout(context) {
+    init {
+        layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+    }
+    abstract fun getData() : JSONObject
+}
+
 abstract class RecordTypeConfig {
     abstract fun getDataView(record : Record, context : Context) : View
-    abstract fun getDataInputView(context: Context) : View
-
-    abstract class RecordDataInputView(context: Context) : FrameLayout(context) {
-        init {
-            layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
-        }
-        abstract fun getData() : JSONObject
-    }
+    abstract fun getDataInputView(context: Context) : RecordDataInputView
 }
 
 class MeditationConfig: RecordTypeConfig() {
@@ -41,7 +42,7 @@ class MeditationConfig: RecordTypeConfig() {
         }
     }
 
-    override fun getDataInputView(context: Context): View {
+    override fun getDataInputView(context: Context): RecordDataInputView {
         return object : RecordDataInputView(context) {
             init {
                 LayoutInflater.from(context)
@@ -65,7 +66,7 @@ class MoodConfig : RecordTypeConfig() {
         }
     }
 
-    override fun getDataInputView(context: Context): View {
+    override fun getDataInputView(context: Context): RecordDataInputView {
         return object : RecordDataInputView(context) {
             init {
                 // getting a rating view where the user selects a number 1 to 5
@@ -98,7 +99,7 @@ class RecordTypes {
             return recordTypeConfigs[record.type]!!.getDataView(record, context)
         }
 
-        fun getDataInputView(type : String, context: Context) : View {
+        fun getDataInputView(type : String, context: Context) : RecordDataInputView {
             return recordTypeConfigs[type]!!.getDataInputView(context)
         }
     }
