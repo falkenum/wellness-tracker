@@ -3,19 +3,25 @@ package com.example.meditationtimer
 import android.app.Dialog
 import android.arch.persistence.room.Entity
 import android.content.*
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.IBinder
 import android.support.v4.app.DialogFragment
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
+import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.text.Layout
+import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
 import android.widget.*
+import org.w3c.dom.Text
 import java.lang.IllegalStateException
 import java.time.*
 
@@ -49,6 +55,7 @@ class HistoryFragment : Fragment() {
         inner class TypeButton(type : String) : Button(activity) {
             init {
                 text = type
+                layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
                 setOnClickListener {
                     // set up the next page
                     dialogView.removeAllViews()
@@ -57,6 +64,8 @@ class HistoryFragment : Fragment() {
                     dialogView.addView(timePicker)
                     val dataView = RecordTypes.getDataInputView(type, context)
                     dialogView.addView(dataView)
+//                    dialogView.setHorizontalGravity(Gravity.CENTER_HORIZONTAL)
+
 
                     // show confirm button
                     confirmButton.visibility = View.VISIBLE
@@ -70,7 +79,8 @@ class HistoryFragment : Fragment() {
 
             dialogView = LinearLayout(context).apply {
                 orientation = LinearLayout.VERTICAL
-                layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+                layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
+                gravity = Gravity.CENTER
 
                 for (type in RecordTypes.getTypes())
                     addView(TypeButton(type))
@@ -220,8 +230,7 @@ class HistoryFragment : Fragment() {
                               container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         Thread {
-            // TODO make sure this is done before using meditationRecordDao
-//            meditationRecordDao = RecordDatabase.instance.meditationRecordDao()
+            // TODO make sure this is done before using recordDao
             recordDao = RecordDatabase.instance.recordDao()
         }.start()
 

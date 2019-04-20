@@ -25,6 +25,9 @@ abstract class RecordTypeConfig {
     abstract fun getDataInputView(context: Context) : View
 
     abstract class RecordDataInputView(context: Context) : FrameLayout(context) {
+        init {
+            layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+        }
         abstract fun getData() : JSONObject
     }
 }
