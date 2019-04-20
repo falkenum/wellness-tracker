@@ -25,6 +25,7 @@ import org.json.JSONObject
 import org.w3c.dom.Text
 import java.lang.IllegalStateException
 import java.time.*
+import android.database.sqlite.SQLiteConstraintException
 
 class HistoryFragment : Fragment() {
 
@@ -50,11 +51,11 @@ class HistoryFragment : Fragment() {
 
     class NewRecordDialogFragment : DialogFragment() {
         lateinit var onConfirm : (LocalTime, String, JSONObject) -> Unit
-        lateinit var dialogView : LinearLayout
-        lateinit var confirmButton : Button
-        lateinit var timePicker: TimePicker
-        lateinit var dataInputView: RecordDataInputView
-        lateinit var chosenType: String
+        private lateinit var dialogView : LinearLayout
+        private lateinit var confirmButton : Button
+        private lateinit var timePicker: TimePicker
+        private lateinit var dataInputView: RecordDataInputView
+        private lateinit var chosenType: String
 
         inner class TypeButton(type : String) : Button(activity) {
             init {
@@ -178,8 +179,12 @@ class HistoryFragment : Fragment() {
                 val date = LocalDate.of(yearMonth.year, yearMonth.month, selectedDayOFMonth!!)
                 val dateTime = OffsetDateTime.of(date, time, OffsetDateTime.now().offset)
                 Thread {
-                    // add the new record retrieved from the dialog
-                    recordDao.insert(Record(dateTime, type, data))
+                    try {
+                        // add the new record retrieved from the dialog
+                        recordDao.insert(Record(dateTime, type, data))
+                    } catch (e : SQLiteConstraintException) {
+                        // TODO error message
+                    }
 
                     // refresh the views to reflect new data
                     refreshTab()

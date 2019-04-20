@@ -4,6 +4,7 @@ import android.arch.persistence.db.SupportSQLiteDatabase
 import android.arch.persistence.room.*
 import android.arch.persistence.room.migration.Migration
 import android.content.Context
+import android.graphics.Color
 import android.support.v7.widget.CardView
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -29,11 +30,16 @@ abstract class RecordDataInputView(context: Context) : FrameLayout(context) {
 }
 
 abstract class RecordTypeConfig {
+    abstract fun getBgColor(context: Context) : Int
     abstract fun getDataView(record : Record, context : Context) : View
     abstract fun getDataInputView(context: Context) : RecordDataInputView
 }
 
 class MeditationConfig: RecordTypeConfig() {
+    override fun getBgColor(context: Context): Int {
+        return context.resources.getColor(R.color.colorMeditation, null)
+    }
+
     override fun getDataView(record: Record, context: Context): View {
         return TextView(context).apply {
             val duration = Duration.parse(record.data.getString("duration"))
@@ -59,6 +65,10 @@ class MeditationConfig: RecordTypeConfig() {
 }
 
 class MoodConfig : RecordTypeConfig() {
+    override fun getBgColor(context: Context): Int {
+        return context.resources.getColor(R.color.colorMood, null)
+    }
+
     override fun getDataView(record: Record, context: Context): View {
         return TextView(context).apply {
             text = "rating: ${record.data.getInt("rating")}"
@@ -95,6 +105,10 @@ class RecordTypes {
             return recordTypeConfigs.keys.toList()
         }
 
+        fun getBgColor(type : String, context: Context) : Int {
+            return recordTypeConfigs[type]!!.getBgColor(context)
+        }
+
         fun getDataView(record: Record, context: Context) : View {
             return recordTypeConfigs[record.type]!!.getDataView(record, context)
         }
@@ -117,8 +131,8 @@ class RecordCardView(context: Context) : CardView(context) {
         val titleStr = "${record.type} at $timeStamp"
 
         findViewById<TextView>(R.id.recordTitle).text = titleStr
-
-        val dataView = record.getDataView(context)
+        (getChildAt(0) as CardView).setCardBackgroundColor(RecordTypes.getBgColor(record.type, context))
+        val dataView = RecordTypes.getDataView(record, context)
         findViewById<LinearLayout>(R.id.recordDataLayout).addView(dataView)
     }
 

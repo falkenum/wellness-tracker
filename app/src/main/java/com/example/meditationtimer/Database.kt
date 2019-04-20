@@ -1,5 +1,6 @@
 package com.example.meditationtimer
 
+import android.arch.persistence.db.SimpleSQLiteQuery
 import android.arch.persistence.db.SupportSQLiteDatabase
 import android.arch.persistence.room.*
 import android.arch.persistence.room.migration.Migration
@@ -18,6 +19,10 @@ import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import android.arch.persistence.db.SupportSQLiteQuery
+import android.arch.persistence.room.RawQuery
+
+
 
 class TimeConverter {
     @TypeConverter
@@ -43,10 +48,6 @@ class JSONConverter {
 @TypeConverters(JSONConverter::class, TimeConverter::class)
 @Entity(primaryKeys = arrayOf("dateTime", "type"))
 open class Record(val dateTime : OffsetDateTime, val type : String, val data : JSONObject = JSONObject()) {
-
-    fun getDataView(context: Context) : View {
-        return RecordTypes.getDataView(this, context)
-    }
 
     companion object {
         fun newMeditationRecord(dateTime: OffsetDateTime, duration: Duration) : Record {
@@ -75,6 +76,12 @@ interface RecordDao{
     fun delete(record: Record)
 }
 
+@Dao
+interface ConfigDao{
+    @RawQuery
+    fun checkpoint(supportSQLiteQuery: SupportSQLiteQuery): Int
+}
+
 val MIGRATION_5_6 = object : Migration(5, 6) {
     override fun migrate(database: SupportSQLiteDatabase) {
         database.execSQL("DROP TABLE MeditationRecord")
@@ -84,11 +91,15 @@ val MIGRATION_5_6 = object : Migration(5, 6) {
 @Database(entities = arrayOf(Record::class), version = 6, exportSchema = false)
 abstract class RecordDatabase : RoomDatabase() {
     abstract fun recordDao(): RecordDao
+    abstract fun configDao(): ConfigDao
 
     companion object {
         lateinit var instance : RecordDatabase
             private set
 
+        fun checkpoint() {
+            instance.configDao().checkpoint(SimpleSQLiteQuery("pragma wal_checkpoint(full)"))
+        }
 
         fun init(context: Context) {
             instance = Room.databaseBuilder(context.getApplicationContext(),

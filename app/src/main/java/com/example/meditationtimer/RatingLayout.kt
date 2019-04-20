@@ -29,10 +29,10 @@ class RatingLayout(context: Context) : LinearLayout(context) {
             id = shownNum
 
             layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
-            val padding = 10
+            val padding = 40
             setPadding(padding, 0, padding, 0)
             text = shownNum.toString()
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 25f)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 30f)
 
             // Color used to highlight
             setBackgroundColor(resources.getColor(R.color.colorPrimary, null))
