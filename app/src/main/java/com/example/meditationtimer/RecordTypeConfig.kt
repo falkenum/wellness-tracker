@@ -1,21 +1,14 @@
 package com.example.meditationtimer
 
-import android.arch.persistence.db.SupportSQLiteDatabase
-import android.arch.persistence.room.*
-import android.arch.persistence.room.migration.Migration
 import android.content.Context
-import android.graphics.Color
 import android.support.v7.widget.CardView
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.*
 import org.json.JSONObject
-import java.time.Duration
-import java.time.Instant
-import java.time.OffsetDateTime
-import java.time.ZoneId
+import java.lang.Exception
+import java.time.*
 import java.time.format.DateTimeFormatter
 
 
@@ -26,10 +19,14 @@ abstract class RecordDataInputView(context: Context) : FrameLayout(context) {
     abstract fun getData() : JSONObject
 }
 
+
 abstract class RecordTypeConfig {
+//    class ReminderProtocol(notification: Notification, dailyReminderTimes : List<LocalTime>)
+
     abstract fun getBgColor(context: Context) : Int
     abstract fun getDataView(record : Record, context : Context) : View
     abstract fun getDataInputView(context: Context) : RecordDataInputView
+    abstract fun getDailyReminderTimes(): List<LocalTime>?
 }
 
 class MeditationConfig: RecordTypeConfig() {
@@ -59,6 +56,11 @@ class MeditationConfig: RecordTypeConfig() {
             }
         }
     }
+
+    override fun getDailyReminderTimes(): List<LocalTime>? {
+        // 8am every day
+        return List(1) { LocalTime.of(8, 0) }
+    }
 }
 
 class MoodConfig : RecordTypeConfig() {
@@ -82,6 +84,17 @@ class MoodConfig : RecordTypeConfig() {
             override fun getData(): JSONObject {
                 val rating = (getChildAt(0) as RatingLayout).selectedNumber
                 return JSONObject().apply { put("rating", rating)}
+            }
+        }
+    }
+
+    override fun getDailyReminderTimes(): List<LocalTime>? {
+        // 10am and 6pm
+        return List(2) {
+            when (it) {
+                0 -> LocalTime.of(10, 0)
+                1 -> LocalTime.of(18, 0)
+                else -> throw Exception("shouldn't happen")
             }
         }
     }
@@ -127,6 +140,8 @@ class DrugUseConfig : RecordTypeConfig() {
             }
         }
     }
+
+    override fun getDailyReminderTimes(): List<LocalTime>? = null
 }
 
 class RecordTypes {
@@ -146,16 +161,8 @@ class RecordTypes {
             return recordTypeConfigs.keys.toList()
         }
 
-        fun getBgColor(type : String, context: Context) : Int {
-            return recordTypeConfigs[type]!!.getBgColor(context)
-        }
-
-        fun getDataView(record: Record, context: Context) : View {
-            return recordTypeConfigs[record.type]!!.getDataView(record, context)
-        }
-
-        fun getDataInputView(type : String, context: Context) : RecordDataInputView {
-            return recordTypeConfigs[type]!!.getDataInputView(context)
+        fun getConfig(type : String) : RecordTypeConfig {
+            return recordTypeConfigs[type]!!
         }
     }
 }
@@ -170,11 +177,13 @@ class RecordCardView(context: Context) : CardView(context) {
     fun insertRecordData(record : Record) {
         val timeStamp = record.dateTime.format(DateTimeFormatter.ofPattern("hh:mm a"))
         val titleStr = "${record.type} at $timeStamp"
+        val bgColor = RecordTypes.getConfig(record.type).getBgColor(context)
+        val dataView = RecordTypes.getConfig(record.type).getDataView(record, context)
 
         findViewById<TextView>(R.id.recordTitle).text = titleStr
-        (getChildAt(0) as CardView).setCardBackgroundColor(RecordTypes.getBgColor(record.type, context))
-        val dataView = RecordTypes.getDataView(record, context)
         findViewById<LinearLayout>(R.id.recordDataLayout).addView(dataView)
+
+        (getChildAt(0) as CardView).setCardBackgroundColor(bgColor)
     }
 
     fun setOnDelete(onDelete: () -> Unit) {

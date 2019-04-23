@@ -68,7 +68,7 @@ class HistoryFragment : Fragment() {
 
                     timePicker = TimePicker(context)
                     dialogView.addView(timePicker)
-                    dataInputView = RecordTypes.getDataInputView(type, context)
+                    dataInputView = RecordTypes.getConfig(type).getDataInputView(context)
                     dialogView.addView(dataInputView)
 
                     // show confirm button
@@ -183,7 +183,8 @@ class HistoryFragment : Fragment() {
                         // add the new record retrieved from the dialog
                         recordDao.insert(Record(dateTime, type, data))
                     } catch (e : SQLiteConstraintException) {
-                        // TODO error message
+                        // TODO error message,
+                        //  this happens when multiple records of the same type are added for the same clock minute
                     }
 
                     // refresh the views to reflect new data

@@ -11,7 +11,7 @@ import java.util.*
 
 class TimerService : Service() {
     companion object {
-        val NOTIFY_ID = 1
+        const val NOTIFICATION_ID = 1
     }
 
     inner class TimerBinder : Binder() {
@@ -46,7 +46,7 @@ class TimerService : Service() {
         scheduler.cancel()
         scheduler = Timer()
         stopForeground(0)
-        notifManager.cancel(NOTIFY_ID)
+        notifManager.cancel(NOTIFICATION_ID)
 
         isRunning = false
 
@@ -87,12 +87,12 @@ class TimerService : Service() {
                 else {
                     val timerStr = format(Locale.ENGLISH, "%02d:%02d", minutes, seconds)
                     notifBuilder.setContentText("time remaining: " + timerStr)
-                    notifManager.notify(NOTIFY_ID, notifBuilder.build())
+                    notifManager.notify(NOTIFICATION_ID, notifBuilder.build())
                     onTimeChanged(minutes, seconds)
                 }
             }
         }
-        startForeground(NOTIFY_ID, notifBuilder.build())
+        startForeground(NOTIFICATION_ID, notifBuilder.build())
         scheduler.scheduleAtFixedRate(timerUpdater, 0, 1000)
     }
 
@@ -101,7 +101,7 @@ class TimerService : Service() {
 
         val channelId = "timer_channel"
         val channelName = "Timer Channel"
-        val importance = NotificationManager.IMPORTANCE_MIN
+        val importance = NotificationManager.IMPORTANCE_LOW
         val channel = NotificationChannel(channelId, channelName, importance)
         notifManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notifManager.createNotificationChannel(channel)

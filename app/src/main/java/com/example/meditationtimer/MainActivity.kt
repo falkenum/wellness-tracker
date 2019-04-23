@@ -1,29 +1,25 @@
 package com.example.meditationtimer
 
+import android.app.*
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.IBinder
 import android.support.design.widget.TabLayout
-import android.support.v4.app.Fragment
-import android.support.v4.app.FragmentManager
-import android.support.v4.app.FragmentPagerAdapter
 import android.support.v4.view.ViewPager
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
-import java.lang.Exception
-import java.lang.String.format
-import java.util.*
+import java.time.*
+
+class BundleKeys {
+    companion object {
+        const val ARG_TIMER_SERVICE_BINDER = "timer service binder"
+        const val REMINDER_TYPE = "reminder type"
+    }
+}
 
 class MainActivity : AppCompatActivity() {
-    companion object {
-        val ARG_TIMER_SERVICE_BINDER = "timer service binder"
-    }
 
     private lateinit var timerServiceIntent: Intent
 
@@ -39,6 +35,43 @@ class MainActivity : AppCompatActivity() {
 
         override fun onServiceDisconnected(name: ComponentName?) {
         }
+    }
+
+    fun setupReminders() {
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        var requestCode = 0
+        for (type in RecordTypes.getTypes()) {
+            val times = RecordTypes.getConfig(type).getDailyReminderTimes()
+            val receiverIntent = Intent(applicationContext, ReminderReceiver::class.java)
+                .putExtra(BundleKeys.REMINDER_TYPE, type)
+
+            // if there are reminders for this config type, then make a pending intent for each one
+            if (times != null) for (time in times) {
+
+                // need a different request code for every alarm set
+                val receiverPendingIntent = PendingIntent.getBroadcast(applicationContext, requestCode,
+                    receiverIntent, 0)
+                requestCode++
+
+                var firstAlarmTime = LocalDateTime.of(LocalDate.now(), time)
+
+                // if the reminder for this day has already passed, then start it tomorrow
+                if (firstAlarmTime.isBefore(LocalDateTime.now()))
+                    firstAlarmTime = firstAlarmTime.plusDays(1 )
+
+
+                val firstAlarmTimeMillis = ZonedDateTime.of(firstAlarmTime, ZoneId.systemDefault())
+                    .toEpochSecond() * 1000
+
+                // interval in ms
+                val millisInDay : Long = 1000*60*60*24
+                alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
+                    firstAlarmTimeMillis, millisInDay, receiverPendingIntent)
+            }
+        }
+
+
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

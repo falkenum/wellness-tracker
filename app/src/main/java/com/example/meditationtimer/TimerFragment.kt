@@ -67,7 +67,7 @@ class TimerFragment() : Fragment() {
                               savedInstanceState: Bundle?): View? {
 
         // get connection to the timer service and configure
-        timerService = (arguments!![MainActivity.ARG_TIMER_SERVICE_BINDER] as TimerService.TimerBinder).getService()
+        timerService = (arguments!![BundleKeys.ARG_TIMER_SERVICE_BINDER] as TimerService.TimerBinder).getService()
 
         rootView = inflater.inflate(R.layout.tab_timer, container, false)
         // setup the plus and minus buttons

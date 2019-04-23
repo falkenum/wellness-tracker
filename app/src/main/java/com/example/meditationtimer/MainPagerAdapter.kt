@@ -15,7 +15,7 @@ class MainPagerAdapter(fm : FragmentManager, val timerBinder: TimerService.Timer
         // deciding which layout to use based on the tab position
         return when (position) {
             0 -> TimerFragment().apply {
-                arguments = Bundle().apply { putBinder(MainActivity.ARG_TIMER_SERVICE_BINDER, timerBinder) }
+                arguments = Bundle().apply { putBinder(BundleKeys.ARG_TIMER_SERVICE_BINDER, timerBinder) }
             }
             1 -> HistoryFragment()
             else -> throw Exception("getItem fragment error")

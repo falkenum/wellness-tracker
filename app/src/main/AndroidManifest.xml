@@ -12,6 +12,11 @@
             android:supportsRtl="true"
             android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
         <receiver
+                android:name=".ReminderReceiver"
+                android:enabled="true"
+                android:exported="true">
+        </receiver>
+        <receiver
                 android:name=".AlarmReceiver"
                 android:enabled="true"
                 android:exported="true">
