@@ -10,10 +10,7 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.FrameLayout
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.widget.*
 import org.json.JSONObject
 import java.time.Duration
 import java.time.Instant
@@ -90,15 +87,59 @@ class MoodConfig : RecordTypeConfig() {
     }
 }
 
+class DrugUseConfig : RecordTypeConfig() {
+    companion object {
+        const val SUBSTANCE = "substance"
+        const val FORM = "form"
+        const val QUANTITY_GRAMS = "quantity"
+    }
+
+    override fun getBgColor(context: Context): Int {
+        return context.resources.getColor(R.color.colorDrugUse, null)
+    }
+
+    override fun getDataView(record: Record, context: Context): View {
+        return TextView(context).apply {
+            val substance = record.data.getString(SUBSTANCE)
+            val form = record.data.getString(FORM)
+            val quantity = record.data.getDouble(QUANTITY_GRAMS)
+
+            text = "substance: $substance\nform: $form\nquantity: $quantity"
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
+        }
+    }
+
+    override fun getDataInputView(context: Context): RecordDataInputView {
+        return object : RecordDataInputView(context) {
+            init {
+                LayoutInflater.from(context)
+                    .inflate(R.layout.view_drug_use_data_input, this, true)
+            }
+            override fun getData(): JSONObject {
+                val substance = findViewById<EditText>(R.id.substanceView).text
+                val form = findViewById<EditText>(R.id.formView).text
+                val quantity = findViewById<EditText>(R.id.quantityView).text.toString().toDouble()
+                return JSONObject().apply {
+                    put(SUBSTANCE, substance)
+                    put(FORM, form)
+                    put(QUANTITY_GRAMS, quantity)
+                }
+            }
+        }
+    }
+}
+
 class RecordTypes {
 
     companion object {
         const val MEDITATION = "Meditation"
         const val MOOD = "Mood"
+        const val DRUG_USE = "Drug use"
 
         private val recordTypeConfigs : HashMap<String, RecordTypeConfig> = hashMapOf(
             MEDITATION to MeditationConfig(),
-            MOOD to MoodConfig()
+            MOOD to MoodConfig(),
+            DRUG_USE to DrugUseConfig()
         )
 
         fun getTypes() : List<String> {

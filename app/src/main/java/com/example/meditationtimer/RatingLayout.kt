@@ -14,7 +14,6 @@ const val HIGHLIGHTED = 99
 const val NOT_HIGHLIGHTED = 0
 
 class RatingLayout(context: Context) : LinearLayout(context) {
-    val numbers = ArrayList<NumberView> ()
 
     inner class NumberView(shownNum : Int) : TextView(context) {
         var highlighted = false
@@ -53,6 +52,7 @@ class RatingLayout(context: Context) : LinearLayout(context) {
         }
     }
 
+    val numbers = ArrayList<NumberView>()
     var selectedNumber : Int = 3
 
     init {

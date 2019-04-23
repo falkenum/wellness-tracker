@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                             xmlns:app="http://schemas.android.com/apk/res-auto"
+                                             xmlns:tools="http://schemas.android.com/tools"
+                                             android:layout_width="wrap_content"
+                                             android:layout_height="wrap_content">
+
+    <TextView
+            android:text="Substance:"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView2" app:layout_constraintEnd_toStartOf="@+id/substanceView"
+            app:layout_constraintBaseline_toBaselineOf="@id/substanceView"
+            android:layout_marginEnd="8dp" tools:layout_editor_absoluteY="8dp"/>
+    <EditText
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:text="Cannabis"
+            android:ems="10"
+            android:id="@+id/substanceView"
+            android:selectAllOnFocus="true" android:singleLine="true" app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" android:textSize="14sp"
+            android:textAlignment="center"/>
+    <TextView
+            android:text="Form:"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toStartOf="@+id/formView"
+            app:layout_constraintBaseline_toBaselineOf="@id/formView"
+            android:layout_marginEnd="8dp" tools:layout_editor_absoluteY="8dp"/>
+    <EditText
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:text="Wax"
+            android:ems="10"
+            android:id="@+id/formView"
+            android:selectAllOnFocus="true" android:singleLine="true" app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/substanceView" android:textSize="14sp"
+            android:textAlignment="center"/>
+    <TextView
+            android:text="Quantity (g):"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toStartOf="@+id/quantityView"
+            app:layout_constraintBaseline_toBaselineOf="@id/quantityView"
+            android:layout_marginEnd="8dp" tools:layout_editor_absoluteY="8dp"/>
+    <EditText
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:text="0.10"
+            android:ems="10"
+            android:id="@+id/quantityView"
+            android:selectAllOnFocus="true" android:singleLine="true" app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/formView" android:textSize="14sp"
+            android:textAlignment="center" android:inputType="number|numberDecimal"/>
+</android.support.constraint.ConstraintLayout>

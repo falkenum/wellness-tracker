@@ -5,20 +5,11 @@ import android.arch.persistence.db.SupportSQLiteDatabase
 import android.arch.persistence.room.*
 import android.arch.persistence.room.migration.Migration
 import android.content.Context
-import android.support.v7.widget.CardView
-import android.util.TypedValue
-import android.view.LayoutInflater
-import android.view.View
-import android.widget.Button
-import android.widget.FrameLayout
-import android.widget.LinearLayout
-import android.widget.TextView
 import org.json.JSONObject
 import java.time.Duration
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import android.arch.persistence.db.SupportSQLiteQuery
 import android.arch.persistence.room.RawQuery
 
@@ -47,7 +38,7 @@ class JSONConverter {
 
 @TypeConverters(JSONConverter::class, TimeConverter::class)
 @Entity(primaryKeys = arrayOf("dateTime", "type"))
-open class Record(val dateTime : OffsetDateTime, val type : String, val data : JSONObject = JSONObject()) {
+data class Record(val dateTime : OffsetDateTime, val type : String, val data : JSONObject = JSONObject()) {
 
     companion object {
         fun newMeditationRecord(dateTime: OffsetDateTime, duration: Duration) : Record {
@@ -79,7 +70,7 @@ interface RecordDao{
 @Dao
 interface ConfigDao{
     @RawQuery
-    fun checkpoint(supportSQLiteQuery: SupportSQLiteQuery): Int
+    fun rawQuery(supportSQLiteQuery: SupportSQLiteQuery): Int
 }
 
 val MIGRATION_5_6 = object : Migration(5, 6) {
@@ -98,7 +89,7 @@ abstract class RecordDatabase : RoomDatabase() {
             private set
 
         fun checkpoint() {
-            instance.configDao().checkpoint(SimpleSQLiteQuery("pragma wal_checkpoint(full)"))
+            instance.configDao().rawQuery(SimpleSQLiteQuery("pragma wal_checkpoint(full)"))
         }
 
         fun init(context: Context) {

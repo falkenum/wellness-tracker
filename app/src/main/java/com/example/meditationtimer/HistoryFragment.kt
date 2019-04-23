@@ -66,6 +66,7 @@ class HistoryFragment : Fragment() {
                     dialogView.removeAllViews()
                     chosenType = type
 
+                    timePicker = TimePicker(context)
                     dialogView.addView(timePicker)
                     dataInputView = RecordTypes.getDataInputView(type, context)
                     dialogView.addView(dataInputView)
@@ -88,7 +89,6 @@ class HistoryFragment : Fragment() {
                 for (type in RecordTypes.getTypes())
                     addView(TypeButton(type))
             }
-            timePicker = TimePicker(context)
 
 
             builder.setView(dialogView)

@@ -99,8 +99,8 @@ class TimerService : Service() {
     override fun onCreate() {
         super.onCreate()
 
-        val channelId = "main_channel"
-        val channelName = "Main Channel"
+        val channelId = "timer_channel"
+        val channelName = "Timer Channel"
         val importance = NotificationManager.IMPORTANCE_MIN
         val channel = NotificationChannel(channelId, channelName, importance)
         notifManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
