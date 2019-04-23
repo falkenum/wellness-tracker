@@ -89,6 +89,8 @@ class MainActivity : AppCompatActivity() {
             // wait for database to init first
             bindService(timerServiceIntent, timerConnection, 0)
         }.start()
+
+        setupReminders()
     }
 
     override fun onDestroy() {
