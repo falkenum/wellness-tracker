@@ -20,7 +20,7 @@ class ReminderReceiver : BroadcastReceiver() {
         notifManager.createNotificationChannel(channel)
 
 
-        val reminderType = intent.extras!![BundleKeys.REMINDER_TYPE] as String
+        val reminderType = (intent.extras?.get(BundleKeys.REMINDER_TYPE) as? String) ?: "[Empty]"
         val notification = Notification.Builder(context, channelId)
             .setSmallIcon(R.drawable.ic_timer_notif)
             .setContentTitle("Wellness Reminder")

@@ -92,7 +92,6 @@ class HistoryFragment : Fragment() {
 
 
             builder.setView(dialogView)
-                .setCancelable(true)
                 .setPositiveButton("Confirm") { _, _ ->
                         val time = LocalTime.of(timePicker.hour, timePicker.minute)
                         val data = dataInputView.getData()

@@ -94,7 +94,7 @@ abstract class RecordDatabase : RoomDatabase() {
 
         fun init(context: Context) {
             instance = Room.databaseBuilder(context.getApplicationContext(),
-                // TODO figure out how to change database name and merge data
+                // TODO figure out how to change database name
                 RecordDatabase::class.java, "meditation-records-db")
                 .addMigrations(MIGRATION_5_6)
                 .build()
