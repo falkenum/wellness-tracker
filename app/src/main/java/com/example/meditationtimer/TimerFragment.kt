@@ -10,37 +10,37 @@ import android.widget.TextView
 import java.lang.String.format
 import java.util.*
 
-class TimerFragment() : Fragment() {
+class TimerFragment : Fragment() {
     private lateinit var timerService: TimerService
     private lateinit var rootView: View
     private var lengthMinutes: Long = 10
 
-    fun setTimerStr(minutes: Long, seconds: Long) {
+    private fun setTimerStr(minutes: Long, seconds: Long) {
         rootView.findViewById<TextView>(R.id.timer)?.text =
             format(Locale.ENGLISH, "%02d:%02d", minutes, seconds)
     }
 
-    fun onStartClick() {
+    private fun onStartClick() {
         setupRunningTimer()
         timerService.startTimer(lengthMinutes, 0)
     }
 
-    fun onStopClick() {
+    private fun onStopClick() {
         setupStoppedTimer()
         timerService.stopTimerEarly()
     }
 
-    fun onPlusClick() {
+    private fun onPlusClick() {
         lengthMinutes += 1
         setTimerStr(lengthMinutes, 0)
     }
 
-    fun onMinusClick() {
+    private fun onMinusClick() {
         if (lengthMinutes > 1) lengthMinutes -= 1
         setTimerStr(lengthMinutes, 0)
     }
 
-    fun setupRunningTimer() {
+    private fun setupRunningTimer() {
         rootView.findViewById<Button>(R.id.startStop)?.apply {
             text = "Stop"
             setOnClickListener { onStopClick() }
@@ -50,7 +50,7 @@ class TimerFragment() : Fragment() {
         rootView.findViewById<Button>(R.id.minus)?.visibility = View.GONE
     }
 
-    fun setupStoppedTimer() {
+    private fun setupStoppedTimer() {
         rootView.findViewById<Button>(R.id.startStop)?.apply {
             text = "Start"
             setOnClickListener { onStartClick() }
@@ -67,7 +67,7 @@ class TimerFragment() : Fragment() {
                               savedInstanceState: Bundle?): View? {
 
         // get connection to the timer service and configure
-        timerService = (arguments!![BundleKeys.ARG_TIMER_SERVICE_BINDER] as TimerService.TimerBinder).getService()
+        timerService = (arguments!![BundleKeys.TIMER_SERVICE_BINDER] as TimerService.TimerBinder).getService()
 
         rootView = inflater.inflate(R.layout.tab_timer, container, false)
         // setup the plus and minus buttons

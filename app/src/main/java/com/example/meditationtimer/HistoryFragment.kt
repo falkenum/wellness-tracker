@@ -78,7 +78,7 @@ class HistoryFragment : Fragment() {
         }
 
         override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-            val builder = AlertDialog.Builder(activity!!)
+            val builder = AlertDialog.Builder(context!!)
 
 
             dialogView = LinearLayout(context).apply {
@@ -88,6 +88,10 @@ class HistoryFragment : Fragment() {
 
                 for (type in RecordTypes.getTypes())
                     addView(TypeButton(type))
+
+                // TODO fix this, this is a hack to get the keyboard to appear on the second page of the dialog
+                // I don't know why this works
+                addView(EditText(context))
             }
 
 

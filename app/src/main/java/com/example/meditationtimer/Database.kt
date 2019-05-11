@@ -79,7 +79,7 @@ val MIGRATION_5_6 = object : Migration(5, 6) {
     }
 }
 
-@Database(entities = arrayOf(Record::class), version = 6, exportSchema = false)
+@Database(entities = [Record::class], version = 6, exportSchema = false)
 abstract class RecordDatabase : RoomDatabase() {
     abstract fun recordDao(): RecordDao
     abstract fun configDao(): ConfigDao

@@ -21,6 +21,7 @@ class ReminderReceiver : BroadcastReceiver() {
 
 
         val reminderType = (intent.extras?.get(BundleKeys.REMINDER_TYPE) as? String) ?: "[Empty]"
+        val reminderId = (intent.extras?.get(BundleKeys.REMINDER_ID) as? Int) ?: 0
         val notification = Notification.Builder(context, channelId)
             .setSmallIcon(R.drawable.ic_timer_notif)
             .setContentTitle("Wellness Reminder")
@@ -29,9 +30,10 @@ class ReminderReceiver : BroadcastReceiver() {
                     Intent(context, MainActivity::class.java), 0)
             )
             .setContentText("Reminder to record a $reminderType")
+            .setAutoCancel(true)
             .build()
 
-        // TODO unique ID for each notification in a day
-        notifManager.notify(0, notification)
+
+        notifManager.notify(reminderId, notification)
     }
 }
