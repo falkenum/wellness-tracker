@@ -10,8 +10,11 @@ import android.os.Bundle
 import android.os.IBinder
 import com.google.android.material.tabs.TabLayout
 import android.util.Log
+import android.widget.Toolbar
+import androidx.navigation.findNavController
 import java.time.*
 import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.NavigationUI
 
 class BundleKeys {
     companion object {
@@ -25,20 +28,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var timerServiceIntent: Intent
 
-    private val timerConnection = object : ServiceConnection {
-        override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
-            val timerServiceBinder = (binder as TimerService.TimerBinder)
-            val viewPager = findViewById<androidx.viewpager.widget.ViewPager>(R.id.viewPager)
-            Log.d("debug", "timer service connected")
-
-            // once the service is connected, setup the tabs
-            viewPager.adapter = MainPagerAdapter(supportFragmentManager, timerServiceBinder)
-            findViewById<TabLayout>(R.id.tabLayout).setupWithViewPager(viewPager)
-        }
-
-        override fun onServiceDisconnected(name: ComponentName?) {
-        }
-    }
 
     private fun setupReminders() {
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -84,28 +73,22 @@ class MainActivity : AppCompatActivity() {
 //        sendBroadcast(Intent(applicationContext, ReminderReceiver::class.java))
 
         setContentView(R.layout.activity_main)
-        timerServiceIntent = Intent(this, TimerService::class.java)
 
         // this is creating the service if it does not exist
-        startService(timerServiceIntent)
+        startService(Intent(this, TimerService::class.java))
 
         Thread {
             RecordDatabase.init(this)
             // this is creating a connection to the service
             // wait for database to init first
-            bindService(timerServiceIntent, timerConnection, 0)
         }.start()
 
         setupReminders()
 
 //        val appBarConfiguration = AppBarConfiguration(navController.graph)
-
-        setSupportActionBar(findViewById(R.id.toolbar))
-    }
-
-    override fun onDestroy() {
-        unbindService(timerConnection)
-        super.onDestroy()
+//        setSupportActionBar(findViewById(R.id.toolbar))
+        findViewById<Toolbar>(R.id.toolbar)
+        NavigationUI.setupActionBarWithNavController(this, findNavController(R.id.nav_host_fragment))
     }
 }
 
