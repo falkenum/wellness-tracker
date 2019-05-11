@@ -1,17 +1,17 @@
 package com.example.meditationtimer
 
 import android.os.Bundle
-import android.support.v4.app.Fragment
-import android.support.v4.app.FragmentManager
-import android.support.v4.app.FragmentPagerAdapter
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentPagerAdapter
 
-class MainPagerAdapter(fm : FragmentManager, val timerBinder: TimerService.TimerBinder) :
-    FragmentPagerAdapter(fm) {
+class MainPagerAdapter(fm : androidx.fragment.app.FragmentManager, val timerBinder: TimerService.TimerBinder) :
+    androidx.fragment.app.FragmentPagerAdapter(fm) {
 
     // timer and history
     override fun getCount(): Int = 2
 
-    override fun getItem(position: Int): Fragment {
+    override fun getItem(position: Int): androidx.fragment.app.Fragment {
         // deciding which layout to use based on the tab position
         return when (position) {
             0 -> TimerFragment().apply {

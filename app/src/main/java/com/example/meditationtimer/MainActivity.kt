@@ -5,12 +5,13 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.IBinder
-import android.support.design.widget.TabLayout
-import android.support.v4.view.ViewPager
+import com.google.android.material.tabs.TabLayout
+import android.util.Log
 import java.time.*
+import androidx.navigation.ui.AppBarConfiguration
 
 class BundleKeys {
     companion object {
@@ -27,7 +28,8 @@ class MainActivity : AppCompatActivity() {
     private val timerConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
             val timerServiceBinder = (binder as TimerService.TimerBinder)
-            val viewPager = findViewById<ViewPager>(R.id.viewPager)
+            val viewPager = findViewById<androidx.viewpager.widget.ViewPager>(R.id.viewPager)
+            Log.d("debug", "timer service connected")
 
             // once the service is connected, setup the tabs
             viewPager.adapter = MainPagerAdapter(supportFragmentManager, timerServiceBinder)
@@ -79,7 +81,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        sendBroadcast(Intent(applicationContext, ReminderReceiver::class.java))
+//        sendBroadcast(Intent(applicationContext, ReminderReceiver::class.java))
 
         setContentView(R.layout.activity_main)
         timerServiceIntent = Intent(this, TimerService::class.java)
@@ -95,6 +97,10 @@ class MainActivity : AppCompatActivity() {
         }.start()
 
         setupReminders()
+
+//        val appBarConfiguration = AppBarConfiguration(navController.graph)
+
+        setSupportActionBar(findViewById(R.id.toolbar))
     }
 
     override fun onDestroy() {

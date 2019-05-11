@@ -1,7 +1,7 @@
 package com.example.meditationtimer
 
 import android.os.Bundle
-import android.support.v4.app.Fragment
+import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,7 +10,7 @@ import android.widget.TextView
 import java.lang.String.format
 import java.util.*
 
-class TimerFragment : Fragment() {
+class TimerFragment : androidx.fragment.app.Fragment() {
     private lateinit var timerService: TimerService
     private lateinit var rootView: View
     private var lengthMinutes: Long = 10

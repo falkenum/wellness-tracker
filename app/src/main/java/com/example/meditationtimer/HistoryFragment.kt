@@ -1,17 +1,17 @@
 package com.example.meditationtimer
 
 import android.app.Dialog
-import android.arch.persistence.room.Entity
+import androidx.room.Entity
 import android.content.*
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.IBinder
-import android.support.v4.app.DialogFragment
-import android.support.v4.app.Fragment
-import android.support.v4.app.FragmentManager
-import android.support.v4.content.ContextCompat
-import android.support.v7.app.AlertDialog
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.core.content.ContextCompat
+import androidx.appcompat.app.AlertDialog
 import android.text.Layout
 import android.util.Log
 import android.view.Gravity
@@ -27,9 +27,9 @@ import java.lang.IllegalStateException
 import java.time.*
 import android.database.sqlite.SQLiteConstraintException
 
-class HistoryFragment : Fragment() {
+class HistoryFragment : androidx.fragment.app.Fragment() {
 
-    class DeleteRecordDialogFragment() : DialogFragment() {
+    class DeleteRecordDialogFragment() : androidx.fragment.app.DialogFragment() {
         lateinit var messageStr : String
         lateinit var onConfirmDelete : () -> Unit
 
@@ -49,7 +49,7 @@ class HistoryFragment : Fragment() {
         }
     }
 
-    class NewRecordDialogFragment : DialogFragment() {
+    class NewRecordDialogFragment : androidx.fragment.app.DialogFragment() {
         lateinit var onConfirm : (LocalTime, String, JSONObject) -> Unit
         private lateinit var dialogView : LinearLayout
         private lateinit var confirmButton : Button
@@ -125,7 +125,7 @@ class HistoryFragment : Fragment() {
     private lateinit var dayInfoLayout : LinearLayout
     private lateinit var sessionCardsLayout : LinearLayout
     private lateinit var inflater: LayoutInflater
-    private lateinit var fm: FragmentManager
+    private lateinit var fm: androidx.fragment.app.FragmentManager
     private lateinit var recordDao: RecordDao
 
     // null means no day is selected

@@ -1,7 +1,7 @@
 package com.example.meditationtimer
 
 import android.content.Context
-import android.support.v7.widget.CardView
+import androidx.cardview.widget.CardView
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
@@ -167,7 +167,7 @@ class RecordTypes {
     }
 }
 
-class RecordCardView(context: Context) : CardView(context) {
+class RecordCardView(context: Context) : androidx.cardview.widget.CardView(context) {
 
     init {
         // TODO remove redundant CardView in the hierarchy
@@ -183,7 +183,7 @@ class RecordCardView(context: Context) : CardView(context) {
         findViewById<TextView>(R.id.recordTitle).text = titleStr
         findViewById<LinearLayout>(R.id.recordDataLayout).addView(dataView)
 
-        (getChildAt(0) as CardView).setCardBackgroundColor(bgColor)
+        (getChildAt(0) as androidx.cardview.widget.CardView).setCardBackgroundColor(bgColor)
     }
 
     fun setOnDelete(onDelete: () -> Unit) {

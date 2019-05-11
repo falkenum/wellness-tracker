@@ -1,17 +1,17 @@
 package com.example.meditationtimer
 
-import android.arch.persistence.db.SimpleSQLiteQuery
-import android.arch.persistence.db.SupportSQLiteDatabase
-import android.arch.persistence.room.*
-import android.arch.persistence.room.migration.Migration
+import androidx.sqlite.db.SimpleSQLiteQuery
+import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.room.*
+import androidx.room.migration.Migration
 import android.content.Context
 import org.json.JSONObject
 import java.time.Duration
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneId
-import android.arch.persistence.db.SupportSQLiteQuery
-import android.arch.persistence.room.RawQuery
+import androidx.sqlite.db.SupportSQLiteQuery
+import androidx.room.RawQuery
 
 
 
