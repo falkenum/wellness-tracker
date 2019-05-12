@@ -1,20 +1,19 @@
 package com.example.meditationtimer
 
+import java.time.*
 import android.app.*
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.ServiceConnection
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.IBinder
-import com.google.android.material.tabs.TabLayout
-import android.util.Log
-import android.widget.Toolbar
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import androidx.navigation.NavController
 import androidx.navigation.findNavController
-import java.time.*
-import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
+import androidx.navigation.ui.onNavDestinationSelected
 
 class BundleKeys {
     companion object {
@@ -26,8 +25,7 @@ class BundleKeys {
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var timerServiceIntent: Intent
-
+    private lateinit var navController: NavController
 
     private fun setupReminders() {
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -85,10 +83,25 @@ class MainActivity : AppCompatActivity() {
 
         setupReminders()
 
-//        val appBarConfiguration = AppBarConfiguration(navController.graph)
-//        setSupportActionBar(findViewById(R.id.toolbar))
-        findViewById<Toolbar>(R.id.toolbar)
-        NavigationUI.setupActionBarWithNavController(this, findNavController(R.id.nav_host_fragment))
+        navController = findNavController(R.id.nav_host_fragment)
+
+
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar!!.setHomeButtonEnabled(true)
+        NavigationUI.setupWithNavController(toolbar, navController)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        val inflater: MenuInflater = menuInflater
+        inflater.inflate(R.menu.options_menu, menu)
+
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+//        return true
+        return item.onNavDestinationSelected(navController)
     }
 }
 

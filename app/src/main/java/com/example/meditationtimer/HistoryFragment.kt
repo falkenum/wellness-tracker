@@ -26,6 +26,7 @@ import org.w3c.dom.Text
 import java.lang.IllegalStateException
 import java.time.*
 import android.database.sqlite.SQLiteConstraintException
+import androidx.navigation.fragment.findNavController
 
 class HistoryFragment : androidx.fragment.app.Fragment() {
 
@@ -285,7 +286,17 @@ class HistoryFragment : androidx.fragment.app.Fragment() {
 
     override fun onStart() {
         super.onStart()
+
         refreshTab()
+
+//        Thread {
+//            Thread.sleep(2000)
+//            activity!!.runOnUiThread {
+//                val x = findNavController().navigateUp().toString()
+//
+//                Log.d("debug", x)
+//            }
+//        }.start()
     }
 
     private fun refreshTab() {

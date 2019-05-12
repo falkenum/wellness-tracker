@@ -4,9 +4,11 @@
             xmlns:tools="http://schemas.android.com/tools" android:id="@+id/nav_graph"
             app:startDestination="@id/timerFragment">
     <fragment android:id="@+id/timerFragment" android:name="com.example.meditationtimer.TimerFragment"
-              android:label="TimerFragment">
+              android:label="Timer">
         <action android:id="@+id/action_timerFragment_to_historyFragment" app:destination="@id/historyFragment"/>
     </fragment>
     <fragment android:id="@+id/historyFragment" android:name="com.example.meditationtimer.HistoryFragment"
-              android:label="HistoryFragment"/>
+              android:label="History">
+        <action android:id="@+id/action_historyFragment_to_timerFragment" app:destination="@id/timerFragment"/>
+    </fragment>
 </navigation>
