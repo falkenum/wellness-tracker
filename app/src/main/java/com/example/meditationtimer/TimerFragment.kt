@@ -5,18 +5,16 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
-import kotlinx.android.synthetic.main.tab_timer.*
 import java.lang.String.format
 import java.util.*
 
 class TimerFragment : androidx.fragment.app.Fragment() {
-    private lateinit var timerService: TimerService
+    private var timerService: TimerService? = null
     private lateinit var rootView: View
     private var lengthMinutes: Long = 10
 
@@ -25,21 +23,16 @@ class TimerFragment : androidx.fragment.app.Fragment() {
             val timerServiceBinder = (binder as TimerService.TimerBinder)
             timerService = timerServiceBinder.getService()
 
-            if (timerService.isRunning) {
-                setupRunningTimer()
-            }
-            else {
-                setupStoppedTimer()
-            }
+            setupTimer()
 
-            timerService.onTimeChanged = { minutes, seconds ->
+            timerService!!.onTimeChanged = { minutes, seconds ->
                 // if the activity is open, update the instant on screen
                 activity?.runOnUiThread { setTimerStr(minutes, seconds) }
             }
 
-            timerService.onTimerFinishTasks.add {
+            timerService!!.onTimerFinishTasks.add {
                 // if the activity is open, update the ui for stopped timer
-                activity?.runOnUiThread { setupStoppedTimer() }
+                activity?.runOnUiThread { setupTimer() }
             }
         }
 
@@ -53,13 +46,13 @@ class TimerFragment : androidx.fragment.app.Fragment() {
     }
 
     private fun onStartClick() {
-        setupRunningTimer()
-        timerService.startTimer(lengthMinutes, 0)
+        timerService!!.startTimer(lengthMinutes, 0)
+        setupTimer()
     }
 
     private fun onStopClick() {
-        setupStoppedTimer()
-        timerService.stopTimerEarly()
+        timerService!!.stopTimerEarly()
+        setupTimer()
     }
 
     private fun onPlusClick() {
@@ -72,25 +65,26 @@ class TimerFragment : androidx.fragment.app.Fragment() {
         setTimerStr(lengthMinutes, 0)
     }
 
-    private fun setupRunningTimer() {
-        rootView.findViewById<Button>(R.id.startStop)?.apply {
-            text = "Stop"
-            setOnClickListener { onStopClick() }
-        }
-
-        rootView.findViewById<Button>(R.id.plus)?.visibility = View.GONE
-        rootView.findViewById<Button>(R.id.minus)?.visibility = View.GONE
-    }
-
-    private fun setupStoppedTimer() {
-        rootView.findViewById<Button>(R.id.startStop)?.apply {
-            text = "Start"
-            setOnClickListener { onStartClick() }
-        }
-        rootView.findViewById<Button>(R.id.plus)?.visibility = View.VISIBLE
-        rootView.findViewById<Button>(R.id.minus)?.visibility = View.VISIBLE
+    private fun setupTimer() {
+        var buttonText = "Start"
+        var visibility = View.VISIBLE
+        var onClick = { onStartClick() }
         setTimerStr(lengthMinutes, 0)
 
+        timerService?.apply {
+            if (isRunning) {
+                buttonText = "Stop"
+                visibility = View.GONE
+                onClick = { onStopClick() }
+            }
+        }
+
+        rootView.findViewById<Button>(R.id.startStop)?.apply {
+            text = buttonText
+            setOnClickListener { onClick() }
+        }
+        rootView.findViewById<Button>(R.id.plus)?.visibility = visibility
+        rootView.findViewById<Button>(R.id.minus)?.visibility = visibility
     }
 
 
@@ -113,6 +107,11 @@ class TimerFragment : androidx.fragment.app.Fragment() {
     override fun onDestroy() {
         activity!!.unbindService(timerConnection)
         super.onDestroy()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        setupTimer()
     }
 }
 
