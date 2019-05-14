@@ -96,7 +96,7 @@ class TimerFragment : androidx.fragment.app.Fragment() {
         activity!!.bindService(Intent(activity, TimerService::class.java), timerConnection, 0)
 
         // setup the layout
-        rootView = inflater.inflate(R.layout.tab_timer, container, false)
+        rootView = inflater.inflate(R.layout.fragment_timer, container, false)
         // setup the plus and minus buttons
         rootView.findViewById<Button>(R.id.plus).setOnClickListener { onPlusClick() }
         rootView.findViewById<Button>(R.id.minus).setOnClickListener { onMinusClick() }

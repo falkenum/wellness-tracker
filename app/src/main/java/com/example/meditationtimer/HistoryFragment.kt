@@ -1,19 +1,10 @@
 package com.example.meditationtimer
 
 import android.app.Dialog
-import androidx.room.Entity
 import android.content.*
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.IBinder
-import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
-import androidx.core.content.ContextCompat
 import androidx.appcompat.app.AlertDialog
-import android.text.Layout
-import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -22,11 +13,9 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
 import android.widget.*
 import org.json.JSONObject
-import org.w3c.dom.Text
 import java.lang.IllegalStateException
 import java.time.*
 import android.database.sqlite.SQLiteConstraintException
-import androidx.navigation.fragment.findNavController
 
 class HistoryFragment : androidx.fragment.app.Fragment() {
 
@@ -250,7 +239,7 @@ class HistoryFragment : androidx.fragment.app.Fragment() {
         }.start()
 
         inflater = inflaterArg
-        tabView = inflater.inflate(R.layout.tab_history, container, false) as ScrollView
+        tabView = inflater.inflate(R.layout.fragment_history, container, false) as ScrollView
 
         calendarView = tabView.findViewById(R.id.calendarView)
         dayInfoLayout = tabView.findViewById(R.id.dayInfoLayout)

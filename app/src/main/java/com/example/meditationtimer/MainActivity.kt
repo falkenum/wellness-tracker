@@ -80,23 +80,17 @@ class MainActivity : AppCompatActivity() {
 
         Thread {
             RecordDatabase.init(this)
-            // this is creating a connection to the service
-            // wait for database to init first
         }.start()
 
         setupReminders()
 
         navController = findNavController(R.id.nav_host_fragment)
 
-
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         val drawerContent = findViewById<NavigationView>(R.id.view_drawer_content)
 
         val drawerLayout = findViewById<DrawerLayout>(R.id.layout_drawer)
         val appBarConfiguration = AppBarConfiguration(navController.graph, drawerLayout)
-
-        setSupportActionBar(toolbar)
-        supportActionBar!!.setHomeButtonEnabled(true)
 
         NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration)
         NavigationUI.setupWithNavController(drawerContent, navController)
