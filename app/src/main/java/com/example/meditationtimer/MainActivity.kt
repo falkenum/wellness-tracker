@@ -10,10 +10,13 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
+import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.onNavDestinationSelected
+import com.google.android.material.navigation.NavigationView
 
 class BundleKeys {
     companion object {
@@ -87,21 +90,16 @@ class MainActivity : AppCompatActivity() {
 
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        val drawerContent = findViewById<NavigationView>(R.id.view_drawer_content)
+
+        val drawerLayout = findViewById<DrawerLayout>(R.id.layout_drawer)
+        val appBarConfiguration = AppBarConfiguration(navController.graph, drawerLayout)
+
         setSupportActionBar(toolbar)
         supportActionBar!!.setHomeButtonEnabled(true)
-        NavigationUI.setupWithNavController(toolbar, navController)
-    }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        val inflater: MenuInflater = menuInflater
-        inflater.inflate(R.menu.options_menu, menu)
-
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-//        return true
-        return item.onNavDestinationSelected(navController)
+        NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration)
+        NavigationUI.setupWithNavController(drawerContent, navController)
     }
 }
 
