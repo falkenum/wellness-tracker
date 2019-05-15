@@ -8,6 +8,8 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import android.widget.ArrayAdapter
+import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
@@ -109,6 +111,7 @@ class MainActivity : AppCompatActivity() {
 
         NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration)
         NavigationUI.setupWithNavController(drawerContent, navController)
+
     }
 }
 

@@ -11,6 +11,5 @@
               android:label="Home">
         <action android:id="@+id/action_homeFragment_to_timerFragment" app:destination="@id/timerFragment"/>
         <action android:id="@+id/action_homeFragment_to_historyFragment" app:destination="@id/historyFragment"/>
-        <action android:id="@+id/action_homeFragment_self2" app:destination="@id/homeFragment"/>
     </fragment>
 </navigation>
