@@ -86,7 +86,22 @@ class MainActivity : AppCompatActivity() {
 
         navController = findNavController(R.id.nav_host_fragment)
 
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        val toolbar = findViewById<Toolbar>(R.id.toolbar).apply {
+            inflateMenu(R.menu.menu_options)
+            setOnMenuItemClickListener { item ->
+                item.onNavDestinationSelected(navController)
+            }
+        }
+
+        // showing history option only on home page
+        // TODO animate transitions
+        navController.addOnDestinationChangedListener { controller, destination, arguments ->
+            when (destination.id) {
+                R.id.homeFragment -> toolbar.menu.getItem(0).isVisible = true
+                else -> toolbar.menu.getItem(0).isVisible = false
+            }
+        }
+
         val drawerContent = findViewById<NavigationView>(R.id.view_drawer_content)
 
         val drawerLayout = findViewById<DrawerLayout>(R.id.layout_drawer)
