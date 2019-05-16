@@ -1,15 +1,12 @@
 package com.example.meditationtimer
 
+import android.animation.ObjectAnimator
 import java.time.*
 import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.widget.ArrayAdapter
-import android.widget.Spinner
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
@@ -17,7 +14,6 @@ import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
-import androidx.navigation.ui.onNavDestinationSelected
 import com.google.android.material.navigation.NavigationView
 
 class BundleKeys {
@@ -91,25 +87,33 @@ class MainActivity : AppCompatActivity() {
         val toolbar = findViewById<Toolbar>(R.id.toolbar).apply {
             inflateMenu(R.menu.menu_options)
             setOnMenuItemClickListener { item ->
-                item.onNavDestinationSelected(navController)
+
+                navController.navigate(R.id.historyFragment)
+                true
             }
         }
 
         // showing history option only on home page
-        // TODO animate transitions
-        navController.addOnDestinationChangedListener { controller, destination, arguments ->
-            when (destination.id) {
-                R.id.homeFragment -> toolbar.menu.getItem(0).isVisible = true
-                else -> toolbar.menu.getItem(0).isVisible = false
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+
+            val onScreen = 1f
+            val offScreen = 0f
+
+            val (startPos, endPos) = when (destination.id) {
+                R.id.homeFragment -> Pair(offScreen, onScreen)
+                else -> Pair(onScreen, offScreen)
             }
+
+            findViewById<View>(R.id.historyActionButton).let {
+                ObjectAnimator.ofFloat(it, "alpha", startPos, endPos).start()
+            }
+
         }
 
-        val drawerContent = findViewById<NavigationView>(R.id.view_drawer_content)
-
         val drawerLayout = findViewById<DrawerLayout>(R.id.layout_drawer)
-        val appBarConfiguration = AppBarConfiguration(navController.graph, drawerLayout)
+        NavigationUI.setupWithNavController(toolbar, navController, drawerLayout)
 
-        NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration)
+        val drawerContent = findViewById<NavigationView>(R.id.view_drawer_content)
         NavigationUI.setupWithNavController(drawerContent, navController)
 
     }
