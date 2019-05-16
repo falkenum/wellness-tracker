@@ -43,13 +43,13 @@ data class Record(val dateTime : OffsetDateTime, val type : String, val data : J
     companion object {
         fun newMeditationRecord(dateTime: OffsetDateTime, duration: Duration) : Record {
             return Record(dateTime, RecordTypes.MEDITATION).apply {
-                data.put("duration", duration)
+                data.put(MeditationConfig.DURATION, duration)
             }
         }
 
         fun newMoodRecord(dateTime: OffsetDateTime, rating : Int) : Record {
             return Record(dateTime, RecordTypes.MOOD).apply {
-                data.put("rating", rating)
+                data.put(MoodConfig.RATING, rating)
             }
         }
     }

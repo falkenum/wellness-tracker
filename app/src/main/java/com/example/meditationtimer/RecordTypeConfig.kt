@@ -30,13 +30,17 @@ abstract class RecordTypeConfig {
 }
 
 class MeditationConfig: RecordTypeConfig() {
+    companion object {
+        const val DURATION = "duration"
+    }
+
     override fun getBgColor(context: Context): Int {
         return context.resources.getColor(R.color.colorMeditation, null)
     }
 
     override fun getDataView(record: Record, context: Context): View {
         return TextView(context).apply {
-            val duration = Duration.parse(record.data.getString("duration"))
+            val duration = Duration.parse(record.data.getString(DURATION))
             text = "duration: ${duration.toMinutes()} min"
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
         }
@@ -52,7 +56,7 @@ class MeditationConfig: RecordTypeConfig() {
             override fun getData(): JSONObject {
                 val durationView = findViewById<TextView>(R.id.durationView)
                 val duration = Duration.ofMinutes(durationView.text.toString().toLong())
-                return JSONObject().apply { put("duration", duration) }
+                return JSONObject().apply { put(DURATION, duration) }
             }
         }
     }
@@ -64,13 +68,17 @@ class MeditationConfig: RecordTypeConfig() {
 }
 
 class MoodConfig : RecordTypeConfig() {
+    companion object {
+        const val RATING = "rating"
+    }
+
     override fun getBgColor(context: Context): Int {
         return context.resources.getColor(R.color.colorMood, null)
     }
 
     override fun getDataView(record: Record, context: Context): View {
         return TextView(context).apply {
-            text = "rating: ${record.data.getInt("rating")}"
+            text = "rating: ${record.data.getInt(RATING)}"
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
         }
     }
@@ -83,7 +91,7 @@ class MoodConfig : RecordTypeConfig() {
             }
             override fun getData(): JSONObject {
                 val rating = (getChildAt(0) as RatingLayout).selectedNumber
-                return JSONObject().apply { put("rating", rating)}
+                return JSONObject().apply { put(RATING, rating)}
             }
         }
     }

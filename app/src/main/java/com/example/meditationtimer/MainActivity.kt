@@ -12,7 +12,6 @@ import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import com.google.android.material.navigation.NavigationView
 
@@ -69,7 +68,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        sendBroadcast(Intent(applicationContext, ReminderReceiver::class.java))
 
         setContentView(R.layout.activity_main)
 
@@ -86,8 +84,9 @@ class MainActivity : AppCompatActivity() {
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar).apply {
             inflateMenu(R.menu.menu_options)
-            setOnMenuItemClickListener { item ->
 
+            // only one menu item currently
+            setOnMenuItemClickListener {
                 navController.navigate(R.id.historyFragment)
                 true
             }
@@ -96,16 +95,17 @@ class MainActivity : AppCompatActivity() {
         // showing history option only on home page
         navController.addOnDestinationChangedListener { _, destination, _ ->
 
-            val onScreen = 1f
-            val offScreen = 0f
+            val opaque = 1f
+            val transparent = 0f
 
-            val (startPos, endPos) = when (destination.id) {
-                R.id.homeFragment -> Pair(offScreen, onScreen)
-                else -> Pair(onScreen, offScreen)
+            val (alphaStart, alphaEnd) = when (destination.id) {
+                R.id.homeFragment -> Pair(transparent, opaque)
+                else -> Pair(opaque, transparent)
             }
 
+            // fade in or fade out the button
             findViewById<View>(R.id.historyActionButton).let {
-                ObjectAnimator.ofFloat(it, "alpha", startPos, endPos).start()
+                ObjectAnimator.ofFloat(it, "alpha", alphaStart, alphaEnd).start()
             }
 
         }
