@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import org.w3c.dom.Text
 import java.time.OffsetDateTime
@@ -36,9 +37,8 @@ class HomeFragment : Fragment() {
 
             onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                    (view as? TextView)?.text?.toString()?.also { type ->
-                        setInputType(type)
-                    }
+                    val type = spinner.getItemAtPosition(position) as String
+                    setInputType(type)
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>?) { }
@@ -54,13 +54,10 @@ class HomeFragment : Fragment() {
 
             Thread {
                 RecordDatabase.instance.recordDao().insert(newRecord)
-
             }.start()
 
             Toast.makeText(activity!!, "Record added", Toast.LENGTH_SHORT).show()
         }
-
-
 
         return rootView
     }

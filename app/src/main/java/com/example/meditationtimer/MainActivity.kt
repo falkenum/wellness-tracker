@@ -110,7 +110,7 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-        val drawerLayout = findViewById<DrawerLayout>(R.id.layout_drawer)
+        val drawerLayout = findViewById<DrawerLayout>(R.id.layout_main_drawer)
         NavigationUI.setupWithNavController(toolbar, navController, drawerLayout)
 
         val drawerContent = findViewById<NavigationView>(R.id.view_drawer_content)

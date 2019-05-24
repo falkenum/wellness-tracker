@@ -46,12 +46,6 @@ data class Record(val dateTime : OffsetDateTime, val type : String, val data : J
                 data.put(MeditationConfig.DURATION, duration)
             }
         }
-
-        fun newMoodRecord(dateTime: OffsetDateTime, rating : Int) : Record {
-            return Record(dateTime, RecordTypes.MOOD).apply {
-                data.put(MoodConfig.RATING, rating)
-            }
-        }
     }
 }
 
