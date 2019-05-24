@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import org.w3c.dom.Text
 import java.time.OffsetDateTime
 
@@ -57,6 +58,10 @@ class HomeFragment : Fragment() {
             }.start()
 
             Toast.makeText(activity!!, "Record added", Toast.LENGTH_SHORT).show()
+        }
+
+        rootView.findViewById<Button>(R.id.newLogEntryButton).setOnClickListener {
+            findNavController().navigate(R.id.newEntryFragment)
         }
 
         return rootView

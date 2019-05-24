@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#0E6FA5</color>
+    <color name="colorPrimary">#2F7DB1</color>
+    <color name="colorPrimaryLight">#58A0CF</color>
     <color name="colorPrimaryDark">#02517C</color>
-    <color name="colorAccent">#D81B60</color>
+    <color name="colorAccent">#FAE160</color>
     <color name="colorMeditation">#96CAF8</color>
     <color name="colorMood">#B48CDB</color>
     <color name="colorDrugUse">#F18E8E</color>

@@ -1,10 +1,8 @@
 package com.example.meditationtimer
 
 import android.content.Context
-import android.graphics.Typeface
 import android.graphics.drawable.LayerDrawable
 import android.util.AttributeSet
-import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
@@ -33,9 +31,9 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
     companion object {
         const val transparent = 0
         const val opaque = 255
-        const val hasEntriesLayer = 0
-        const val selectedDayLayer = 1
-        const val currentDayLayer = 2
+        const val primaryLightLayer = 0
+        const val accentLayer = 1
+        const val ringLayer = 2
     }
 
     init {
@@ -73,35 +71,63 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
                 if (value) opaque else transparent
         }
 
-        fun setHasEntries(value : Boolean) = setLayer(hasEntriesLayer, value)
-        fun setSelectedDay(value : Boolean) = setLayer(selectedDayLayer, value)
-        fun setCurrentDay(value : Boolean) = setLayer(currentDayLayer, value)
+        private var currentDay : Boolean = false
+            set(value) {
+                field = value
+                setLayer(ringLayer, value)
+            }
+
+        var hasEntries : Boolean = false
+            set(value) {
+                field = value
+
+                // highlight background if it is not highlighted by the accent already
+                highlighted = value && !selectedDay
+            }
+
+        private var highlighted : Boolean = false
+            set(value) {
+                field = value
+                setLayer(primaryLightLayer, value)
+            }
+        private var selectedDay: Boolean = false
+            set(value) {
+                field = value
+                setLayer(accentLayer, value)
+
+                // highlight if the day is deselected and it has entries
+                highlighted = !value && hasEntries
+            }
 
         init {
             id = dayOfMonth
             background = context!!.getDrawable(R.drawable.calendar_day_bg)
 
-            setHasEntries(false)
-            setSelectedDay(false)
+            hasEntries = false
+            highlighted = false
+            selectedDay = false
 
             // set extra outline for today's date
             val thisDate = LocalDate.of(yearMonthShown.year, yearMonthShown.month, dayOfMonth)
-            setCurrentDay(thisDate == LocalDate.now())
+            currentDay = thisDate == LocalDate.now()
 
             text = dayOfMonth.toString()
             textAlignment = View.TEXT_ALIGNMENT_CENTER
 
             setOnClickListener {
 
-                if (selectedDayView == this) {
+                // if already clicked, unclick it
+                if (selectedDay) {
                     selectedDayView = null
-                    setSelectedDay(false)
+                    selectedDay = false
                     onDayUnselect?.invoke()
                 }
+
+                // make this one selected day
                 else {
-                    selectedDayView?.setSelectedDay(false)
+                    selectedDayView?.selectedDay = false
                     selectedDayView = this
-                    setSelectedDay(true)
+                    selectedDay = true
 
                     // callback for when a day is picked
                     onDaySelect?.invoke(dayOfMonth)
@@ -174,7 +200,7 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
     // given day of month, set whether the bg of that day should be filled
     fun fillDaysBy(pred : (Int) -> Boolean) {
         for (dayOfMonth in 1..lengthOfMonth) {
-            findViewById<DayView>(dayOfMonth).setHasEntries(pred(dayOfMonth))
+            findViewById<DayView>(dayOfMonth).hasEntries = pred(dayOfMonth)
         }
     }
 }

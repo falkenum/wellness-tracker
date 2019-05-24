@@ -7,9 +7,13 @@
               android:label="Timer"/>
     <fragment android:id="@+id/historyFragment" android:name="com.example.meditationtimer.HistoryFragment"
               android:label="History"/>
+    <fragment android:id="@+id/newEntryFragment" android:name="com.example.meditationtimer.NewEntryFragment"
+              android:label="New Log Entry"/>
     <fragment android:id="@+id/homeFragment" android:name="com.example.meditationtimer.HomeFragment"
               android:label="Home">
         <action android:id="@+id/action_homeFragment_to_timerFragment" app:destination="@id/timerFragment"/>
         <action android:id="@+id/action_homeFragment_to_historyFragment" app:destination="@id/historyFragment"/>
+        <action android:id="@+id/action_homeFragment_to_newEntryFragment" app:destination="@id/newEntryFragment"
+        />
     </fragment>
 </navigation>
