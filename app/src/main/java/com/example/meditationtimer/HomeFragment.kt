@@ -5,10 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import org.w3c.dom.Text
 import java.time.OffsetDateTime
 
 class HomeFragment : Fragment() {
@@ -16,13 +14,13 @@ class HomeFragment : Fragment() {
     private lateinit var dataInputView : RecordDataInputView
     private lateinit var spinner : Spinner
 
-    private fun setInputType(type : String) {
-        dataInputView = RecordTypes.getConfig(type).getDataInputView(activity!!)
-        rootView.findViewById<FrameLayout>(R.id.dataInputHolder).apply {
-            removeAllViews()
-            addView(dataInputView)
-        }
-    }
+//    private fun setInputType(type : String) {
+//        dataInputView = RecordTypes.getConfig(type).getDataInputView(activity!!)
+//        rootView.findViewById<FrameLayout>(R.id.dataInputHolder).apply {
+//            removeAllViews()
+//            addView(dataInputView)
+//        }
+//    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         rootView = inflater.inflate(R.layout.fragment_home, container, false)
@@ -36,32 +34,29 @@ class HomeFragment : Fragment() {
                 setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             }
 
-            onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                    val type = spinner.getItemAtPosition(position) as String
-                    setInputType(type)
-                }
-
-                override fun onNothingSelected(parent: AdapterView<*>?) { }
-            }
+//            onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+//                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+//                    val type = spinner.getItemAtPosition(position) as String
+//                    setInputType(type)
+//                }
+//
+//                override fun onNothingSelected(parent: AdapterView<*>?) { }
+//            }
         }
 
         savedInstanceState?.getInt(SELECTED_ITEM_POS)?.also { spinnerPosition ->
             spinner.setSelection(spinnerPosition)
         }
 
-        rootView.findViewById<Button>(R.id.confrimButton).setOnClickListener {
-            val newRecord = Record(OffsetDateTime.now(), spinner.selectedItem as String, dataInputView.getData())
-
-            Thread {
-                RecordDatabase.instance.recordDao().insert(newRecord)
-            }.start()
-
-            Toast.makeText(activity!!, "Record added", Toast.LENGTH_SHORT).show()
-        }
-
         rootView.findViewById<Button>(R.id.newLogEntryButton).setOnClickListener {
-            findNavController().navigate(R.id.newEntryFragment)
+            val type = spinner.selectedItem as String
+
+            findNavController().run {
+                val destinationArgs = Bundle().apply {
+                    putString(NewEntryFragment.ENTRY_TYPE, type)
+                }
+                navigate(R.id.newEntryFragment, destinationArgs)
+            }
         }
 
         return rootView
