@@ -29,6 +29,7 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
     var onMonthChange : ((YearMonth) -> Unit)? = null
 
     companion object {
+        const val slightlyTransparent = 150
         const val transparent = 0
         const val opaque = 255
         const val primaryLightLayer = 0
@@ -66,15 +67,19 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
     }
 
     private inner class DayView(val dayOfMonth : Int) : EmptyDayView()  {
-        private fun setLayer(layer : Int, value : Boolean) {
-            (background as LayerDrawable).getDrawable(layer).alpha =
-                if (value) opaque else transparent
+        private fun setLayerAlpha(layer : Int, value : Int) {
+            (background as LayerDrawable).getDrawable(layer).alpha = value
+        }
+
+
+        private fun setLayerIsVisible(layer : Int, value : Boolean) {
+            setLayerAlpha(layer, if (value) opaque else transparent)
         }
 
         private var currentDay : Boolean = false
             set(value) {
                 field = value
-                setLayer(ringLayer, value)
+                setLayerIsVisible(ringLayer, value)
             }
 
         var hasEntries : Boolean = false
@@ -88,12 +93,12 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
         private var highlighted : Boolean = false
             set(value) {
                 field = value
-                setLayer(primaryLightLayer, value)
+                setLayerAlpha(primaryLightLayer, if (value) slightlyTransparent else transparent)
             }
         private var selectedDay: Boolean = false
             set(value) {
                 field = value
-                setLayer(accentLayer, value)
+                setLayerAlpha(accentLayer, if (value) slightlyTransparent else transparent)
 
                 // highlight if the day is deselected and it has entries
                 highlighted = !value && hasEntries
