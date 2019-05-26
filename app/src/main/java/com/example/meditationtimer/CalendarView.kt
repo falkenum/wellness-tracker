@@ -22,7 +22,6 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
         private set
     val lengthOfMonth : Int get() = yearMonthShown.lengthOfMonth()
 
-    private val displayMetrics = resources.displayMetrics
     private var selectedDayView : DayView? = null
     var onDaySelect : ((Int) -> Unit)? = null
     var onDayUnselect : (() -> Unit)? = null
@@ -142,10 +141,6 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
         }
     }
 
-    private fun dpToPx(dp : Int) : Int {
-        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp.toFloat(),
-            displayMetrics).roundToInt()
-    }
 
     private fun makeCalendar() {
         // reset selected day
@@ -160,7 +155,7 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
         val defaultDaysRow: () -> TableRow = {
             TableRow(context).apply {
                 // padding between rows
-                val verticalPadding = dpToPx(5)
+                val verticalPadding = Utility.dpToPx(context, 5)
                 setPaddingRelative(0, verticalPadding, 0, verticalPadding)
             }
         }

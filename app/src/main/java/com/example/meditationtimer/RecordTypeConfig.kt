@@ -2,7 +2,9 @@ package com.example.meditationtimer
 
 import android.content.Context
 import android.text.Editable
+import android.text.Layout
 import android.util.TypedValue
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,12 +25,27 @@ class RecordDataView(context: Context, startingData : JSONObject, val readOnly :
 
     val data : JSONObject
         get() {
-            return JSONObject()
+            return JSONObject().apply {
+                val labelIndex = 0
+                val valueIndex = 1
+
+                for (rowIndex in 0 until childCount) {
+                    val row = getChildAt(rowIndex) as LinearLayout
+
+                    val labelView = row.getChildAt(labelIndex) as TextView
+                    val valueView = row.getChildAt(valueIndex) as TextView
+
+                    val label = labelView.text as String
+                    val value = valueView.text as String
+
+                    put(label, value)
+                }
+            }
         }
 
     private fun getLabelView(label : String) : TextView {
         return TextView(context).apply {
-            layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+//            layoutParams = LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, 1f)
             text = label + ": "
 //            setBackgroundColor(context.getColor(R.color.colorAccent))
             setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
@@ -38,18 +55,17 @@ class RecordDataView(context: Context, startingData : JSONObject, val readOnly :
     private fun getValueView(value : String) : TextView {
         val view = if (readOnly) {
             return TextView(context).apply {
-                layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
-                text = value
 //                setBackgroundColor(context.getColor(R.color.colorAccent))
+                text = value
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
             }
         }
         else {
             EditText(context).apply {
-                layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
-    //            inputType = TextView.LAYER_TYPE_NONE
-
 //                setBackgroundColor(context.getColor(R.color.colorPrimary))
+                width = Utility.dpToPx(context, 100)
+                text.insert(0, value)
+                textAlignment = View.TEXT_ALIGNMENT_CENTER
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
             }
         }
@@ -64,7 +80,10 @@ class RecordDataView(context: Context, startingData : JSONObject, val readOnly :
         for (label in startingData.keys()) {
             val newRow = LinearLayout(context).apply {
                 orientation = HORIZONTAL
-                layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+                layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
+                    // I don't understand why this works, but it makes the children have RIGHT gravity too
+                    gravity = Gravity.RIGHT
+                }
 
                 val value = startingData.getString(label)
                 addView(getLabelView(label))
