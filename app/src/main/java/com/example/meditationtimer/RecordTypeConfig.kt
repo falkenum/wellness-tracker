@@ -1,32 +1,96 @@
 package com.example.meditationtimer
 
 import android.content.Context
-import androidx.cardview.widget.CardView
+import android.text.Editable
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.*
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import org.json.JSONObject
 import java.lang.Exception
+import java.nio.ReadOnlyBufferException
 import java.time.*
 import java.time.format.DateTimeFormatter
 
 
-abstract class RecordDataInputView(context: Context) : FrameLayout(context) {
-    init {
-        layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+class RecordDataView(context: Context, startingData : JSONObject, val readOnly : Boolean)
+    : LinearLayout(context) {
+
+    private val textSizeSp = 18f
+
+    val data : JSONObject
+        get() {
+            return JSONObject()
+        }
+
+    private fun getLabelView(label : String) : TextView {
+        return TextView(context).apply {
+            layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+            text = label + ": "
+//            setBackgroundColor(context.getColor(R.color.colorAccent))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
+        }
     }
-    abstract fun getData() : JSONObject
+
+    private fun getValueView(value : String) : TextView {
+        val view = if (readOnly) {
+            return TextView(context).apply {
+                layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+                text = value
+//                setBackgroundColor(context.getColor(R.color.colorAccent))
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
+            }
+        }
+        else {
+            EditText(context).apply {
+                layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+    //            inputType = TextView.LAYER_TYPE_NONE
+
+//                setBackgroundColor(context.getColor(R.color.colorPrimary))
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
+            }
+        }
+
+        return view
+    }
+
+    init {
+        orientation = VERTICAL
+        layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+
+        for (label in startingData.keys()) {
+            val newRow = LinearLayout(context).apply {
+                orientation = HORIZONTAL
+                layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+
+                val value = startingData.getString(label)
+                addView(getLabelView(label))
+                addView(getValueView(value))
+            }
+
+            addView(newRow)
+        }
+    }
 }
 
 
 abstract class RecordTypeConfig {
-//    class ReminderProtocol(notification: Notification, dailyReminderTimes : List<LocalTime>)
+
+    abstract val defaultData : JSONObject
 
     abstract fun getBgColor(context: Context) : Int
-    abstract fun getDataView(record : Record, context : Context) : View
-    abstract fun getDataInputView(context: Context) : RecordDataInputView
     abstract fun getDailyReminderTimes(): List<LocalTime>?
+
+    fun getDataView(record: Record, context: Context): View {
+        return RecordDataView(context, record.data, true)
+    }
+
+    open fun getDataInputView(context: Context): RecordDataView {
+        return RecordDataView(context, defaultData, false)
+    }
 }
 
 class MeditationConfig: RecordTypeConfig() {
@@ -34,31 +98,10 @@ class MeditationConfig: RecordTypeConfig() {
         const val DURATION = "duration"
     }
 
+    override val defaultData : JSONObject = JSONObject(mutableMapOf(DURATION to "10"))
+
     override fun getBgColor(context: Context): Int {
         return context.resources.getColor(R.color.colorMeditation, null)
-    }
-
-    override fun getDataView(record: Record, context: Context): View {
-        return TextView(context).apply {
-            val duration = Duration.parse(record.data.getString(DURATION))
-            text = "duration: ${duration.toMinutes()} min"
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
-        }
-    }
-
-    override fun getDataInputView(context: Context): RecordDataInputView {
-        return object : RecordDataInputView(context) {
-            init {
-                LayoutInflater.from(context)
-                    .inflate(R.layout.view_meditation_data_input, this, true)
-                layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
-            }
-            override fun getData(): JSONObject {
-                val durationView = findViewById<TextView>(R.id.durationView)
-                val duration = Duration.ofMinutes(durationView.text.toString().toLong())
-                return JSONObject().apply { put(DURATION, duration) }
-            }
-        }
     }
 
     override fun getDailyReminderTimes(): List<LocalTime>? {
@@ -72,28 +115,10 @@ class MoodConfig : RecordTypeConfig() {
         const val RATING = "rating"
     }
 
+    override val defaultData : JSONObject = JSONObject(mutableMapOf(RATING to "3"))
+
     override fun getBgColor(context: Context): Int {
         return context.resources.getColor(R.color.colorMood, null)
-    }
-
-    override fun getDataView(record: Record, context: Context): View {
-        return TextView(context).apply {
-            text = "rating: ${record.data.getInt(RATING)}"
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
-        }
-    }
-
-    override fun getDataInputView(context: Context): RecordDataInputView {
-        return object : RecordDataInputView(context) {
-            init {
-                // getting a rating view where the user selects a number 1 to 5
-                addView(RatingLayout(context))
-            }
-            override fun getData(): JSONObject {
-                val rating = (getChildAt(0) as RatingLayout).selectedNumber
-                return JSONObject().apply { put(RATING, rating)}
-            }
-        }
     }
 
     override fun getDailyReminderTimes(): List<LocalTime>? {
@@ -115,38 +140,14 @@ class DrugUseConfig : RecordTypeConfig() {
         const val QUANTITY_GRAMS = "quantity"
     }
 
+    override val defaultData : JSONObject = JSONObject(mutableMapOf(
+        SUBSTANCE to "Cannabis",
+        FORM to "wax",
+        QUANTITY_GRAMS to "0.1"
+    ))
+
     override fun getBgColor(context: Context): Int {
         return context.resources.getColor(R.color.colorDrugUse, null)
-    }
-
-    override fun getDataView(record: Record, context: Context): View {
-        return TextView(context).apply {
-            val substance = record.data.getString(SUBSTANCE)
-            val form = record.data.getString(FORM)
-            val quantity = record.data.getDouble(QUANTITY_GRAMS)
-
-            text = "substance: $substance\nform: $form\nquantity: $quantity"
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
-        }
-    }
-
-    override fun getDataInputView(context: Context): RecordDataInputView {
-        return object : RecordDataInputView(context) {
-            init {
-                LayoutInflater.from(context)
-                    .inflate(R.layout.view_drug_use_data_input, this, true)
-            }
-            override fun getData(): JSONObject {
-                val substance = findViewById<EditText>(R.id.substanceView).text
-                val form = findViewById<EditText>(R.id.formView).text
-                val quantity = findViewById<EditText>(R.id.quantityView).text.toString().toDouble()
-                return JSONObject().apply {
-                    put(SUBSTANCE, substance)
-                    put(FORM, form)
-                    put(QUANTITY_GRAMS, quantity)
-                }
-            }
-        }
     }
 
     override fun getDailyReminderTimes(): List<LocalTime>? = null

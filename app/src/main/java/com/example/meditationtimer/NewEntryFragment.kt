@@ -30,7 +30,7 @@ class NewEntryFragment : Fragment() {
         }
 
         rootView.findViewById<Button>(R.id.confrimButton).setOnClickListener {
-            val newRecord = Record(OffsetDateTime.now(), entryType, dataInputView.getData())
+            val newRecord = Record(OffsetDateTime.now(), entryType, dataInputView.data)
 
             Thread {
                 RecordDatabase.instance.recordDao().insert(newRecord)

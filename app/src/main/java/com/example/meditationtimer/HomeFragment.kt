@@ -7,18 +7,17 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import java.time.OffsetDateTime
 
 class HomeFragment : Fragment() {
     private lateinit var rootView : View
-    private lateinit var dataInputView : RecordDataInputView
+    private lateinit var dataView : RecordDataView
     private lateinit var spinner : Spinner
 
 //    private fun setInputType(type : String) {
-//        dataInputView = RecordTypes.getConfig(type).getDataInputView(activity!!)
+//        dataView = RecordTypes.getConfig(type).getDataInputView(activity!!)
 //        rootView.findViewById<FrameLayout>(R.id.dataInputHolder).apply {
 //            removeAllViews()
-//            addView(dataInputView)
+//            addView(dataView)
 //        }
 //    }
 

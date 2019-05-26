@@ -44,7 +44,7 @@ class HistoryFragment : androidx.fragment.app.Fragment() {
         private lateinit var dialogView : LinearLayout
         private lateinit var confirmButton : Button
         private lateinit var timePicker: TimePicker
-        private lateinit var dataInputView: RecordDataInputView
+        private lateinit var dataView: RecordDataView
         private lateinit var chosenType: String
 
         inner class TypeButton(type : String) : Button(activity) {
@@ -58,8 +58,8 @@ class HistoryFragment : androidx.fragment.app.Fragment() {
 
                     timePicker = TimePicker(context)
                     dialogView.addView(timePicker)
-                    dataInputView = RecordTypes.getConfig(type).getDataInputView(context)
-                    dialogView.addView(dataInputView)
+                    dataView = RecordTypes.getConfig(type).getDataInputView(context)
+                    dialogView.addView(dataView)
 
                     // show confirm button
                     confirmButton.visibility = View.VISIBLE
@@ -88,7 +88,7 @@ class HistoryFragment : androidx.fragment.app.Fragment() {
             builder.setView(dialogView)
                 .setPositiveButton("Confirm") { _, _ ->
                         val time = LocalTime.of(timePicker.hour, timePicker.minute)
-                        val data = dataInputView.getData()
+                        val data = dataView.data
 
                         onConfirm(time, chosenType, data)
                     }
