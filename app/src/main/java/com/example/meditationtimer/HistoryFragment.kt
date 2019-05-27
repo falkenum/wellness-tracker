@@ -267,9 +267,13 @@ class HistoryFragment : androidx.fragment.app.Fragment() {
         }
 
         tabView.findViewById<Button>(R.id.addRecordButton).setOnClickListener {
-            // argument to set date and time in new fragment
-            findNavController().navigate(R.id.newEntryFragment)
-//            getNewRecord()
+            findNavController().run {
+                // argument to set date and time in new fragment
+                val destinationArgs = Bundle().apply {
+                    putString(NewEntryFragment.DATE_TIME, ZonedDateTime.now().toString())
+                }
+                navigate(R.id.newEntryFragment, destinationArgs)
+            }
         }
 
         activity!!.bindService(Intent(activity, TimerService::class.java), timerConnection, 0)

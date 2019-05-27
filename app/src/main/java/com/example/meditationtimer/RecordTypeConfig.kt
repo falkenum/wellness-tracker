@@ -3,6 +3,7 @@ package com.example.meditationtimer
 import android.content.Context
 import android.text.Editable
 import android.text.Layout
+import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -12,17 +13,20 @@ import android.widget.*
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import org.json.JSONObject
+import org.w3c.dom.Text
 import java.lang.Exception
 import java.nio.ReadOnlyBufferException
 import java.time.*
 import java.time.format.DateTimeFormatter
 
 
-class RecordDataView(context: Context, startingData : JSONObject, val readOnly : Boolean)
+open class RecordDataView(context: Context, startingData : JSONObject)
     : LinearLayout(context) {
 
-    private val textSizeSp = 18f
-    private val labelSuffix = ':'
+    constructor(context: Context, attributeSet: AttributeSet) : this(context, JSONObject())
+
+    protected val textSizeSp = 18f
+    protected val labelSuffix = ':'
 
     val data : JSONObject
         get() {
@@ -54,25 +58,17 @@ class RecordDataView(context: Context, startingData : JSONObject, val readOnly :
         }
     }
 
-    private fun getValueView(value : String) : TextView {
-        val view = if (readOnly) {
-            return TextView(context).apply {
-//                setBackgroundColor(context.getColor(R.color.colorAccent))
-                text = value
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
-            }
-        }
-        else {
-            EditText(context).apply {
-//                setBackgroundColor(context.getColor(R.color.colorPrimary))
-                width = Utility.dpToPx(context, 100)
-                text.insert(0, value)
-                textAlignment = View.TEXT_ALIGNMENT_CENTER
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
-            }
-        }
+    // to suppress a warning
+    final override fun addView(child: View?) {
+        super.addView(child)
+    }
 
-        return view
+    protected open fun getValueView(value : String) : TextView {
+        return TextView(context).apply {
+            //                setBackgroundColor(context.getColor(R.color.colorAccent))
+            text = value
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
+        }
     }
 
     init {
@@ -100,6 +96,18 @@ class RecordDataView(context: Context, startingData : JSONObject, val readOnly :
     }
 }
 
+class RecordDataInputView(context: Context, startingData : JSONObject)
+    : RecordDataView(context, startingData) {
+    override fun getValueView(value: String) : TextView {
+        return EditText(context).apply {
+            width = Utility.dpToPx(context, 100)
+            text.insert(0, value)
+            textAlignment = View.TEXT_ALIGNMENT_CENTER
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
+        }
+    }
+}
+
 
 abstract class RecordTypeConfig {
 
@@ -109,11 +117,11 @@ abstract class RecordTypeConfig {
     abstract fun getDailyReminderTimes(): List<LocalTime>?
 
     fun getDataView(record: Record, context: Context): View {
-        return RecordDataView(context, record.data, true)
+        return RecordDataView(context, record.data)
     }
 
     open fun getDataInputView(context: Context): RecordDataView {
-        return RecordDataView(context, defaultData, false)
+        return RecordDataInputView(context, defaultData)
     }
 }
 

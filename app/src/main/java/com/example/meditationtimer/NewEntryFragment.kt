@@ -10,10 +10,12 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import java.time.OffsetDateTime
+import java.time.ZonedDateTime
 
 class NewEntryFragment : Fragment() {
     companion object ARGUMENT_KEYS {
         const val ENTRY_TYPE = "com.example.meditationtimer.ENTRY_TYPE"
+        const val DATE_TIME = "com.example.meditationtimer.DATE_TIME"
     }
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.fragment_new_entry, container, false)
@@ -22,6 +24,12 @@ class NewEntryFragment : Fragment() {
         val entryType = arguments?.run {
             getString(ENTRY_TYPE)
         } ?: RecordTypes.DRUG_USE
+
+        val dateTime = arguments?.run {
+            getString(DATE_TIME)
+        } ?: ZonedDateTime.now()
+
+        // set time, type
 
         val dataInputView = RecordTypes.getConfig(entryType).getDataInputView(activity!!)
         rootView.findViewById<FrameLayout>(R.id.dataInputHolder).apply {
