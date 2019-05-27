@@ -24,45 +24,11 @@ class HomeFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         rootView = inflater.inflate(R.layout.fragment_home, container, false)
 
-        spinner = rootView.findViewById<Spinner>(R.id.spinner).apply {
-            adapter = ArrayAdapter<String>(
-                activity!!,
-                android.R.layout.simple_spinner_item,
-                RecordTypes.getTypes()
-            ).apply {
-                setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            }
-
-//            onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-//                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-//                    val type = spinner.getItemAtPosition(position) as String
-//                    setInputType(type)
-//                }
-//
-//                override fun onNothingSelected(parent: AdapterView<*>?) { }
-//            }
-        }
-
-        savedInstanceState?.getInt(SELECTED_ITEM_POS)?.also { spinnerPosition ->
-            spinner.setSelection(spinnerPosition)
-        }
-
         rootView.findViewById<Button>(R.id.newLogEntryButton).setOnClickListener {
-            val type = spinner.selectedItem as String
-
-            findNavController().run {
-                val destinationArgs = Bundle().apply {
-                    putString(NewEntryFragment.ENTRY_TYPE, type)
-                }
-                navigate(R.id.newEntryFragment, destinationArgs)
-            }
+            findNavController().navigate(R.id.newEntryFragment)
         }
 
         return rootView
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putInt(SELECTED_ITEM_POS, spinner.selectedItemPosition)
     }
 
     companion object SavedInstanceItems {

@@ -23,9 +23,7 @@ class NewEntryFragment : Fragment() {
         val rootView = inflater.inflate(R.layout.fragment_new_entry, container, false)
 
         // gets the type arg specified or defaults to drug use
-        val entryType = arguments?.run {
-            getString(ENTRY_TYPE)
-        } ?: RecordTypes.DRUG_USE
+        val entryType = (activity as MainActivity).selectedType
 
         val dateTime = arguments?.run {
             getString(DATE_TIME)

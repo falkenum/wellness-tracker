@@ -6,6 +6,7 @@ import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
@@ -16,6 +17,7 @@ import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.NavigationUI
 import com.google.android.material.navigation.NavigationView
+import com.google.android.material.tabs.TabLayout
 
 class BundleKeys {
     companion object {
@@ -25,9 +27,18 @@ class BundleKeys {
     }
 }
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
+    override fun onTabUnselected(tab: TabLayout.Tab?) { }
+
+    override fun onTabSelected(tab: TabLayout.Tab?) {
+        selectedType = tab!!.text.toString()
+    }
+
+    override fun onTabReselected(tab: TabLayout.Tab?) { }
 
     private lateinit var navController: NavController
+
+    lateinit var selectedType : String
 
     private fun setupReminders() {
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -92,6 +103,19 @@ class MainActivity : AppCompatActivity() {
                 navController.navigate(R.id.historyFragment)
                 true
             }
+        }
+
+        findViewById<TabLayout>(R.id.tabLayout).apply {
+            for (type in RecordTypes.getTypes()) {
+                addTab(newTab().setText(type))
+            }
+
+            addOnTabSelectedListener(this@MainActivity)
+
+            val firstTab = getTabAt(0)!!
+            selectTab(firstTab)
+            // for some reason selectTab() doesn't call onTabSelected
+            onTabSelected(firstTab)
         }
 
         // showing history option only on home page
