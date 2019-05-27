@@ -78,7 +78,7 @@ open class RecordDataView(context: Context, startingData : JSONObject)
                 orientation = HORIZONTAL
                 layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
                     // I don't understand why this works, but it makes the children have RIGHT gravity too
-                    gravity = Gravity.RIGHT
+                    gravity = Gravity.END
                 }
 
                 val value = startingData.getString(label)
