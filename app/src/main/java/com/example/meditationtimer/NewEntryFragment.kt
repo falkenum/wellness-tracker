@@ -1,16 +1,22 @@
 package com.example.meditationtimer
 
 import android.os.Bundle
+import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.FrameLayout
+import android.widget.LinearLayout
+import android.widget.LinearLayout.LayoutParams
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import org.w3c.dom.Attr
 import java.time.OffsetDateTime
 import java.time.ZonedDateTime
+
 
 class NewEntryFragment : Fragment() {
     companion object ARGUMENT_KEYS {
@@ -29,25 +35,33 @@ class NewEntryFragment : Fragment() {
             getString(DATE_TIME)
         } ?: ZonedDateTime.now()
 
-        // set time, type
 
         val dataInputView = RecordTypes.getConfig(entryType).getDataInputView(activity!!)
-        rootView.findViewById<FrameLayout>(R.id.dataInputHolder).apply {
+        val newEntryLayout = rootView.findViewById<LinearLayout>(R.id.newEntryLayout).apply {
             removeAllViews()
             addView(dataInputView)
+
+            val confirmButton = Button(context, null, 0, R.style.button).apply {
+                text = "Confirm"
+                layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+
+                setOnClickListener {
+                    val newRecord = Record(OffsetDateTime.now(), entryType, dataInputView.data)
+
+                    Thread {
+                        RecordDatabase.instance.recordDao().insert(newRecord)
+                    }.start()
+
+                    Toast.makeText(activity!!, "Record added", Toast.LENGTH_SHORT).show()
+
+                    findNavController().navigateUp()
+                }
+            }
+
+            addView(confirmButton)
         }
 
-        rootView.findViewById<Button>(R.id.confrimButton).setOnClickListener {
-            val newRecord = Record(OffsetDateTime.now(), entryType, dataInputView.data)
-
-            Thread {
-                RecordDatabase.instance.recordDao().insert(newRecord)
-            }.start()
-
-            Toast.makeText(activity!!, "Record added", Toast.LENGTH_SHORT).show()
-
-            findNavController().navigateUp()
-        }
+//        rootView.findViewById<Button>(R.id.confrimButton).
 
         return rootView
     }

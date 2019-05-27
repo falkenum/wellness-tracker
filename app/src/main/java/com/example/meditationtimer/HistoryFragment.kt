@@ -179,7 +179,7 @@ class HistoryFragment : androidx.fragment.app.Fragment() {
                         recordDao.insert(Record(dateTime, type, data))
                     } catch (e : SQLiteConstraintException) {
                         // TODO error message,
-                        //  this happens when multiple records of the same type are added for the same clock minute
+                        //  this happens when multiple records of the same type are added for the same second
                     }
 
                     // refresh the views to reflect new data
@@ -281,7 +281,6 @@ class HistoryFragment : androidx.fragment.app.Fragment() {
 //        tabView.visibility = GONE
 
         selectedDayOFMonth = LocalDate.now().dayOfMonth
-        refreshTab()
 
         return tabView
     }

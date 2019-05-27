@@ -23,8 +23,6 @@ import java.time.format.DateTimeFormatter
 open class RecordDataView(context: Context, startingData : JSONObject)
     : LinearLayout(context) {
 
-    constructor(context: Context, attributeSet: AttributeSet) : this(context, JSONObject())
-
     protected val textSizeSp = 18f
     protected val labelSuffix = ':'
 
