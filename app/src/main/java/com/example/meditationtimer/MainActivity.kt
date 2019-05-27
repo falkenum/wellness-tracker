@@ -7,6 +7,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
@@ -108,6 +110,10 @@ class MainActivity : AppCompatActivity() {
                 ObjectAnimator.ofFloat(it, "alpha", alphaStart, alphaEnd).start()
             }
 
+            // hide the keyboard on destination changes
+            val imm = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+            val view = currentFocus ?: View(this)
+            imm.hideSoftInputFromWindow(view.windowToken, 0)
         }
 
         val drawerLayout = findViewById<DrawerLayout>(R.id.layout_main_drawer)

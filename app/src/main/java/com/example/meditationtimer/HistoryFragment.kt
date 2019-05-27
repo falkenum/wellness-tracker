@@ -16,6 +16,8 @@ import org.json.JSONObject
 import java.lang.IllegalStateException
 import java.time.*
 import android.database.sqlite.SQLiteConstraintException
+import android.view.View.VISIBLE
+import androidx.navigation.fragment.findNavController
 
 class HistoryFragment : androidx.fragment.app.Fragment() {
 
@@ -265,10 +267,17 @@ class HistoryFragment : androidx.fragment.app.Fragment() {
         }
 
         tabView.findViewById<Button>(R.id.addRecordButton).setOnClickListener {
-            getNewRecord()
+            // argument to set date and time in new fragment
+            findNavController().navigate(R.id.newEntryFragment)
+//            getNewRecord()
         }
 
         activity!!.bindService(Intent(activity, TimerService::class.java), timerConnection, 0)
+
+//        tabView.visibility = GONE
+
+        selectedDayOFMonth = LocalDate.now().dayOfMonth
+        refreshTab()
 
         return tabView
     }
@@ -277,15 +286,6 @@ class HistoryFragment : androidx.fragment.app.Fragment() {
         super.onStart()
 
         refreshTab()
-
-//        Thread {
-//            Thread.sleep(2000)
-//            activity!!.runOnUiThread {
-//                val x = findNavController().navigateUp().toString()
-//
-//                Log.d("debug", x)
-//            }
-//        }.start()
     }
 
     private fun refreshTab() {

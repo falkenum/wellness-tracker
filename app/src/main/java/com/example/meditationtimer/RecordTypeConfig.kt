@@ -22,12 +22,13 @@ class RecordDataView(context: Context, startingData : JSONObject, val readOnly :
     : LinearLayout(context) {
 
     private val textSizeSp = 18f
+    private val labelSuffix = ':'
 
     val data : JSONObject
         get() {
             return JSONObject().apply {
                 val labelIndex = 0
-                val valueIndex = 1
+                val valueIndex = 2
 
                 for (rowIndex in 0 until childCount) {
                     val row = getChildAt(rowIndex) as LinearLayout
@@ -35,8 +36,9 @@ class RecordDataView(context: Context, startingData : JSONObject, val readOnly :
                     val labelView = row.getChildAt(labelIndex) as TextView
                     val valueView = row.getChildAt(valueIndex) as TextView
 
-                    val label = labelView.text as String
-                    val value = valueView.text as String
+                    // remove colon at the end
+                    val label = labelView.text.toString().filter { it != labelSuffix }
+                    val value = valueView.text.toString()
 
                     put(label, value)
                 }
@@ -46,7 +48,7 @@ class RecordDataView(context: Context, startingData : JSONObject, val readOnly :
     private fun getLabelView(label : String) : TextView {
         return TextView(context).apply {
 //            layoutParams = LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, 1f)
-            text = label + ": "
+            text = label + labelSuffix
 //            setBackgroundColor(context.getColor(R.color.colorAccent))
             setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
         }
@@ -86,7 +88,10 @@ class RecordDataView(context: Context, startingData : JSONObject, val readOnly :
                 }
 
                 val value = startingData.getString(label)
+                val spaceView = Space(context).apply { minimumWidth = Utility.dpToPx(context, 10) }
+
                 addView(getLabelView(label))
+                addView(spaceView)
                 addView(getValueView(value))
             }
 
