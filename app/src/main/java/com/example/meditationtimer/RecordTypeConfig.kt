@@ -19,13 +19,13 @@ open class RecordDataView(context: Context, startingData : JSONObject)
     : LinearLayout(context) {
 
     protected val textSizeSp = 18f
-    protected val labelSuffix = ':'
+    private val labelSuffix = ':'
+    private val labelIndex = 0
+    private val valueIndex = 2
 
     val data : JSONObject
         get() {
             return JSONObject().apply {
-                val labelIndex = 0
-                val valueIndex = 2
 
                 for (rowIndex in 0 until childCount) {
                     val row = getChildAt(rowIndex) as LinearLayout
@@ -41,6 +41,20 @@ open class RecordDataView(context: Context, startingData : JSONObject)
                 }
             }
         }
+    fun put(key : String, value : String) {
+        // find the row with this key
+        for (childIndex in 0 until childCount) {
+            val currentRow = getChildAt(childIndex) as LinearLayout
+            val labelView = currentRow.getChildAt(labelIndex) as TextView
+            val label = labelView.text.toString()
+
+            // if this is the row with the key
+            if (label == key) {
+                val valueView = currentRow.getChildAt(valueIndex) as TextView
+                valueView.text = value
+            }
+        }
+    }
 
     private fun getLabelView(label : String) : TextView {
         return TextView(context).apply {
@@ -123,7 +137,7 @@ class MeditationConfig: RecordTypeConfig() {
         const val DURATION = "duration"
     }
 
-    override val defaultData : JSONObject = JSONObject(mutableMapOf(DURATION to "10"))
+    override val defaultData : JSONObject = JSONObject(mapOf(DURATION to "10"))
 
     override fun getBgColor(context: Context): Int {
         return context.resources.getColor(R.color.colorMeditation, null)
@@ -140,7 +154,7 @@ class MoodConfig : RecordTypeConfig() {
         const val RATING = "rating"
     }
 
-    override val defaultData : JSONObject = JSONObject(mutableMapOf(RATING to "3"))
+    override val defaultData : JSONObject = JSONObject(mapOf(RATING to "3"))
 
     override fun getBgColor(context: Context): Int {
         return context.resources.getColor(R.color.colorMood, null)
@@ -165,7 +179,7 @@ class DrugUseConfig : RecordTypeConfig() {
         const val QUANTITY_GRAMS = "quantity"
     }
 
-    override val defaultData : JSONObject = JSONObject(mutableMapOf(
+    override val defaultData : JSONObject = JSONObject(mapOf(
         SUBSTANCE to "Cannabis",
         FORM to "wax",
         QUANTITY_GRAMS to "0.1"
