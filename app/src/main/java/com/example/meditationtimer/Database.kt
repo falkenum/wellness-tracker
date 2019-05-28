@@ -79,6 +79,7 @@ abstract class RecordDatabase : RoomDatabase() {
     abstract fun configDao(): ConfigDao
 
     companion object {
+        private const val DB_NAME = "log-entries.db"
         lateinit var instance : RecordDatabase
             private set
 
@@ -89,7 +90,7 @@ abstract class RecordDatabase : RoomDatabase() {
         fun init(context: Context) {
             instance = Room.databaseBuilder(context.getApplicationContext(),
                 // TODO figure out how to change database name
-                RecordDatabase::class.java, "meditation-records-db")
+                RecordDatabase::class.java, DB_NAME)
                 .addMigrations(MIGRATION_5_6)
                 .build()
         }
