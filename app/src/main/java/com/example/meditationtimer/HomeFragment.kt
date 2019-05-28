@@ -31,7 +31,6 @@ class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
             text = type
         }
 
-
         // to be called after accessing the database
         // entries is a list with all entries of the type passed in
         val processEntries = { entries : List<Record> ->
@@ -58,7 +57,8 @@ class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
                         else {
                             0.0
                         }
-                        averageValues.put(key, averageForToday)
+
+                        averageValues.put("average $key", averageForToday)
                     }
                 }
 
