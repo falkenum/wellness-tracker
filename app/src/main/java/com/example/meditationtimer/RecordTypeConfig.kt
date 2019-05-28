@@ -118,7 +118,7 @@ abstract class RecordTypeConfig {
         return RecordDataView(context, record.data)
     }
 
-    open fun getDataInputView(context: Context): RecordDataView {
+    open fun getDataInputView(context: Context): RecordDataInputView {
         return RecordDataInputView(context, defaultData)
     }
 }
