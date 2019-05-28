@@ -7,8 +7,21 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.tabs.TabLayout
 
-class HomeFragment : Fragment() {
+class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
+    override fun onTabReselected(tab: TabLayout.Tab?) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onTabUnselected(tab: TabLayout.Tab?) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onTabSelected(tab: TabLayout.Tab?) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     private lateinit var rootView : View
     private lateinit var dataView : RecordDataView
     private lateinit var spinner : Spinner
@@ -26,6 +39,11 @@ class HomeFragment : Fragment() {
 
         rootView.findViewById<Button>(R.id.newLogEntryButton).setOnClickListener {
             findNavController().navigate(R.id.newEntryFragment)
+        }
+
+        activity!!.findViewById<TabLayout>(R.id.tabLayout).run {
+            clearOnTabSelectedListeners()
+            addOnTabSelectedListener(this@HomeFragment)
         }
 
         return rootView

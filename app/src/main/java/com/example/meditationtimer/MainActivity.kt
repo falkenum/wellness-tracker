@@ -27,15 +27,7 @@ class BundleKeys {
     }
 }
 
-class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
-    override fun onTabUnselected(tab: TabLayout.Tab?) { }
-
-    override fun onTabSelected(tab: TabLayout.Tab?) {
-        selectedType = tab!!.text.toString()
-    }
-
-    override fun onTabReselected(tab: TabLayout.Tab?) { }
-
+class MainActivity : AppCompatActivity() {
     private lateinit var navController: NavController
 
     lateinit var selectedType : String
@@ -109,13 +101,6 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
             for (type in RecordTypes.getTypes()) {
                 addTab(newTab().setText(type))
             }
-
-            addOnTabSelectedListener(this@MainActivity)
-
-            val firstTab = getTabAt(0)!!
-            selectTab(firstTab)
-            // for some reason selectTab() doesn't call onTabSelected
-            onTabSelected(firstTab)
         }
 
         // showing history option only on home page

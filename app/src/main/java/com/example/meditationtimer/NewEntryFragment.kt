@@ -56,6 +56,7 @@ class NewEntryFragment : Fragment(), TabLayout.OnTabSelectedListener {
         } ?: ZonedDateTime.now()
 
         activity!!.findViewById<TabLayout>(R.id.tabLayout).run {
+            clearOnTabSelectedListeners()
             addOnTabSelectedListener(this@NewEntryFragment)
         }
 
