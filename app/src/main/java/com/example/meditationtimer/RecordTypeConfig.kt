@@ -1,21 +1,16 @@
 package com.example.meditationtimer
 
 import android.content.Context
-import android.text.Editable
-import android.text.Layout
-import android.util.AttributeSet
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.ShapeDrawable
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.*
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.constraintlayout.widget.ConstraintSet
 import org.json.JSONObject
-import org.w3c.dom.Text
 import java.lang.Exception
-import java.nio.ReadOnlyBufferException
 import java.time.*
 import java.time.format.DateTimeFormatter
 
@@ -210,7 +205,7 @@ class RecordCardView(context: Context) : androidx.cardview.widget.CardView(conte
 
     init {
         // TODO remove redundant CardView in the hierarchy
-        LayoutInflater.from(context).inflate(R.layout.view_session_record_card, this, true)
+        LayoutInflater.from(context).inflate(R.layout.view_entry_card, this, true)
     }
 
     fun insertRecordData(record : Record) {
@@ -222,7 +217,12 @@ class RecordCardView(context: Context) : androidx.cardview.widget.CardView(conte
         findViewById<TextView>(R.id.recordTitle).text = titleStr
         findViewById<LinearLayout>(R.id.recordDataLayout).addView(dataView)
 
-        (getChildAt(0) as androidx.cardview.widget.CardView).setCardBackgroundColor(bgColor)
+        (getChildAt(0) as androidx.cardview.widget.CardView).apply {
+            // set card color for the specific type
+            val entryCardIcon = findViewById<FrameLayout>(R.id.entryCardIconHolder).background as GradientDrawable
+            entryCardIcon.setColor(bgColor)
+
+        }
     }
 
     fun setOnDelete(onDelete: () -> Unit) {

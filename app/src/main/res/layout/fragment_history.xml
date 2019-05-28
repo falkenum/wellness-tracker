@@ -61,7 +61,7 @@
             <LinearLayout android:orientation="vertical"
                           android:id="@+id/sessionCardsLayout"
                           android:layout_width="match_parent"
-                          android:gravity="center"
+                          android:gravity="center_horizontal"
                           android:layout_height="wrap_content">
 
             </LinearLayout>
