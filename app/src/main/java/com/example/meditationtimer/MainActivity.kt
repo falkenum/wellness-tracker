@@ -30,8 +30,6 @@ class BundleKeys {
 class MainActivity : AppCompatActivity() {
     private lateinit var navController: NavController
 
-    lateinit var selectedType : String
-
     private fun setupReminders() {
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         var requestCode = 0

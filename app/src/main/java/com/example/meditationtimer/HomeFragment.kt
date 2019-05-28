@@ -8,31 +8,43 @@ import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.tabs.TabLayout
+import java.time.LocalDate
 
 class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
     override fun onTabReselected(tab: TabLayout.Tab?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onTabUnselected(tab: TabLayout.Tab?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onTabSelected(tab: TabLayout.Tab?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        setStatsType(tab!!.text.toString())
     }
 
     private lateinit var rootView : View
-    private lateinit var dataView : RecordDataView
-    private lateinit var spinner : Spinner
 
-//    private fun setInputType(type : String) {
-//        dataView = RecordTypes.getConfig(type).getDataInputView(activity!!)
-//        rootView.findViewById<FrameLayout>(R.id.dataInputHolder).apply {
-//            removeAllViews()
-//            addView(dataView)
-//        }
-//    }
+    private fun setStatsType(type : String) {
+        rootView.findViewById<TextView>(R.id.entryTypeView).apply {
+            text = type
+        }
+
+        // updating the statistics view
+        Thread {
+            val numEntries = RecordDatabase.instance
+                .recordDao()
+                .getAll()
+                .filter { (it.type == type) &&
+                        (it.dateTime.toLocalDate() == LocalDate.now()) }
+                .size
+
+            activity!!.runOnUiThread {
+                rootView.findViewById<TextView>(R.id.numEntriesView).apply {
+                    text = numEntries.toString()
+                }
+            }
+        }.start()
+
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         rootView = inflater.inflate(R.layout.fragment_home, container, false)
@@ -41,10 +53,12 @@ class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
             findNavController().navigate(R.id.newEntryFragment)
         }
 
-        activity!!.findViewById<TabLayout>(R.id.tabLayout).run {
-            clearOnTabSelectedListeners()
+        val selectedType = activity!!.findViewById<TabLayout>(R.id.tabLayout).run{
             addOnTabSelectedListener(this@HomeFragment)
+            getTabAt(selectedTabPosition)!!.text.toString()
         }
+
+        setStatsType(selectedType)
 
         return rootView
     }

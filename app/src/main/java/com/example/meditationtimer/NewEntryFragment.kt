@@ -25,8 +25,10 @@ class NewEntryFragment : Fragment(), TabLayout.OnTabSelectedListener {
     lateinit var rootView : View
 
     private fun updateDataInputType(type : String) {
+        activity?.run {
+            dataInputView = RecordTypes.getConfig(type).getDataInputView(this)
+        }
 
-        dataInputView = RecordTypes.getConfig(type).getDataInputView(activity!!)
 
         rootView.findViewById<FrameLayout>(R.id.dataInputHolder)!!.run {
             removeAllViews()
@@ -47,21 +49,20 @@ class NewEntryFragment : Fragment(), TabLayout.OnTabSelectedListener {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         rootView = inflater.inflate(R.layout.fragment_new_entry, container, false)
 
-        // gets the type arg specified or defaults to drug use
-        val entryType = (activity as MainActivity).selectedType
-        updateDataInputType(entryType)
-
         val dateTime = arguments?.run {
             getString(DATE_TIME)
         } ?: ZonedDateTime.now()
 
-        activity!!.findViewById<TabLayout>(R.id.tabLayout).run {
-            clearOnTabSelectedListeners()
+        val selectedType = activity!!.findViewById<TabLayout>(R.id.tabLayout).run {
             addOnTabSelectedListener(this@NewEntryFragment)
+            getTabAt(selectedTabPosition)!!.text.toString()
         }
 
+        // set the initial data input
+        updateDataInputType(selectedType)
+
         rootView.findViewById<Button>(R.id.confirmButton).setOnClickListener {
-            val newRecord = Record(OffsetDateTime.now(), entryType, dataInputView.data)
+            val newRecord = Record(OffsetDateTime.now(), selectedType, dataInputView.data)
 
             Thread {
                 RecordDatabase.instance.recordDao().insert(newRecord)
