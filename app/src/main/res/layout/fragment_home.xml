@@ -38,8 +38,26 @@
     <FrameLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
                  android:id="@+id/averageValuesHolder"
     />
-
-
+    <RadioGroup
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:id="@+id/periodLengthRadioGroup">
+        <RadioButton
+                android:text="Year"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/yearButton" android:layout_weight="1"/>
+        <RadioButton
+                android:text="Month"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/monthButton" android:layout_weight="1"/>
+        <RadioButton
+                android:text="Week"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/weekButton" android:layout_weight="1"/>
+        <RadioButton
+                android:text="Day"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/dayButton" android:layout_weight="1"/>
+    </RadioGroup>
 
 </LinearLayout>
 

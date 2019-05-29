@@ -20,14 +20,35 @@ class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
     }
 
     override fun onTabSelected(tab: TabLayout.Tab?) {
-        updateStatsType(tab!!.text.toString())
+        updateStats()
     }
+
+    private val periodLengthDays : Long
+        get() {
+            val checkedRadioButtonId = rootView.findViewById<RadioGroup>(R.id.periodLengthRadioGroup)
+                .checkedRadioButtonId
+            return when (checkedRadioButtonId) {
+                R.id.yearButton -> 365
+                R.id.monthButton -> 7
+                R.id.weekButton -> 30
+                R.id.dayButton -> 1
+                else -> throw Exception("shouldn't get here")
+            }
+        }
+
+    private val selectedType : String
+        get() {
+            return activity!!.findViewById<TabLayout>(R.id.tabLayout).run {
+                getTabAt(selectedTabPosition)!!.text.toString()
+            }
+        }
 
     private lateinit var rootView : View
 
-    private fun updateStatsType(type : String) {
+    private fun updateStats() {
+
         rootView.findViewById<TextView>(R.id.entryTypeView).apply {
-            text = type
+            text = selectedType
         }
 
         // to be called after accessing the database
@@ -40,7 +61,7 @@ class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
             rootView.findViewById<FrameLayout>(R.id.averageValuesHolder).apply {
 
                 // find which values are numeric and can be processed
-                val defaultData = EntryTypes.getConfig(type).defaultData
+                val defaultData = EntryTypes.getConfig(selectedType).defaultData
                 val averageValues = JSONObject()
 
                 for (key in defaultData.keys()) {
@@ -69,7 +90,7 @@ class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
 
         val startEpochSecond = Instant
             .now()
-            .minus(Duration.ofDays(1))
+            .minus(Duration.ofDays(periodLengthDays))
             .epochSecond
 
         val endEpochSecond = Instant.now().epochSecond
@@ -77,13 +98,12 @@ class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
         // updating the statistics view
         Thread {
             val entries = LogEntryDatabase.instance.entryDao()
-                .getAllWithinDurationAndType(startEpochSecond, endEpochSecond, type)
+                .getAllWithinDurationAndType(startEpochSecond, endEpochSecond, selectedType)
 
             activity!!.runOnUiThread {
                 processEntries(entries)
             }
         }.start()
-
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -93,12 +113,19 @@ class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
             findNavController().navigate(R.id.newEntryFragment)
         }
 
-        val selectedType = activity!!.findViewById<TabLayout>(R.id.tabLayout).run{
+        activity!!.findViewById<TabLayout>(R.id.tabLayout).run{
             addOnTabSelectedListener(this@HomeFragment)
-            getTabAt(selectedTabPosition)!!.text.toString()
         }
 
-        updateStatsType(selectedType)
+
+        rootView.findViewById<RadioGroup>(R.id.periodLengthRadioGroup).apply {
+            setOnCheckedChangeListener { _, _ ->
+                updateStats()
+            }
+            check(R.id.dayButton)
+        }
+
+        updateStats()
 
         return rootView
     }
