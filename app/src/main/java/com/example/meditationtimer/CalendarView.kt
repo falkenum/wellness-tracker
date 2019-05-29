@@ -14,7 +14,7 @@ import android.widget.TextView
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
-import kotlin.math.roundToInt
+import java.time.ZonedDateTime
 
 class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout(context, attributeSet) {
 
@@ -24,7 +24,7 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
 
     private var selectedDayView : DayView? = null
     var onDaySelect : ((Int) -> Unit)? = null
-    var onDayUnselect : (() -> Unit)? = null
+    var onDayDeselect : (() -> Unit)? = null
     var onMonthChange : ((YearMonth) -> Unit)? = null
 
     companion object {
@@ -41,7 +41,6 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
         orientation = VERTICAL
         LayoutInflater.from(context).inflate(R.layout.view_calendar, this, true)
 
-
         findViewById<TextView>(R.id.calendarLeft).setOnClickListener {
             yearMonthShown = yearMonthShown.minusMonths(1)
             makeCalendar()
@@ -55,6 +54,9 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
         }
 
         makeCalendar()
+
+        // select today
+        findViewById<DayView>(ZonedDateTime.now().dayOfMonth).select()
     }
 
     private open inner class EmptyDayView : TextView(context)  {
@@ -120,26 +122,35 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
 
             setOnClickListener {
 
-                // if already clicked, unclick it
+                // if already selected, deselect it
                 if (selectedDay) {
-                    selectedDayView = null
-                    selectedDay = false
-                    onDayUnselect?.invoke()
+                    deselect()
                 }
 
                 // make this one selected day
                 else {
-                    selectedDayView?.selectedDay = false
-                    selectedDayView = this
-                    selectedDay = true
-
-                    // callback for when a day is picked
-                    onDaySelect?.invoke(dayOfMonth)
+                    select()
                 }
             }
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
         }
+
+        private fun deselect() {
+            selectedDayView = null
+            selectedDay = false
+            onDayDeselect?.invoke()
+        }
+
+        fun select() {
+            selectedDayView?.selectedDay = false
+            selectedDayView = this
+            selectedDay = true
+
+            // callback for when a day is picked
+            onDaySelect?.invoke(dayOfMonth)
+        }
     }
+
 
 
     private fun makeCalendar() {

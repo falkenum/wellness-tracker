@@ -254,7 +254,7 @@ class HistoryFragment : androidx.fragment.app.Fragment() {
             showInfoForSelectedDay()
         }
 
-        calendarView.onDayUnselect = {
+        calendarView.onDayDeselect = {
             // make summary invisible again when no day is selected
             selectedDayOFMonth = null
             showInfoForSelectedDay()

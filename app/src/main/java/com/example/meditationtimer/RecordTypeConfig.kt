@@ -9,6 +9,7 @@ import android.view.View
 import android.widget.*
 import org.json.JSONObject
 import java.lang.Exception
+import java.lang.String.format
 import java.time.*
 import java.time.format.DateTimeFormatter
 
@@ -56,9 +57,7 @@ open class RecordDataView(context: Context, startingData : JSONObject)
 
     private fun getLabelView(label : String) : TextView {
         return TextView(context).apply {
-//            layoutParams = LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, 1f)
             text = label + labelSuffix
-//            setBackgroundColor(context.getColor(R.color.colorAccent))
             setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
         }
     }
@@ -70,9 +69,17 @@ open class RecordDataView(context: Context, startingData : JSONObject)
 
     protected open fun getValueView(value : String) : TextView {
         return TextView(context).apply {
-            //                setBackgroundColor(context.getColor(R.color.colorAccent))
-            text = value
             setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
+
+            val valueNumeric = value.toDoubleOrNull()
+
+            //if it's a floating point, limit decimal places
+            text = if (valueNumeric != null) {
+                format("%.2f", valueNumeric)
+            }
+            else {
+                value
+            }
         }
     }
 
@@ -89,6 +96,7 @@ open class RecordDataView(context: Context, startingData : JSONObject)
                 }
 
                 val value = startingData.getString(label)
+
                 val spaceView = Space(context).apply { minimumWidth = Utility.dpToPx(context, 10) }
 
                 addView(getLabelView(label))
