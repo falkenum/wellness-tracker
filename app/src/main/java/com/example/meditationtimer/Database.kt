@@ -6,24 +6,20 @@ import androidx.room.*
 import androidx.room.migration.Migration
 import android.content.Context
 import org.json.JSONObject
-import java.time.Duration
-import java.time.Instant
-import java.time.OffsetDateTime
-import java.time.ZoneId
 import androidx.sqlite.db.SupportSQLiteQuery
 import androidx.room.RawQuery
-
+import java.time.*
 
 
 class TimeConverter {
     @TypeConverter
-    fun dateTimeToSecond(dateTime : OffsetDateTime) : Long {
+    fun dateTimeToSecond(dateTime : ZonedDateTime) : Long {
         return dateTime.toEpochSecond()
     }
 
     @TypeConverter
-    fun secondToDateTime(epochSeconds : Long) : OffsetDateTime {
-        return OffsetDateTime.ofInstant(Instant.ofEpochSecond(epochSeconds), ZoneId.systemDefault())
+    fun secondToDateTime(epochSeconds : Long) : ZonedDateTime {
+        return ZonedDateTime.ofInstant(Instant.ofEpochSecond(epochSeconds), ZoneId.systemDefault())
     }
 }
 
@@ -38,14 +34,14 @@ class JSONConverter {
 
 @TypeConverters(JSONConverter::class, TimeConverter::class)
 @Entity(primaryKeys = arrayOf("dateTime", "type"))
-data class Entry(val dateTime : OffsetDateTime,
+data class Entry(val dateTime : ZonedDateTime,
                  val type : String,
                  val data : JSONObject = JSONObject()) {
 
 
 
     companion object {
-        fun newMeditationEntry(dateTime: OffsetDateTime, duration: Duration) : Entry {
+        fun newMeditationEntry(dateTime: ZonedDateTime, duration: Duration) : Entry {
             return Entry(dateTime, EntryTypes.MEDITATION).apply {
                 data.put(MeditationConfig.DURATION, duration)
             }

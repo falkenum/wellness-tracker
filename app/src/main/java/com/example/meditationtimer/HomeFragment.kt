@@ -13,6 +13,12 @@ import java.time.Duration
 import java.time.Instant
 
 class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
+    companion object {
+        const val YEAR = "year"
+        const val MONTH = "month"
+        const val WEEK = "week"
+        const val DAY = "day"
+    }
     override fun onTabReselected(tab: TabLayout.Tab?) {
     }
 
@@ -25,13 +31,24 @@ class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
 
     private val periodLengthDays : Long
         get() {
+            return when (checkedTimePeriod) {
+                YEAR -> 365
+                MONTH -> 30
+                WEEK -> 7
+                DAY -> 1
+                else -> throw Exception("Invalid period type")
+            }
+        }
+
+    private val checkedTimePeriod : String
+        get() {
             val checkedRadioButtonId = rootView.findViewById<RadioGroup>(R.id.periodLengthRadioGroup)
                 .checkedRadioButtonId
             return when (checkedRadioButtonId) {
-                R.id.yearButton -> 365
-                R.id.monthButton -> 7
-                R.id.weekButton -> 30
-                R.id.dayButton -> 1
+                R.id.yearButton -> YEAR
+                R.id.monthButton -> MONTH
+                R.id.weekButton -> WEEK
+                R.id.dayButton -> DAY
                 else -> throw Exception("shouldn't get here")
             }
         }
@@ -45,15 +62,16 @@ class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
 
     private lateinit var rootView : View
 
-    private fun updateStats() {
 
-        rootView.findViewById<TextView>(R.id.entryTypeView).apply {
-            text = selectedType
-        }
+    private fun updateStats() {
 
         // to be called after accessing the database
         // entries is a list with all entries of the type passed in
         val processEntries = { entries : List<Entry> ->
+            rootView.findViewById<TextView>(R.id.timePeriod).apply {
+                text = checkedTimePeriod
+            }
+
             rootView.findViewById<TextView>(R.id.numEntriesView).apply {
                 text = entries.size.toString()
             }
@@ -65,9 +83,9 @@ class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
                 val averageValues = JSONObject()
 
                 for (key in defaultData.keys()) {
-                    val value = defaultData.get(key).toString()
+                    val defaultValue = defaultData.get(key).toString()
 
-                    if (value.toDoubleOrNull() != null) {
+                    if (defaultValue.toDoubleOrNull() != null) {
                         val averageForToday = if (entries.isNotEmpty()) {
                             entries.sumByDouble {
                                 it.data.getDouble(key)
@@ -112,6 +130,8 @@ class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
         rootView.findViewById<Button>(R.id.newLogEntryButton).setOnClickListener {
             findNavController().navigate(R.id.newEntryFragment)
         }
+
+//        rootView.findViewById<ExtendedFloatingActionButton>(R.id.newLogEntryFAB).show()
 
         activity!!.findViewById<TabLayout>(R.id.tabLayout).run{
             addOnTabSelectedListener(this@HomeFragment)

@@ -171,7 +171,7 @@ class HistoryFragment : androidx.fragment.app.Fragment() {
                 // get complete dateTime based on current selected year, month, and day
                 val yearMonth = calendarView.yearMonthShown
                 val date = LocalDate.of(yearMonth.year, yearMonth.month, selectedDayOFMonth!!)
-                val dateTime = OffsetDateTime.of(date, time, OffsetDateTime.now().offset)
+                val dateTime = ZonedDateTime.of(date, time, ZonedDateTime.now().offset)
                 Thread {
                     try {
                         // add the new record retrieved from the dialog

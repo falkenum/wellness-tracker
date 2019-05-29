@@ -18,9 +18,9 @@ open class RecordDataView(context: Context, startingData : JSONObject)
     : LinearLayout(context) {
 
     protected val textSizeSp = 18f
-    private val labelSuffix = ':'
+    private val labelSuffix = ": "
     private val labelIndex = 0
-    private val valueIndex = 2
+    private val valueIndex = 1
 
     val data : JSONObject
         get() {
@@ -32,8 +32,10 @@ open class RecordDataView(context: Context, startingData : JSONObject)
                     val labelView = row.getChildAt(labelIndex) as TextView
                     val valueView = row.getChildAt(valueIndex) as TextView
 
-                    // remove colon at the end
-                    val label = labelView.text.toString().filter { it != labelSuffix }
+                    // remove suffix
+                    val label = labelView.text.toString().filterIndexed { index, c ->
+                        index < length() - labelSuffix.length
+                    }
                     val value = valueView.text.toString()
 
                     put(label, value)
@@ -92,15 +94,15 @@ open class RecordDataView(context: Context, startingData : JSONObject)
                 orientation = HORIZONTAL
                 layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
                     // I don't understand why this works, but it makes the children have RIGHT gravity too
-                    gravity = Gravity.END
-                }
+                gravity = Gravity.START
+            }
 
                 val value = startingData.getString(label)
 
-                val spaceView = Space(context).apply { minimumWidth = Utility.dpToPx(context, 10) }
+//                val spaceView = Space(context).apply { minimumWidth = Utility.dpToPx(context, 10) }
 
                 addView(getLabelView(label))
-                addView(spaceView)
+//                addView(spaceView)
                 addView(getValueView(value))
             }
 

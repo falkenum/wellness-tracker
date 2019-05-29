@@ -26,8 +26,8 @@ class TimerService : Service() {
     lateinit var onTimeChanged : (minutes : Long, seconds : Long) -> Unit
     var onTimerFinishTasks = ArrayList<() -> Unit>()
 
-    private lateinit var startTime: OffsetDateTime
-    private lateinit var endTime: OffsetDateTime
+    private lateinit var startTime: ZonedDateTime
+    private lateinit var endTime: ZonedDateTime
 
     var isRunning = false
         private set
@@ -37,7 +37,7 @@ class TimerService : Service() {
         alarmManager.cancel(bellPendingIntent)
 
         // modify the end instant set by startTimer
-        endTime = OffsetDateTime.now()
+        endTime = ZonedDateTime.now()
 
         stopTimer()
     }
@@ -62,7 +62,7 @@ class TimerService : Service() {
 
     fun startTimer(lengthMinutes: Long, lengthSeconds: Long) {
         isRunning = true
-        startTime = OffsetDateTime.now()
+        startTime = ZonedDateTime.now()
         endTime = startTime.plusMinutes(lengthMinutes).plusSeconds(lengthSeconds)
         val endTimeMillis = endTime.toEpochSecond() * 1000
 
@@ -73,7 +73,7 @@ class TimerService : Service() {
 
         val timerUpdater = object : TimerTask() {
             override fun run() {
-                val duration = Duration.between(OffsetDateTime.now(), endTime)
+                val duration = Duration.between(ZonedDateTime.now(), endTime)
                 // if there is a nanos component, round up
                 val totalSeconds = if (duration.nano > 0) duration.seconds + 1 else duration.seconds
                 val minutes = totalSeconds / 60

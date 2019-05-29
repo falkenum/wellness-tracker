@@ -62,7 +62,7 @@ class NewEntryFragment : Fragment(), TabLayout.OnTabSelectedListener {
         updateDataInputType(selectedType)
 
         rootView.findViewById<Button>(R.id.confirmButton).setOnClickListener {
-            val newRecord = Entry(OffsetDateTime.now(), selectedType, dataInputView.data)
+            val newRecord = Entry(ZonedDateTime.now(), selectedType, dataInputView.data)
 
             Thread {
                 LogEntryDatabase.instance.entryDao().insert(newRecord)
