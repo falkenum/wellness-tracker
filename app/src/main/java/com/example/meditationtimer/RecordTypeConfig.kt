@@ -1,9 +1,7 @@
 package com.example.meditationtimer
 
 import android.content.Context
-import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
-import android.graphics.drawable.ShapeDrawable
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -123,8 +121,8 @@ abstract class RecordTypeConfig {
     abstract fun getBgColor(context: Context) : Int
     abstract fun getDailyReminderTimes(): List<LocalTime>?
 
-    fun getDataView(record: Record, context: Context): View {
-        return RecordDataView(context, record.data)
+    fun getDataView(entry: Entry, context: Context): View {
+        return RecordDataView(context, entry.data)
     }
 
     open fun getDataInputView(context: Context): RecordDataInputView {
@@ -192,7 +190,7 @@ class DrugUseConfig : RecordTypeConfig() {
     override fun getDailyReminderTimes(): List<LocalTime>? = null
 }
 
-class RecordTypes {
+class EntryTypes {
 
     companion object {
         const val MEDITATION = "Meditation"
@@ -222,11 +220,11 @@ class RecordCardView(context: Context) : androidx.cardview.widget.CardView(conte
         LayoutInflater.from(context).inflate(R.layout.view_entry_card, this, true)
     }
 
-    fun insertRecordData(record : Record) {
-        val timeStamp = record.dateTime.format(DateTimeFormatter.ofPattern("hh:mm a"))
-        val titleStr = "${record.type} at $timeStamp"
-        val bgColor = RecordTypes.getConfig(record.type).getBgColor(context)
-        val dataView = RecordTypes.getConfig(record.type).getDataView(record, context)
+    fun insertRecordData(entry : Entry) {
+        val timeStamp = entry.dateTime.format(DateTimeFormatter.ofPattern("hh:mm a"))
+        val titleStr = "${entry.type} at $timeStamp"
+        val bgColor = EntryTypes.getConfig(entry.type).getBgColor(context)
+        val dataView = EntryTypes.getConfig(entry.type).getDataView(entry, context)
 
         findViewById<TextView>(R.id.recordTitle).text = titleStr
         findViewById<LinearLayout>(R.id.recordDataLayout).addView(dataView)

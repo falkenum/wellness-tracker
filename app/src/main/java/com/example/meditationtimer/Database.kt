@@ -38,11 +38,15 @@ class JSONConverter {
 
 @TypeConverters(JSONConverter::class, TimeConverter::class)
 @Entity(primaryKeys = arrayOf("dateTime", "type"))
-data class Record(val dateTime : OffsetDateTime, val type : String, val data : JSONObject = JSONObject()) {
+data class Entry(val dateTime : OffsetDateTime,
+                 val type : String,
+                 val data : JSONObject = JSONObject()) {
+
+
 
     companion object {
-        fun newMeditationRecord(dateTime: OffsetDateTime, duration: Duration) : Record {
-            return Record(dateTime, RecordTypes.MEDITATION).apply {
+        fun newMeditationEntry(dateTime: OffsetDateTime, duration: Duration) : Entry {
+            return Entry(dateTime, EntryTypes.MEDITATION).apply {
                 data.put(MeditationConfig.DURATION, duration)
             }
         }
@@ -50,15 +54,23 @@ data class Record(val dateTime : OffsetDateTime, val type : String, val data : J
 }
 
 @Dao
-interface RecordDao{
-    @Query("SELECT * FROM Record")
-    fun getAll() : List<Record>
+interface EntryDao{
+    @Query("SELECT * FROM Entry")
+    fun getAll() : List<Entry>
 
     @Insert
-    fun insert(record: Record)
+    fun insert(entry: Entry)
 
     @Delete
-    fun delete(record: Record)
+    fun delete(entry: Entry)
+
+    @Query("SELECT * FROM Entry WHERE " +
+            "type = :type AND " +
+            "dateTime >= :startEpochSecond AND " +
+            "dateTime < :endEpochSecond")
+    fun getAllWithinDurationAndType(startEpochSecond : Long,
+                                    endEpochSecond : Long,
+                                    type: String) : List<Entry>
 }
 
 @Dao
@@ -73,14 +85,20 @@ val MIGRATION_5_6 = object : Migration(5, 6) {
     }
 }
 
-@Database(entities = [Record::class], version = 6, exportSchema = false)
-abstract class RecordDatabase : RoomDatabase() {
-    abstract fun recordDao(): RecordDao
+val MIGRATION_6_7 = object : Migration(6, 7) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("ALTER TABLE Record RENAME TO Entry")
+    }
+}
+
+@Database(entities = [Entry::class], version = 7, exportSchema = false)
+abstract class LogEntryDatabase : RoomDatabase() {
+    abstract fun entryDao(): EntryDao
     abstract fun configDao(): ConfigDao
 
     companion object {
         private const val DB_NAME = "log-entries.db"
-        lateinit var instance : RecordDatabase
+        lateinit var instance : LogEntryDatabase
             private set
 
         fun checkpoint() {
@@ -88,10 +106,9 @@ abstract class RecordDatabase : RoomDatabase() {
         }
 
         fun init(context: Context) {
-            instance = Room.databaseBuilder(context.getApplicationContext(),
-                // TODO figure out how to change database name
-                RecordDatabase::class.java, DB_NAME)
-                .addMigrations(MIGRATION_5_6)
+            instance = Room.databaseBuilder(context.applicationContext,
+                LogEntryDatabase::class.java, DB_NAME)
+                .addMigrations(MIGRATION_5_6, MIGRATION_6_7)
                 .build()
         }
     }

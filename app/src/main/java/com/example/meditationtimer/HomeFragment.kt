@@ -8,10 +8,9 @@ import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.tabs.TabLayout
-import kotlinx.android.synthetic.main.fragment_home.*
 import org.json.JSONObject
-import java.lang.Exception
-import java.time.LocalDate
+import java.time.Duration
+import java.time.Instant
 
 class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
     override fun onTabReselected(tab: TabLayout.Tab?) {
@@ -33,26 +32,25 @@ class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
 
         // to be called after accessing the database
         // entries is a list with all entries of the type passed in
-        val processEntries = { entries : List<Record> ->
-            val entriesForToday = entries.filter { it.dateTime.toLocalDate() == LocalDate.now()}
+        val processEntries = { entries : List<Entry> ->
             rootView.findViewById<TextView>(R.id.numEntriesView).apply {
-                text = entriesForToday.size.toString()
+                text = entries.size.toString()
             }
 
             rootView.findViewById<FrameLayout>(R.id.averageValuesHolder).apply {
 
                 // find which values are numeric and can be processed
-                val defaultData = RecordTypes.getConfig(type).defaultData
+                val defaultData = EntryTypes.getConfig(type).defaultData
                 val averageValues = JSONObject()
 
                 for (key in defaultData.keys()) {
                     val value = defaultData.get(key).toString()
 
                     if (value.toDoubleOrNull() != null) {
-                        val averageForToday = if (entriesForToday.isNotEmpty()) {
-                            entriesForToday.sumByDouble {
+                        val averageForToday = if (entries.isNotEmpty()) {
+                            entries.sumByDouble {
                                 it.data.getDouble(key)
-                            } / entriesForToday.size
+                            } / entries.size
                         }
                         else {
                             0.0
@@ -68,13 +66,21 @@ class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
                 addView(averageValuesView)
             }
         }
+
+        val startEpochSecond = Instant
+            .now()
+            .minus(Duration.ofDays(1))
+            .epochSecond
+
+        val endEpochSecond = Instant.now().epochSecond
+
         // updating the statistics view
         Thread {
-            val entriesForType = RecordDatabase.instance.recordDao().getAll()
-                .filter { (it.type == type) }
+            val entries = LogEntryDatabase.instance.entryDao()
+                .getAllWithinDurationAndType(startEpochSecond, endEpochSecond, type)
 
             activity!!.runOnUiThread {
-                processEntries(entriesForType)
+                processEntries(entries)
             }
         }.start()
 

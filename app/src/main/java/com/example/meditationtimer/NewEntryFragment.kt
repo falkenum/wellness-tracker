@@ -26,7 +26,7 @@ class NewEntryFragment : Fragment(), TabLayout.OnTabSelectedListener {
 
     private fun updateDataInputType(type : String) {
         activity?.run {
-            dataInputView = RecordTypes.getConfig(type).getDataInputView(this)
+            dataInputView = EntryTypes.getConfig(type).getDataInputView(this)
         }
 
 
@@ -62,13 +62,13 @@ class NewEntryFragment : Fragment(), TabLayout.OnTabSelectedListener {
         updateDataInputType(selectedType)
 
         rootView.findViewById<Button>(R.id.confirmButton).setOnClickListener {
-            val newRecord = Record(OffsetDateTime.now(), selectedType, dataInputView.data)
+            val newRecord = Entry(OffsetDateTime.now(), selectedType, dataInputView.data)
 
             Thread {
-                RecordDatabase.instance.recordDao().insert(newRecord)
+                LogEntryDatabase.instance.entryDao().insert(newRecord)
             }.start()
 
-            Toast.makeText(activity!!, "Record added", Toast.LENGTH_SHORT).show()
+            Toast.makeText(activity!!, "Entry added", Toast.LENGTH_SHORT).show()
 
             findNavController().navigateUp()
         }

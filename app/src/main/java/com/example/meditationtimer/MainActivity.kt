@@ -6,9 +6,7 @@ import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
-import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -33,8 +31,8 @@ class MainActivity : AppCompatActivity() {
     private fun setupReminders() {
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         var requestCode = 0
-        for (type in RecordTypes.getTypes()) {
-            val times = RecordTypes.getConfig(type).getDailyReminderTimes()
+        for (type in EntryTypes.getTypes()) {
+            val times = EntryTypes.getConfig(type).getDailyReminderTimes()
             val receiverIntent = Intent(applicationContext, ReminderReceiver::class.java)
                 .putExtra(BundleKeys.REMINDER_TYPE, type)
 
@@ -78,7 +76,7 @@ class MainActivity : AppCompatActivity() {
         startService(Intent(this, TimerService::class.java))
 
         Thread {
-            RecordDatabase.init(this)
+            LogEntryDatabase.init(this)
         }.start()
 
         setupReminders()
@@ -96,7 +94,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<TabLayout>(R.id.tabLayout).apply {
-            for (type in RecordTypes.getTypes()) {
+            for (type in EntryTypes.getTypes()) {
                 addTab(newTab().setText(type))
             }
         }

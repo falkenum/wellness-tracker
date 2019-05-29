@@ -16,7 +16,6 @@ import org.json.JSONObject
 import java.lang.IllegalStateException
 import java.time.*
 import android.database.sqlite.SQLiteConstraintException
-import android.view.View.VISIBLE
 import androidx.navigation.fragment.findNavController
 
 class HistoryFragment : androidx.fragment.app.Fragment() {
@@ -60,7 +59,7 @@ class HistoryFragment : androidx.fragment.app.Fragment() {
 
                     timePicker = TimePicker(context)
                     dialogView.addView(timePicker)
-                    dataView = RecordTypes.getConfig(type).getDataInputView(context)
+                    dataView = EntryTypes.getConfig(type).getDataInputView(context)
                     dialogView.addView(dataView)
 
                     // show confirm button
@@ -78,7 +77,7 @@ class HistoryFragment : androidx.fragment.app.Fragment() {
                 layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
                 gravity = Gravity.CENTER
 
-                for (type in RecordTypes.getTypes())
+                for (type in EntryTypes.getTypes())
                     addView(TypeButton(type))
 
                 // TODO fix this, this is a hack to get the keyboard to appear on the second page of the dialog
@@ -110,7 +109,7 @@ class HistoryFragment : androidx.fragment.app.Fragment() {
         }
     }
 
-    private lateinit var monthRecords : Array< ArrayList<Record> >
+    private lateinit var monthEntries : Array< ArrayList<Entry> >
     private lateinit var tabView: ScrollView
     private lateinit var calendarView : CalendarView
     private lateinit var numRecordsView : TextView
@@ -118,7 +117,7 @@ class HistoryFragment : androidx.fragment.app.Fragment() {
     private lateinit var sessionCardsLayout : LinearLayout
     private lateinit var inflater: LayoutInflater
     private lateinit var fm: androidx.fragment.app.FragmentManager
-    private lateinit var recordDao: RecordDao
+    private lateinit var entryDao: EntryDao
 
     // null means no day is selected
     private var selectedDayOFMonth : Int? = null
@@ -142,20 +141,20 @@ class HistoryFragment : androidx.fragment.app.Fragment() {
         }
     }
 
-    private fun getRecordInfoCard(record : Record) : RecordCardView {
+    private fun getRecordInfoCard(entry : Entry) : RecordCardView {
 
        return RecordCardView(activity!!).apply {
-           insertRecordData(record)
+           insertRecordData(entry)
 
            setOnDelete {
                val deleteAction = {
                    Thread {
-                       // delete record
-                       recordDao.delete(record)
+                       // delete entry
+                       entryDao.delete(entry)
                        refreshTab()
                    }.start()
                }
-               // confirm that the record should be deleted
+               // confirm that the entry should be deleted
                DeleteRecordDialogFragment().apply {
                    messageStr = "Delete?"
                    onConfirmDelete = deleteAction
@@ -176,7 +175,7 @@ class HistoryFragment : androidx.fragment.app.Fragment() {
                 Thread {
                     try {
                         // add the new record retrieved from the dialog
-                        recordDao.insert(Record(dateTime, type, data))
+                        entryDao.insert(Entry(dateTime, type, data))
                     } catch (e : SQLiteConstraintException) {
                         // TODO error message,
                         //  this happens when multiple records of the same type are added for the same second
@@ -196,7 +195,7 @@ class HistoryFragment : androidx.fragment.app.Fragment() {
             return
         }
 
-        val recordsForDay = monthRecords[selectedDayOFMonth!! - 1]
+        val recordsForDay = monthEntries[selectedDayOFMonth!! - 1]
         numRecordsView.text = recordsForDay.size.toString()
 
         // remove all the cards, leave the summaryLayout at the beginning
@@ -212,10 +211,10 @@ class HistoryFragment : androidx.fragment.app.Fragment() {
 
     private fun reloadMonthRecords() {
         // Make an array of lists containing the records for each day of the month
-        monthRecords = Array(calendarView.yearMonthShown.lengthOfMonth())
-            { ArrayList<Record>(0) }
+        monthEntries = Array(calendarView.yearMonthShown.lengthOfMonth())
+            { ArrayList<Entry>(0) }
 
-        for (record in recordDao.getAll()) {
+        for (record in entryDao.getAll()) {
             val dateTime = record.dateTime
 
             // if the record is in the shown month
@@ -223,21 +222,21 @@ class HistoryFragment : androidx.fragment.app.Fragment() {
                 val dayOfMonth = MonthDay.from(dateTime).dayOfMonth
 
                 // add to the appropriate array list, zero indexed for the array
-                monthRecords[dayOfMonth - 1].add(record)
+                monthEntries[dayOfMonth - 1].add(record)
             }
         }
     }
 
     private fun fillCalendarDays() {
-        calendarView.fillDaysBy { dayOfMonth -> monthRecords[dayOfMonth - 1].size > 0 }
+        calendarView.fillDaysBy { dayOfMonth -> monthEntries[dayOfMonth - 1].size > 0 }
     }
 
     override fun onCreateView(inflaterArg: LayoutInflater,
                               container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         Thread {
-            // TODO make sure this is done before using recordDao
-            recordDao = RecordDatabase.instance.recordDao()
+            // TODO make sure this is done before using entryDao
+            entryDao = LogEntryDatabase.instance.entryDao()
         }.start()
 
         inflater = inflaterArg
