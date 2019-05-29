@@ -99,7 +99,7 @@ class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
                     }
                 }
 
-                val averageValuesView = RecordDataView(context, averageValues)
+                val averageValuesView = EntryDataView(context, averageValues)
 
                 removeAllViews()
                 addView(averageValuesView)

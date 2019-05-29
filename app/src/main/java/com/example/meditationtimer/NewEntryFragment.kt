@@ -10,7 +10,6 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.tabs.TabLayout
-import java.time.OffsetDateTime
 import java.time.ZonedDateTime
 
 
@@ -21,7 +20,7 @@ class NewEntryFragment : Fragment(), TabLayout.OnTabSelectedListener {
         const val DATE_TIME = "com.example.meditationtimer.DATE_TIME"
     }
 
-    lateinit var dataInputView : RecordDataInputView
+    lateinit var dataInputView : EntryDataInputView
     lateinit var rootView : View
 
     private fun updateDataInputType(type : String) {
@@ -62,10 +61,10 @@ class NewEntryFragment : Fragment(), TabLayout.OnTabSelectedListener {
         updateDataInputType(selectedType)
 
         rootView.findViewById<Button>(R.id.confirmButton).setOnClickListener {
-            val newRecord = Entry(ZonedDateTime.now(), selectedType, dataInputView.data)
+            val newEntry = Entry(ZonedDateTime.now(), selectedType, dataInputView.data)
 
             Thread {
-                LogEntryDatabase.instance.entryDao().insert(newRecord)
+                LogEntryDatabase.instance.entryDao().insert(newEntry)
             }.start()
 
             Toast.makeText(activity!!, "Entry added", Toast.LENGTH_SHORT).show()

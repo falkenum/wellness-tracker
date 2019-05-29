@@ -14,7 +14,7 @@ import java.time.*
 import java.time.format.DateTimeFormatter
 
 
-open class RecordDataView(context: Context, startingData : JSONObject)
+open class EntryDataView(context: Context, startingData : JSONObject)
     : LinearLayout(context) {
 
     protected val textSizeSp = 18f
@@ -111,8 +111,8 @@ open class RecordDataView(context: Context, startingData : JSONObject)
     }
 }
 
-class RecordDataInputView(context: Context, startingData : JSONObject)
-    : RecordDataView(context, startingData) {
+class EntryDataInputView(context: Context, startingData : JSONObject)
+    : EntryDataView(context, startingData) {
     override fun getValueView(value: String) : TextView {
         return EditText(context).apply {
             width = Utility.dpToPx(context, 100)
@@ -124,7 +124,7 @@ class RecordDataInputView(context: Context, startingData : JSONObject)
 }
 
 
-abstract class RecordTypeConfig {
+abstract class EntryTypeConfig {
 
     abstract val defaultData : JSONObject
 
@@ -132,15 +132,15 @@ abstract class RecordTypeConfig {
     abstract fun getDailyReminderTimes(): List<LocalTime>?
 
     fun getDataView(entry: Entry, context: Context): View {
-        return RecordDataView(context, entry.data)
+        return EntryDataView(context, entry.data)
     }
 
-    open fun getDataInputView(context: Context): RecordDataInputView {
-        return RecordDataInputView(context, defaultData)
+    open fun getDataInputView(context: Context): EntryDataInputView {
+        return EntryDataInputView(context, defaultData)
     }
 }
 
-class MeditationConfig: RecordTypeConfig() {
+class MeditationConfig: EntryTypeConfig() {
     companion object {
         const val DURATION = "duration"
     }
@@ -157,7 +157,7 @@ class MeditationConfig: RecordTypeConfig() {
     }
 }
 
-class MoodConfig : RecordTypeConfig() {
+class MoodConfig : EntryTypeConfig() {
     companion object {
         const val RATING = "rating"
     }
@@ -180,7 +180,7 @@ class MoodConfig : RecordTypeConfig() {
     }
 }
 
-class DrugUseConfig : RecordTypeConfig() {
+class DrugUseConfig : EntryTypeConfig() {
     companion object {
         const val SUBSTANCE = "substance"
         const val FORM = "form"
@@ -207,30 +207,30 @@ class EntryTypes {
         const val MOOD = "Mood"
         const val DRUG_USE = "Drug use"
 
-        private val recordTypeConfigs : HashMap<String, RecordTypeConfig> = hashMapOf(
+        private val ENTRY_TYPE_CONFIGS : HashMap<String, EntryTypeConfig> = hashMapOf(
             MEDITATION to MeditationConfig(),
             MOOD to MoodConfig(),
             DRUG_USE to DrugUseConfig()
         )
 
         fun getTypes() : List<String> {
-            return recordTypeConfigs.keys.toList()
+            return ENTRY_TYPE_CONFIGS.keys.toList()
         }
 
-        fun getConfig(type : String) : RecordTypeConfig {
-            return recordTypeConfigs[type]!!
+        fun getConfig(type : String) : EntryTypeConfig {
+            return ENTRY_TYPE_CONFIGS[type]!!
         }
     }
 }
 
-class RecordCardView(context: Context) : androidx.cardview.widget.CardView(context) {
+class EntryCardView(context: Context) : androidx.cardview.widget.CardView(context) {
 
     init {
         // TODO remove redundant CardView in the hierarchy
         LayoutInflater.from(context).inflate(R.layout.view_entry_card, this, true)
     }
 
-    fun insertRecordData(entry : Entry) {
+    fun insertEntryData(entry : Entry) {
         val timeStamp = entry.dateTime.format(DateTimeFormatter.ofPattern("hh:mm a"))
         val titleStr = "${entry.type} at $timeStamp"
         val bgColor = EntryTypes.getConfig(entry.type).getBgColor(context)
