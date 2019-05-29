@@ -31,11 +31,8 @@ open class EntryDataView(context: Context, startingData : JSONObject)
 
                     val labelView = row.getChildAt(labelIndex) as TextView
                     val valueView = row.getChildAt(valueIndex) as TextView
-
                     // remove suffix
-                    val label = labelView.text.toString().filterIndexed { index, c ->
-                        index < length() - labelSuffix.length
-                    }
+                    val label = labelView.text.toString().removeSuffix(labelSuffix)
                     val value = valueView.text.toString()
 
                     put(label, value)
@@ -189,7 +186,7 @@ class DrugUseConfig : EntryTypeConfig() {
 
     override val defaultData : JSONObject = JSONObject(mapOf(
         SUBSTANCE to "Cannabis",
-        FORM to "wax",
+        FORM to "Wax",
         QUANTITY_GRAMS to "0.1"
     ))
 

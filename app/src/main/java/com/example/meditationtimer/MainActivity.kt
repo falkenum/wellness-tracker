@@ -8,6 +8,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
@@ -77,6 +78,23 @@ class MainActivity : AppCompatActivity() {
 
         Thread {
             LogEntryDatabase.init(this)
+
+            val entryDao = LogEntryDatabase.instance.entryDao()
+            val entries = entryDao.getAll()
+
+            // I just wanted an empty mutable list
+            val invalidEntries = entries.filter { false }.toMutableList()
+
+            for (entry in entries)
+                if (!Entry.isValidEntry(entry)) {
+                    invalidEntries.add(entry)
+                    entryDao.delete(entry)
+                }
+
+            DebugDialogFragment().apply {
+                message = "Deleted ${invalidEntries.size} invalid entries"
+            }.show(supportFragmentManager, "DebugDialog")
+
         }.start()
 
         setupReminders()

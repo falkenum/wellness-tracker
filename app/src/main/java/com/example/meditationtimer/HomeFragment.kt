@@ -1,6 +1,7 @@
 package com.example.meditationtimer
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -145,8 +146,13 @@ class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
             check(R.id.dayButton)
         }
 
-        updateStats()
-
         return rootView
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Log.d("debugging", "hello")
+
+        updateStats()
     }
 }

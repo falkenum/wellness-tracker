@@ -5,6 +5,8 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.room.*
 import androidx.room.migration.Migration
 import android.content.Context
+import android.widget.Toast
+import androidx.fragment.app.DialogFragment
 import org.json.JSONObject
 import androidx.sqlite.db.SupportSQLiteQuery
 import androidx.room.RawQuery
@@ -46,13 +48,23 @@ data class Entry(val dateTime : ZonedDateTime,
                 data.put(MeditationConfig.DURATION, duration)
             }
         }
+        fun isValidEntry(entry : Entry) : Boolean {
+            for (key in entry.data.keys()) {
+                if (key == "")
+                    return false
+            }
+            return true
+        }
     }
+
 }
 
 @Dao
 interface EntryDao{
     @Query("SELECT * FROM Entry")
     fun getAll() : List<Entry>
+
+
 
     @Insert
     fun insert(entry: Entry)
