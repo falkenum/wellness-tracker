@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import com.google.android.material.tabs.TabLayout
 import org.json.JSONObject
 import java.time.Duration
 import java.time.Instant
@@ -72,16 +71,16 @@ class HomeFragment : Fragment() {
                     val defaultValue = defaultData.get(key).toString()
 
                     if (defaultValue.toDoubleOrNull() != null) {
-                        val averageForToday = if (entries.isNotEmpty()) {
-                            entries.sumByDouble {
+                        val total = entries.sumByDouble {
                                 it.data.getDouble(key)
-                            } / entries.size
-                        }
-                        else {
-                            0.0
                         }
 
-                        averageValues.put("average $key", averageForToday)
+                        val average =
+                            if (entries.isNotEmpty()) total / entries.size
+                            else 0.0
+
+                        averageValues.put("total $key", total)
+                        averageValues.put("average $key", average)
                     }
                 }
 

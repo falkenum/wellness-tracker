@@ -1,16 +1,21 @@
 package com.example.meditationtimer
 
+import android.app.DatePickerDialog
+import android.app.Dialog
+import android.app.TimePickerDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.FrameLayout
-import android.widget.Toast
+import android.widget.*
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.navigation.fragment.findNavController
-import com.google.android.material.tabs.TabLayout
-import java.time.ZonedDateTime
+import kotlinx.android.synthetic.main.fragment_new_entry.*
+import org.w3c.dom.Text
+import java.time.*
+import java.util.*
 
 
 class NewEntryFragment : Fragment() {
@@ -22,6 +27,10 @@ class NewEntryFragment : Fragment() {
 
     lateinit var dataInputView : EntryDataInputView
     lateinit var rootView : View
+    lateinit var fm : FragmentManager
+
+    private var selectedTime = ZonedDateTime.now().toLocalTime()
+    private var selectedDate = ZonedDateTime.now().toLocalDate()
 
     private fun updateDataInputType(type : String) {
         activity?.run {
@@ -37,6 +46,7 @@ class NewEntryFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         rootView = inflater.inflate(R.layout.fragment_new_entry, container, false)
+        fm = activity!!.supportFragmentManager
 
         val dateTime = arguments?.run {
             getString(DATE_TIME)
@@ -49,32 +59,101 @@ class NewEntryFragment : Fragment() {
             selectedType
         }
 
+        rootView.findViewById<Button>(R.id.confirmButton).setOnClickListener {
+            onConfirm()
+        }
+
+        rootView.findViewById<Button>(R.id.modifyTimeButton).setOnClickListener {
+            getTime()
+        }
+
+        rootView.findViewById<Button>(R.id.modifyDateButton).setOnClickListener {
+            getDate()
+        }
+
         // set the initial data input
         updateDataInputType(selectedType)
 
-        rootView.findViewById<Button>(R.id.confirmButton).setOnClickListener {
-            val selectedType = (activity!! as MainActivity).selectedType
-            val newEntry = Entry(ZonedDateTime.now(), selectedType, dataInputView.data)
-
-            Thread {
-                if (!Entry.isValidEntry(newEntry)) {
-                    DebugDialogFragment().apply {
-                        message = "Could not add invalid entry $newEntry"
-                    }.show(fragmentManager!!, "InvalidEntryDialog")
-                }
-                else {
-                    LogEntryDatabase.instance.entryDao().insert(newEntry)
-                    activity!!.runOnUiThread {
-                        Toast.makeText(activity!!, "Entry added", Toast.LENGTH_SHORT).show()
-
-                        findNavController().navigateUp()
-                    }
-                }
-
-
-            }.start()
-        }
 
         return rootView
+    }
+
+    class EntryDatePicker : DialogFragment(), DatePickerDialog.OnDateSetListener {
+        lateinit var dateValueView : TextView
+        lateinit var onDateSet : (date : LocalDate) -> Unit
+        override fun onDateSet(view: DatePicker?, year: Int, month: Int, dayOfMonth: Int) {
+            onDateSet(LocalDate.of(year, month, dayOfMonth))
+            dateValueView.text = "$year $month $dayOfMonth"
+        }
+
+        override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+            // Use the current date as the default date in the picker
+            val c = Calendar.getInstance()
+            val year = c.get(Calendar.YEAR)
+            val month = c.get(Calendar.MONTH)
+            val day = c.get(Calendar.DAY_OF_MONTH)
+
+            // Create a new instance of DatePickerDialog and return it
+            return DatePickerDialog(activity!!, this, year, month, day)
+        }
+    }
+    private fun getDate() {
+        EntryDatePicker().apply {
+            onDateSet = { date -> selectedDate = date }
+            dateValueView = rootView.findViewById(R.id.dateValueView)
+            show(fm, "DatePickerDialog")
+        }
+    }
+
+    class EntryTimePicker : DialogFragment(), TimePickerDialog.OnTimeSetListener {
+        lateinit var timeValueView : TextView
+        lateinit var onTimeSet : (time : LocalTime) -> Unit
+
+        override fun onTimeSet(view: TimePicker?, hourOfDay: Int, minute: Int) {
+            onTimeSet(LocalTime.of(hourOfDay, minute))
+            timeValueView.text = "$hourOfDay:$minute"
+        }
+
+        override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+            // Use the current time as the default values for the picker
+            val c = Calendar.getInstance()
+            val hour = c.get(Calendar.HOUR_OF_DAY)
+            val minute = c.get(Calendar.MINUTE)
+
+            // Create a new instance of TimePickerDialog and return it
+            return TimePickerDialog(activity, this,
+                hour, minute, false)
+        }
+    }
+
+    private fun getTime() {
+        EntryTimePicker().apply {
+            onTimeSet = { time -> selectedTime = time}
+            timeValueView = rootView.findViewById(R.id.timeValueView)
+            show(fm, "TimePickerDialog")
+        }
+    }
+
+    private fun onConfirm() {
+        val selectedType = (activity!! as MainActivity).selectedType
+        val localDateTime = LocalDateTime.of(selectedDate, selectedTime)
+        val dateTime = ZonedDateTime.of(localDateTime, ZoneId.systemDefault())
+        val newEntry = Entry(dateTime, selectedType, dataInputView.data)
+
+        Thread {
+            if (!Entry.isValidEntry(newEntry)) {
+                DebugDialogFragment().apply {
+                    message = "Could not add invalid entry $newEntry"
+                }.show(fragmentManager!!, "InvalidEntryDialog")
+            }
+            else {
+                LogEntryDatabase.instance.entryDao().insert(newEntry)
+                activity!!.runOnUiThread {
+                    Toast.makeText(activity!!, "Entry added", Toast.LENGTH_SHORT).show()
+
+                    findNavController().navigateUp()
+                }
+            }
+        }.start()
     }
 }

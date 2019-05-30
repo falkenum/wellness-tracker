@@ -17,7 +17,6 @@ import java.time.format.DateTimeFormatter
 open class EntryDataView(context: Context, startingData : JSONObject)
     : LinearLayout(context) {
 
-    protected val textSizeSp = 18f
     private val labelSuffix = ": "
     private val labelIndex = 0
     private val valueIndex = 1
@@ -57,7 +56,6 @@ open class EntryDataView(context: Context, startingData : JSONObject)
     private fun getLabelView(label : String) : TextView {
         return TextView(context).apply {
             text = label + labelSuffix
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
         }
     }
 
@@ -68,8 +66,6 @@ open class EntryDataView(context: Context, startingData : JSONObject)
 
     protected open fun getValueView(value : String) : TextView {
         return TextView(context).apply {
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
-
             val valueNumeric = value.toDoubleOrNull()
 
             //if it's a floating point, limit decimal places
@@ -96,8 +92,6 @@ open class EntryDataView(context: Context, startingData : JSONObject)
 
                 val value = startingData.getString(label)
 
-//                val spaceView = Space(context).apply { minimumWidth = Utility.dpToPx(context, 10) }
-
                 addView(getLabelView(label))
 //                addView(spaceView)
                 addView(getValueView(value))
@@ -115,7 +109,6 @@ class EntryDataInputView(context: Context, startingData : JSONObject)
             width = Utility.dpToPx(context, 100)
             text.insert(0, value)
             textAlignment = View.TEXT_ALIGNMENT_CENTER
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
         }
     }
 }

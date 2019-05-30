@@ -15,7 +15,7 @@
 
     <style name="button" >
         <item name="android:background">@drawable/button_bg</item>
-        <item name="android:titleMargin">0dp</item>
+        <item name="android:textSize">@dimen/buttonTextSize</item>
         <item name="android:textAllCaps">true</item>
         <item name="android:fontFamily">sans-serif-medium</item>
         <item name="android:padding">10dp</item>

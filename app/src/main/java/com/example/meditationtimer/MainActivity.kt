@@ -1,5 +1,6 @@
 package com.example.meditationtimer
 
+import android.animation.Animator
 import android.animation.ObjectAnimator
 import java.time.*
 import android.app.*
@@ -7,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.view.animation.Animation
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -127,14 +129,39 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
             val opaque = 1f
             val transparent = 0f
 
-            val (alphaStart, alphaEnd) = when (destination.id) {
-                R.id.homeFragment -> Pair(transparent, opaque)
-                else -> Pair(opaque, transparent)
+            val goingToHome = when (destination.id) {
+                R.id.homeFragment -> true
+                else -> false
             }
 
+            val (alphaStart, alphaEnd) =
+                if (goingToHome) Pair(transparent, opaque)
+                else Pair(opaque, transparent)
+
             // fade in or fade out the button
-            findViewById<View>(R.id.historyActionButton).let {
-                ObjectAnimator.ofFloat(it, "alpha", alphaStart, alphaEnd).start()
+            findViewById<View>(R.id.historyActionButton).let { historyActionButton ->
+                val fadeOut = ObjectAnimator.ofFloat(historyActionButton, "alpha", alphaStart, alphaEnd).apply {
+                    addListener(
+                        object : Animator.AnimatorListener {
+                            override fun onAnimationRepeat(animation: Animator?) {
+                            }
+
+                            override fun onAnimationEnd(animation: Animator?) {
+                                if (!goingToHome)
+                                    historyActionButton.visibility = View.GONE
+                            }
+
+                            override fun onAnimationCancel(animation: Animator?) {
+                            }
+
+                            override fun onAnimationStart(animation: Animator?) {
+                                if (goingToHome)
+                                    historyActionButton.visibility = View.VISIBLE
+                            }
+                        }
+                    )
+                    start()
+                }
             }
 
             // hide the keyboard on destination changes
