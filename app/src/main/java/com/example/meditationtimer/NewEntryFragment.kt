@@ -65,11 +65,14 @@ class NewEntryFragment : Fragment(), TabLayout.OnTabSelectedListener {
 
             Thread {
                 LogEntryDatabase.instance.entryDao().insert(newEntry)
+
+
+                activity!!.runOnUiThread {
+                    Toast.makeText(activity!!, "Entry added", Toast.LENGTH_SHORT).show()
+
+                    findNavController().navigateUp()
+                }
             }.start()
-
-            Toast.makeText(activity!!, "Entry added", Toast.LENGTH_SHORT).show()
-
-            findNavController().navigateUp()
         }
 
         return rootView

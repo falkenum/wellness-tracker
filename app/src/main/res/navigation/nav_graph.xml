@@ -2,7 +2,7 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
             xmlns:tools="http://schemas.android.com/tools" android:id="@+id/nav_graph"
-            app:startDestination="@id/homeFragment">
+            app:startDestination="@id/blankFragment2">
     <fragment android:id="@+id/timerFragment" android:name="com.example.meditationtimer.TimerFragment"
               android:label="Timer"/>
     <fragment android:id="@+id/historyFragment" android:name="com.example.meditationtimer.HistoryFragment"
@@ -17,5 +17,9 @@
         <action android:id="@+id/action_homeFragment_to_historyFragment" app:destination="@id/historyFragment"/>
         <action android:id="@+id/action_homeFragment_to_newEntryFragment" app:destination="@id/newEntryFragment"
         />
+    </fragment>
+    <fragment android:id="@+id/blankFragment2" android:name="com.example.meditationtimer.BlankFragment"
+              android:label="fragment_blank" tools:layout="@layout/fragment_blank">
+        <action android:id="@+id/action_blankFragment2_to_homeFragment" app:destination="@id/homeFragment"/>
     </fragment>
 </navigation>

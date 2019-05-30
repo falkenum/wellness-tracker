@@ -69,12 +69,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onDatabaseLoaded() {
+        setContentView(R.layout.activity_main)
+
+        findViewById<TabLayout>(R.id.tabLayout).apply {
+            for (type in EntryTypes.getTypes()) {
+                addTab(newTab().setText(type))
+            }
+        }
+
         // this is creating the service if it does not exist
         startService(Intent(this, TimerService::class.java))
 
         setupReminders()
 
-        setContentView(R.layout.activity_main)
 
         navController = findNavController(R.id.nav_host_fragment)
 
@@ -88,14 +95,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        findViewById<TabLayout>(R.id.tabLayout).apply {
-            for (type in EntryTypes.getTypes()) {
-                addTab(newTab().setText(type))
-            }
-        }
-
         // showing history option only on home page
         navController.addOnDestinationChangedListener { _, destination, _ ->
+            // TODO collapse/show tabLayout
 
             val opaque = 1f
             val transparent = 0f
@@ -121,6 +123,9 @@ class MainActivity : AppCompatActivity() {
 
         val drawerContent = findViewById<NavigationView>(R.id.view_drawer_content)
         NavigationUI.setupWithNavController(drawerContent, navController)
+
+        // setup complete, go to home
+        navController.navigate(R.id.homeFragment)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

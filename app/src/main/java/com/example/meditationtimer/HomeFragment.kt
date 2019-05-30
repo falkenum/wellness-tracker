@@ -74,7 +74,6 @@ class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
             }
 
             rootView.findViewById<TextView>(R.id.numEntriesView).apply {
-                Log.d("debugging", "changing num entries")
                 text = entries.size.toString()
             }
 

@@ -50,9 +50,16 @@ data class Entry(val dateTime : ZonedDateTime,
         }
         fun isValidEntry(entry : Entry) : Boolean {
             for (key in entry.data.keys()) {
+                // if key is empty
                 if (key == "")
                     return false
+
+                // if key isn't valid for the given type
+                if (EntryTypes.getConfig(entry.type).defaultData.isNull(key))
+                    return false
             }
+
+
             return true
         }
     }
