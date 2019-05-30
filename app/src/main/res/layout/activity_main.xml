@@ -39,7 +39,7 @@
                 android:layout_height="match_parent"
 
                 app:defaultNavHost="true"
-                app:navGraph="@navigation/nav_graph" android:layout_marginHorizontal="16dp"/>
+                app:navGraph="@navigation/startup_graph" android:layout_marginHorizontal="16dp"/>
 
     </LinearLayout>
 

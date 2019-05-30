@@ -64,14 +64,21 @@ class NewEntryFragment : Fragment(), TabLayout.OnTabSelectedListener {
             val newEntry = Entry(ZonedDateTime.now(), selectedType, dataInputView.data)
 
             Thread {
-                LogEntryDatabase.instance.entryDao().insert(newEntry)
-
-
-                activity!!.runOnUiThread {
-                    Toast.makeText(activity!!, "Entry added", Toast.LENGTH_SHORT).show()
-
-                    findNavController().navigateUp()
+                if (!Entry.isValidEntry(newEntry)) {
+                    DebugDialogFragment().apply {
+                        message = "Could not add invalid entry $newEntry"
+                    }.show(fragmentManager!!, "InvalidEntryDialog")
                 }
+                else {
+                    LogEntryDatabase.instance.entryDao().insert(newEntry)
+                    activity!!.runOnUiThread {
+                        Toast.makeText(activity!!, "Entry added", Toast.LENGTH_SHORT).show()
+
+                        findNavController().navigateUp()
+                    }
+                }
+
+
             }.start()
         }
 

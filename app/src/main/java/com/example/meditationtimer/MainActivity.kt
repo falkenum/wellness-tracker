@@ -82,8 +82,10 @@ class MainActivity : AppCompatActivity() {
 
         setupReminders()
 
-
         navController = findNavController(R.id.nav_host_fragment)
+
+        // need to have main activity layout loaded before getting to the home page
+        navController.setGraph(R.navigation.primary_graph)
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar).apply {
             inflateMenu(R.menu.menu_options)
@@ -123,9 +125,6 @@ class MainActivity : AppCompatActivity() {
 
         val drawerContent = findViewById<NavigationView>(R.id.view_drawer_content)
         NavigationUI.setupWithNavController(drawerContent, navController)
-
-        // setup complete, go to home
-        navController.navigate(R.id.homeFragment)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

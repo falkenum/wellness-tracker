@@ -27,7 +27,8 @@ class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
     }
 
     override fun onTabSelected(tab: TabLayout.Tab?) {
-        updateStats()
+        if (isVisible)
+            updateStats()
     }
 
     private val periodLengthDays : Long
