@@ -13,22 +13,12 @@ import org.json.JSONObject
 import java.time.Duration
 import java.time.Instant
 
-class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
+class HomeFragment : Fragment() {
     companion object {
         const val YEAR = "year"
         const val MONTH = "month"
         const val WEEK = "week"
         const val DAY = "day"
-    }
-    override fun onTabReselected(tab: TabLayout.Tab?) {
-    }
-
-    override fun onTabUnselected(tab: TabLayout.Tab?) {
-    }
-
-    override fun onTabSelected(tab: TabLayout.Tab?) {
-        if (isVisible)
-            updateStats()
     }
 
     private val periodLengthDays : Long
@@ -55,13 +45,6 @@ class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
             }
         }
 
-    private val selectedType : String
-        get() {
-            return activity!!.findViewById<TabLayout>(R.id.tabLayout).run {
-                getTabAt(selectedTabPosition)!!.text.toString()
-            }
-        }
-
     private lateinit var rootView : View
 
 
@@ -79,6 +62,7 @@ class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
             }
 
             rootView.findViewById<FrameLayout>(R.id.averageValuesHolder).apply {
+                val selectedType = (activity!! as MainActivity).selectedType
 
                 // find which values are numeric and can be processed
                 val defaultData = EntryTypes.getConfig(selectedType).defaultData
@@ -117,6 +101,7 @@ class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
 
         // updating the statistics view
         Thread {
+            val selectedType = (activity!! as MainActivity).selectedType
             val entries = LogEntryDatabase.instance.entryDao()
                 .getAllWithinDurationAndType(startEpochSecond, endEpochSecond, selectedType)
 
@@ -133,8 +118,12 @@ class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
             findNavController().navigate(R.id.newEntryFragment)
         }
 
-        activity!!.findViewById<TabLayout>(R.id.tabLayout).run{
-            addOnTabSelectedListener(this@HomeFragment)
+
+        (activity!! as MainActivity).apply {
+            addOnTabSelectedAction {
+                if (isVisible)
+                    updateStats()
+            }
         }
 
 

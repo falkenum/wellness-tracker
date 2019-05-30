@@ -8,7 +8,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
@@ -26,7 +25,17 @@ class BundleKeys {
     }
 }
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
+    override fun onTabReselected(tab: TabLayout.Tab?) {
+    }
+
+    override fun onTabUnselected(tab: TabLayout.Tab?) {
+    }
+
+    override fun onTabSelected(tab: TabLayout.Tab?) {
+        onTabSelectedActions.forEach { onTabSelectedAction -> onTabSelectedAction(tab!!) }
+    }
+
     private lateinit var navController: NavController
 
     private fun setupReminders() {
@@ -68,13 +77,27 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+   val selectedType : String
+        get() {
+            return findViewById<TabLayout>(R.id.tabLayout).run {
+                getTabAt(selectedTabPosition)!!.text.toString()
+            }
+        }
+
+    val onTabSelectedActions = MutableList(0) { { tab : TabLayout.Tab -> } }
+    fun addOnTabSelectedAction(onTabSelectedAction : (TabLayout.Tab) -> Unit) {
+        onTabSelectedActions.add(onTabSelectedAction)
+    }
+
     private fun onDatabaseLoaded() {
         setContentView(R.layout.activity_main)
 
-        findViewById<TabLayout>(R.id.tabLayout).apply {
+        findViewById<TabLayout>(R.id.tabLayout).run {
             for (type in EntryTypes.getTypes()) {
                 addTab(newTab().setText(type))
             }
+
+            addOnTabSelectedListener(this@MainActivity)
         }
 
         // this is creating the service if it does not exist
@@ -145,9 +168,11 @@ class MainActivity : AppCompatActivity() {
                     entryDao.delete(entry)
                 }
 
-            DebugDialogFragment().apply {
-                message = "Deleted ${invalidEntries.size} invalid entries"
-            }.show(supportFragmentManager, "DebugDialog")
+            if (invalidEntries.size > 0) {
+                DebugDialogFragment().apply {
+                    message = "Deleted ${invalidEntries.size} invalid entries"
+                }.show(supportFragmentManager, "DebugDialog")
+            }
 
             runOnUiThread {
                 onDatabaseLoaded()

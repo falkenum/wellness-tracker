@@ -13,7 +13,7 @@ import com.google.android.material.tabs.TabLayout
 import java.time.ZonedDateTime
 
 
-class NewEntryFragment : Fragment(), TabLayout.OnTabSelectedListener {
+class NewEntryFragment : Fragment() {
 
     companion object ARGUMENT_KEYS {
         const val ENTRY_TYPE = "com.example.meditationtimer.ENTRY_TYPE"
@@ -35,16 +35,6 @@ class NewEntryFragment : Fragment(), TabLayout.OnTabSelectedListener {
         }
     }
 
-    override fun onTabReselected(tab: TabLayout.Tab?) {
-    }
-
-    override fun onTabUnselected(tab: TabLayout.Tab?) {
-    }
-
-    override fun onTabSelected(tab: TabLayout.Tab?) {
-        updateDataInputType(tab!!.text.toString())
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         rootView = inflater.inflate(R.layout.fragment_new_entry, container, false)
 
@@ -52,15 +42,18 @@ class NewEntryFragment : Fragment(), TabLayout.OnTabSelectedListener {
             getString(DATE_TIME)
         } ?: ZonedDateTime.now()
 
-        val selectedType = activity!!.findViewById<TabLayout>(R.id.tabLayout).run {
-            addOnTabSelectedListener(this@NewEntryFragment)
-            getTabAt(selectedTabPosition)!!.text.toString()
+        val selectedType = (activity!! as MainActivity).run {
+            addOnTabSelectedAction { tab ->
+                updateDataInputType(tab.text.toString())
+            }
+            selectedType
         }
 
         // set the initial data input
         updateDataInputType(selectedType)
 
         rootView.findViewById<Button>(R.id.confirmButton).setOnClickListener {
+            val selectedType = (activity!! as MainActivity).selectedType
             val newEntry = Entry(ZonedDateTime.now(), selectedType, dataInputView.data)
 
             Thread {
