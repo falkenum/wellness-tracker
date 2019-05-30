@@ -68,36 +68,13 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        setContentView(R.layout.activity_main)
-
+    private fun onDatabaseLoaded() {
         // this is creating the service if it does not exist
         startService(Intent(this, TimerService::class.java))
 
-        Thread {
-            LogEntryDatabase.init(this)
-
-            val entryDao = LogEntryDatabase.instance.entryDao()
-            val entries = entryDao.getAll()
-
-            // I just wanted an empty mutable list
-            val invalidEntries = entries.filter { false }.toMutableList()
-
-            for (entry in entries)
-                if (!Entry.isValidEntry(entry)) {
-                    invalidEntries.add(entry)
-                    entryDao.delete(entry)
-                }
-
-            DebugDialogFragment().apply {
-                message = "Deleted ${invalidEntries.size} invalid entries"
-            }.show(supportFragmentManager, "DebugDialog")
-
-        }.start()
-
         setupReminders()
+
+        setContentView(R.layout.activity_main)
 
         navController = findNavController(R.id.nav_host_fragment)
 
@@ -144,6 +121,36 @@ class MainActivity : AppCompatActivity() {
 
         val drawerContent = findViewById<NavigationView>(R.id.view_drawer_content)
         NavigationUI.setupWithNavController(drawerContent, navController)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        Thread {
+            LogEntryDatabase.init(this)
+
+            val entryDao = LogEntryDatabase.instance.entryDao()
+            val entries = entryDao.getAll()
+
+            // I just wanted an empty mutable list
+            val invalidEntries = entries.filter { false }.toMutableList()
+
+            for (entry in entries)
+                if (!Entry.isValidEntry(entry)) {
+                    invalidEntries.add(entry)
+                    entryDao.delete(entry)
+                }
+
+            DebugDialogFragment().apply {
+                message = "Deleted ${invalidEntries.size} invalid entries"
+            }.show(supportFragmentManager, "DebugDialog")
+
+            runOnUiThread {
+                onDatabaseLoaded()
+            }
+
+        }.start()
+
 
     }
 }

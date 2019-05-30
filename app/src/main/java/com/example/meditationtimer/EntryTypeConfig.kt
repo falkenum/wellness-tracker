@@ -39,20 +39,20 @@ open class EntryDataView(context: Context, startingData : JSONObject)
                 }
             }
         }
-    fun put(key : String, value : String) {
-        // find the row with this key
-        for (childIndex in 0 until childCount) {
-            val currentRow = getChildAt(childIndex) as LinearLayout
-            val labelView = currentRow.getChildAt(labelIndex) as TextView
-            val label = labelView.text.toString()
-
-            // if this is the row with the key
-            if (label == key) {
-                val valueView = currentRow.getChildAt(valueIndex) as TextView
-                valueView.text = value
-            }
-        }
-    }
+//    fun put(key : String, value : String) {
+//        // find the row with this key
+//        for (childIndex in 0 until childCount) {
+//            val currentRow = getChildAt(childIndex) as LinearLayout
+//            val labelView = currentRow.getChildAt(labelIndex) as TextView
+//            val label = labelView.text.toString()
+//
+//            // if this is the row with the key
+//            if (label == key) {
+//                val valueView = currentRow.getChildAt(valueIndex) as TextView
+//                valueView.text = value
+//            }
+//        }
+//    }
 
     private fun getLabelView(label : String) : TextView {
         return TextView(context).apply {

@@ -74,6 +74,7 @@ class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
             }
 
             rootView.findViewById<TextView>(R.id.numEntriesView).apply {
+                Log.d("debugging", "changing num entries")
                 text = entries.size.toString()
             }
 
@@ -131,8 +132,6 @@ class HomeFragment : Fragment(), TabLayout.OnTabSelectedListener {
         rootView.findViewById<Button>(R.id.newLogEntryButton).setOnClickListener {
             findNavController().navigate(R.id.newEntryFragment)
         }
-
-//        rootView.findViewById<ExtendedFloatingActionButton>(R.id.newLogEntryFAB).show()
 
         activity!!.findViewById<TabLayout>(R.id.tabLayout).run{
             addOnTabSelectedListener(this@HomeFragment)
