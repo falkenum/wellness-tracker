@@ -15,6 +15,7 @@ import androidx.navigation.fragment.findNavController
 import kotlinx.android.synthetic.main.fragment_new_entry.*
 import org.w3c.dom.Text
 import java.time.*
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 
@@ -81,9 +82,11 @@ class NewEntryFragment : Fragment() {
     class EntryDatePicker : DialogFragment(), DatePickerDialog.OnDateSetListener {
         lateinit var dateValueView : TextView
         lateinit var onDateSet : (date : LocalDate) -> Unit
-        override fun onDateSet(view: DatePicker?, year: Int, month: Int, dayOfMonth: Int) {
-            onDateSet(LocalDate.of(year, month, dayOfMonth))
-            dateValueView.text = "$year $month $dayOfMonth"
+        override fun onDateSet(view: DatePicker?, year: Int, monthIndex: Int, dayOfMonth: Int) {
+            val month = monthIndex + 1
+            val date = LocalDate.of(year, month, dayOfMonth)
+            onDateSet(date)
+            dateValueView.text = date.format(DateTimeFormatter.ofPattern("MMM dd, uuuu"))
         }
 
         override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -110,8 +113,9 @@ class NewEntryFragment : Fragment() {
         lateinit var onTimeSet : (time : LocalTime) -> Unit
 
         override fun onTimeSet(view: TimePicker?, hourOfDay: Int, minute: Int) {
-            onTimeSet(LocalTime.of(hourOfDay, minute))
-            timeValueView.text = "$hourOfDay:$minute"
+            val time = LocalTime.of(hourOfDay, minute)
+            onTimeSet(time)
+            timeValueView.text = time.format(DateTimeFormatter.ofPattern("hh:mm a"))
         }
 
         override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

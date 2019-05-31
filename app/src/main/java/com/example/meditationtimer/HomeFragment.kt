@@ -138,8 +138,6 @@ class HomeFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        Log.d("debugging", "hello")
-
         updateStats()
     }
 }

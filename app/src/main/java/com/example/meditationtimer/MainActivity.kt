@@ -183,23 +183,26 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         Thread {
             LogEntryDatabase.init(this)
 
-//            val entryDao = LogEntryDatabase.instance.entryDao()
-//            val entries = entryDao.getAll()
-//
-//            // I just wanted an empty mutable list
-//            val invalidEntries = entries.filter { false }.toMutableList()
-//
-//            for (entry in entries)
-//                if (!Entry.isValidEntry(entry)) {
-//                    invalidEntries.add(entry)
-//                    entryDao.delete(entry)
-//                }
-//
-//            if (invalidEntries.size > 0) {
-//                DebugDialogFragment().apply {
-//                    message = "Deleted ${invalidEntries.size} invalid entries"
-//                }.show(supportFragmentManager, "DebugDialog")
-//            }
+            val entryDao = LogEntryDatabase.instance.entryDao()
+            val entries = entryDao.getAll()
+
+            // I just wanted an empty mutable list
+            val invalidEntries = entries.filter { false }.toMutableList()
+
+            for (entry in entries)
+                if (!Entry.isValidEntry(entry)) {
+                    invalidEntries.add(entry)
+                    entryDao.delete(entry)
+                }
+
+            if (invalidEntries.size > 0) {
+                DebugDialogFragment().apply {
+                    message = "Deleted ${invalidEntries.size} invalid entries: "
+                    for (entry in invalidEntries) {
+                        message = message + "; " + entry.toString()
+                    }
+                }.show(supportFragmentManager, "DebugDialog")
+            }
 
             runOnUiThread {
                 onDatabaseLoaded()

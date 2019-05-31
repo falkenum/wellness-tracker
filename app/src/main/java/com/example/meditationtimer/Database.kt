@@ -62,6 +62,22 @@ data class Entry(val dateTime : ZonedDateTime,
 
             return true
         }
+
+//        fun fixEntry(entry : Entry) {
+//            for (key in entry.data.keys()) {
+//                // if key is empty
+//                if (key == "")
+//                    // find what the key is by seeing
+//
+//
+//                // if key isn't valid for the given type
+//                if (EntryTypes.getConfig(entry.type).defaultData.isNull(key))
+//                    return false
+//            }
+//
+//
+//            return true
+//        }
     }
 
 }
