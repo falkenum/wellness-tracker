@@ -2,6 +2,7 @@ package com.example.meditationtimer
 
 import android.content.Context
 import android.graphics.drawable.GradientDrawable
+import android.text.InputType
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -109,6 +110,15 @@ class EntryDataInputView(context: Context, startingData : JSONObject)
             width = Utility.dpToPx(context, 100)
             text.insert(0, value)
             textAlignment = View.TEXT_ALIGNMENT_CENTER
+
+            val valueNumeric = value.toDoubleOrNull()
+            //if it's a number, change keyboard
+            if (valueNumeric != null) {
+                inputType = InputType.TYPE_CLASS_NUMBER
+            }
+            else {
+                inputType = InputType.TYPE_CLASS_TEXT
+            }
         }
     }
 }
