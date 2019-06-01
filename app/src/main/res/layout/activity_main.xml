@@ -29,7 +29,7 @@
             <com.google.android.material.tabs.TabLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" android:id="@+id/tabLayout"
-                    app:tabIndicatorHeight="5dp" app:tabContentStart="400dp"/>
+                    app:tabIndicatorHeight="5dp" />
         </LinearLayout>
 
         <fragment
@@ -39,7 +39,7 @@
                 android:layout_height="match_parent"
 
                 app:defaultNavHost="true"
-                app:navGraph="@navigation/startup_graph" android:layout_marginHorizontal="16dp"/>
+                app:navGraph="@navigation/primary_graph" android:layout_marginHorizontal="16dp"/>
 
     </LinearLayout>
 

@@ -93,8 +93,7 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
 
     private fun onDatabaseLoaded() {
         setContentView(R.layout.activity_main)
-
-        findViewById<TabLayout>(R.id.tabLayout).run {
+        findViewById<TabLayout>(R.id.tabLayout)!!.run {
             for (type in EntryTypes.getTypes()) {
                 addTab(newTab().setText(type))
             }
@@ -102,15 +101,15 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
             addOnTabSelectedListener(this@MainActivity)
         }
 
+
         // this is creating the service if it does not exist
         startService(Intent(this, TimerService::class.java))
 
         setupReminders()
 
         navController = findNavController(R.id.nav_host_fragment)
-
-        // need to have main activity layout loaded before getting to the home page
-        navController.setGraph(R.navigation.primary_graph)
+        navController.navigate(R.id.homeFragment)
+        navController.graph.startDestination = R.id.homeFragment
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar).apply {
             inflateMenu(R.menu.menu_options)

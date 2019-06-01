@@ -86,16 +86,20 @@ open class EntryDataView(context: Context, startingData : JSONObject)
         for (label in startingData.keys()) {
             val newRow = LinearLayout(context).apply {
                 orientation = HORIZONTAL
-                layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
+                layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
                     // I don't understand why this works, but it makes the children have RIGHT gravity too
                 gravity = Gravity.START
             }
+                val spaceView = Space(context).apply {
+                    layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
+                        weight = 1f
+                    }
+                }
 
                 val value = startingData.getString(label)
-
                 addView(getLabelView(label))
-//                addView(spaceView)
-                addView(getValueView(value))
+                addView(spaceView)
+                addView(getValueView(value).apply { gravity = Gravity.END })
             }
 
             addView(newRow)
