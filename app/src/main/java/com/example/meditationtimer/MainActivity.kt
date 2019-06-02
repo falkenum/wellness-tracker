@@ -1,23 +1,29 @@
 package com.example.meditationtimer
 
-import android.animation.Animator
-import android.animation.ObjectAnimator
+import android.animation.LayoutTransition
 import java.time.*
 import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import androidx.transition.Scene
+import android.view.Gravity
 import android.view.View
-import android.view.animation.Animation
 import android.view.inputmethod.InputMethodManager
+import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.NavigationUI
+import androidx.transition.ChangeBounds
+import androidx.transition.Fade
+import androidx.transition.Slide
+import androidx.transition.TransitionManager
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.tabs.TabLayout
+import kotlinx.android.synthetic.main.activity_main.*
 
 class BundleKeys {
     companion object {
@@ -91,6 +97,44 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         onTabSelectedActions.add(onTabSelectedAction)
     }
 
+    private fun fadeHistoryButton(fadeIn : Boolean) {
+        val fade = Fade(if (fadeIn) Fade.IN else Fade.OUT).apply {
+            // 400 ms transition
+            this.duration = 400
+        }
+
+        TransitionManager.beginDelayedTransition(toolbar, fade)
+
+        val historyActionButton = findViewById<View>(R.id.historyActionButton)
+        historyActionButton.visibility = if (fadeIn) View.VISIBLE else View.INVISIBLE
+    }
+
+    private fun changeTabDrawer(open : Boolean) {
+        val slide = Slide().apply {
+            slideEdge = Gravity.TOP
+            duration = 400
+            mode = if (open) Slide.MODE_IN else Slide.MODE_OUT
+        }
+
+        val tabLayout = findViewById<TabLayout>(R.id.tabLayout)
+        tabLayout.visibility = if (open) View.VISIBLE else View.GONE
+//        tabLayoutHolder.layoutTransition = LayoutTransition().apply {
+//            set
+//        }
+//        val fade = Fade().apply {
+//            // 400 ms transition
+//            duration = 400
+//            addTarget(tabLayout)
+//        }
+//
+//        val endScene = Scene(tabLayoutHolder, tabLayout)
+//        TransitionManager.go(endScene, fade)
+
+//        TransitionManager.beginDelayedTransition(tabLayoutHolder, slide)
+//        tabLayout.visibility = if (open) View.VISIBLE else View.GONE
+
+    }
+
     private fun onDatabaseLoaded() {
         setContentView(R.layout.activity_main)
         findViewById<TabLayout>(R.id.tabLayout)!!.run {
@@ -123,50 +167,21 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
 
         // showing history option only on home page
         navController.addOnDestinationChangedListener { _, destination, _ ->
-            // TODO collapse/show tabLayout
-
-            val opaque = 1f
-            val transparent = 0f
-
-            val goingToHome = when (destination.id) {
+            val showHistoryButton = when (destination.id) {
                 R.id.homeFragment -> true
                 else -> false
             }
 
-            val (alphaStart, alphaEnd) =
-                if (goingToHome) Pair(transparent, opaque)
-                else Pair(opaque, transparent)
-
-            // fade in or fade out the button
-            findViewById<View>(R.id.historyActionButton).let { historyActionButton ->
-                val fadeOut = ObjectAnimator.ofFloat(historyActionButton, "alpha", alphaStart, alphaEnd).apply {
-                    addListener(
-                        object : Animator.AnimatorListener {
-                            override fun onAnimationRepeat(animation: Animator?) {
-                            }
-
-                            override fun onAnimationEnd(animation: Animator?) {
-                                if (!goingToHome)
-                                    historyActionButton.visibility = View.GONE
-                            }
-
-                            override fun onAnimationCancel(animation: Animator?) {
-                            }
-
-                            override fun onAnimationStart(animation: Animator?) {
-                                if (goingToHome)
-                                    historyActionButton.visibility = View.VISIBLE
-                            }
-                        }
-                    )
-                    start()
-                }
+            val showTabLayout = when (destination.id) {
+                R.id.newEntryFragment -> true
+                R.id.homeFragment -> true
+                else -> false
             }
 
-            // hide the keyboard on destination changes
-            val imm = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-            val view = currentFocus ?: View(this)
-            imm.hideSoftInputFromWindow(view.windowToken, 0)
+            fadeHistoryButton(showHistoryButton)
+            changeTabDrawer(showTabLayout)
+
+            hideKeyboard()
         }
 
         val drawerLayout = findViewById<DrawerLayout>(R.id.layout_main_drawer)
@@ -174,6 +189,12 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
 
         val drawerContent = findViewById<NavigationView>(R.id.view_drawer_content)
         NavigationUI.setupWithNavController(drawerContent, navController)
+    }
+
+    private fun hideKeyboard() {
+        val imm = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        val view = currentFocus ?: View(this)
+        imm.hideSoftInputFromWindow(view.windowToken, 0)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

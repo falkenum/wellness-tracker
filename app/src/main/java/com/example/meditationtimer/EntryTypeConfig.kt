@@ -20,7 +20,7 @@ open class EntryDataView(context: Context, startingData : JSONObject)
 
     private val labelSuffix = ": "
     private val labelIndex = 0
-    private val valueIndex = 1
+    private val valueIndex = 2
 
     val data : JSONObject
         get() {

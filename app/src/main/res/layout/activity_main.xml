@@ -13,24 +13,25 @@
                   android:id="@+id/mainLayout"
     >
 
-        <LinearLayout android:layout_width="match_parent"
-                      android:elevation="4dp"
-                      android:orientation="vertical"
-                      android:background="@drawable/toolbar_bg"
-                      android:layout_height="wrap_content">
-            <androidx.appcompat.widget.Toolbar
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:theme="?attr/actionBarTheme"
-                    android:elevation="0dp"
-                    android:minHeight="?attr/actionBarSize"
-                    android:id="@+id/toolbar"/>
+        <androidx.appcompat.widget.Toolbar
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/toolbar_bg"
+                android:theme="?attr/actionBarTheme"
+                android:elevation="0dp"
+                android:minHeight="?attr/actionBarSize"
+                android:id="@+id/toolbar"/>
 
+        <FrameLayout android:layout_width="match_parent"
+                     android:id="@+id/tabLayoutHolder"
+                     android:animateLayoutChanges="true"
+                     android:layout_height="wrap_content">
             <com.google.android.material.tabs.TabLayout
+                    android:background="@drawable/toolbar_bg"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" android:id="@+id/tabLayout"
                     app:tabIndicatorHeight="5dp" />
-        </LinearLayout>
+        </FrameLayout>
 
         <fragment
                 android:id="@+id/nav_host_fragment"

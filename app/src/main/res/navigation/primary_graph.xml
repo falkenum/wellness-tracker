@@ -14,7 +14,8 @@
     <fragment android:id="@+id/homeFragment" android:name="com.example.meditationtimer.HomeFragment"
               android:label="Home">
         <action android:id="@+id/action_homeFragment_to_timerFragment" app:destination="@id/timerFragment"/>
-        <action android:id="@+id/action_homeFragment_to_historyFragment" app:destination="@id/historyFragment"/>
+        <action android:id="@+id/action_homeFragment_to_historyFragment" app:destination="@id/historyFragment"
+        />
         <action android:id="@+id/action_homeFragment_to_newEntryFragment" app:destination="@id/newEntryFragment"
         />
     </fragment>
