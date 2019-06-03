@@ -46,5 +46,5 @@ dependencies {
     implementation "androidx.navigation:navigation-fragment-ktx:$androidx_version"
 
     implementation "android.arch.core:common:1.1.1"
-
+    implementation 'commons-net:commons-net:3.6'
 }

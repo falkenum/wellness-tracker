@@ -63,21 +63,6 @@ data class Entry(val dateTime : ZonedDateTime,
             return true
         }
 
-//        fun fixEntry(entry : Entry) {
-//            for (key in entry.data.keys()) {
-//                // if key is empty
-//                if (key == "")
-//                    // find what the key is by seeing
-//
-//
-//                // if key isn't valid for the given type
-//                if (EntryTypes.getConfig(entry.type).defaultData.isNull(key))
-//                    return false
-//            }
-//
-//
-//            return true
-//        }
     }
 
 }
@@ -102,6 +87,19 @@ interface EntryDao{
     fun getAllWithinDurationAndType(startEpochSecond : Long,
                                     endEpochSecond : Long,
                                     type: String) : List<Entry>
+
+    @Query("SELECT * FROM Entry WHERE " +
+            "dateTime >= :startEpochSecond AND " +
+            "dateTime < :endEpochSecond")
+    fun getAllWithinDuration(startEpochSecond: Long, endEpochSecond: Long) : List<Entry>
+
+    @Transaction
+    fun getAllForDate(date : LocalDate) : List<Entry> {
+        val startDateTime = ZonedDateTime.of(date, LocalTime.MIN, ZoneId.systemDefault())
+        val endDateTime = ZonedDateTime.of(date, LocalTime.MAX, ZoneId.systemDefault())
+
+        return getAllWithinDuration(startDateTime.toEpochSecond(), endDateTime.toEpochSecond())
+    }
 }
 
 @Dao

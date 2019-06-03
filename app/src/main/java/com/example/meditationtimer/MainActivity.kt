@@ -1,6 +1,9 @@
 package com.example.meditationtimer
 
+import android.animation.Animator
+import android.animation.AnimatorSet
 import android.animation.LayoutTransition
+import android.animation.ObjectAnimator
 import java.time.*
 import android.app.*
 import android.content.Context
@@ -24,6 +27,11 @@ import androidx.transition.TransitionManager
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.tabs.TabLayout
 import kotlinx.android.synthetic.main.activity_main.*
+import org.apache.commons.net.ftp.FTP
+import org.apache.commons.net.ftp.FTPClient
+import java.io.BufferedInputStream
+import java.io.FileInputStream
+import java.net.InetAddress
 
 class BundleKeys {
     companion object {
@@ -32,6 +40,7 @@ class BundleKeys {
         const val REMINDER_ID = "reminder id"
     }
 }
+
 
 class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
     override fun onTabReselected(tab: TabLayout.Tab?) {
@@ -92,7 +101,7 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
             }
         }
 
-    val onTabSelectedActions = MutableList(0) { { tab : TabLayout.Tab -> } }
+    private val onTabSelectedActions = MutableList(0) { { tab : TabLayout.Tab -> } }
     fun addOnTabSelectedAction(onTabSelectedAction : (TabLayout.Tab) -> Unit) {
         onTabSelectedActions.add(onTabSelectedAction)
     }
@@ -106,33 +115,15 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         TransitionManager.beginDelayedTransition(toolbar, fade)
 
         val historyActionButton = findViewById<View>(R.id.historyActionButton)
-        historyActionButton.visibility = if (fadeIn) View.VISIBLE else View.INVISIBLE
+        historyActionButton.visibility = if (fadeIn) View.VISIBLE else View.GONE
+
     }
 
     private fun changeTabDrawer(open : Boolean) {
-        val slide = Slide().apply {
-            slideEdge = Gravity.TOP
-            duration = 400
-            mode = if (open) Slide.MODE_IN else Slide.MODE_OUT
-        }
 
         val tabLayout = findViewById<TabLayout>(R.id.tabLayout)
+
         tabLayout.visibility = if (open) View.VISIBLE else View.GONE
-//        tabLayoutHolder.layoutTransition = LayoutTransition().apply {
-//            set
-//        }
-//        val fade = Fade().apply {
-//            // 400 ms transition
-//            duration = 400
-//            addTarget(tabLayout)
-//        }
-//
-//        val endScene = Scene(tabLayoutHolder, tabLayout)
-//        TransitionManager.go(endScene, fade)
-
-//        TransitionManager.beginDelayedTransition(tabLayoutHolder, slide)
-//        tabLayout.visibility = if (open) View.VISIBLE else View.GONE
-
     }
 
     private fun onDatabaseLoaded() {
@@ -200,14 +191,25 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val ftpClient = FTPClient()
+//        ftpClient.connect(InetAddress.getByName(server))
+//        ftpClient.login(user, password)
+//        ftpClient.changeWorkingDirectory(serverRoad)
+//        ftpClient.setFileType(FTP.BINARY_FILE_TYPE)
+
+//        val buffIn = BufferedInputStream(FileInputStream(file))
+//        ftpClient.enterLocalPassiveMode()
+//        ftpClient.storeFile("test.txt", buffIn)
+//        buffIn.close()
+//        ftpClient.logout()
+
         Thread {
             LogEntryDatabase.init(this)
 
             val entryDao = LogEntryDatabase.instance.entryDao()
             val entries = entryDao.getAll()
 
-            // I just wanted an empty mutable list
-            val invalidEntries = entries.filter { false }.toMutableList()
+            val invalidEntries = mutableListOf<Entry>()
 
             for (entry in entries)
                 if (!Entry.isValidEntry(entry)) {

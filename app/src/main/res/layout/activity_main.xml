@@ -23,8 +23,8 @@
                 android:id="@+id/toolbar"/>
 
         <FrameLayout android:layout_width="match_parent"
-                     android:id="@+id/tabLayoutHolder"
                      android:animateLayoutChanges="true"
+                     android:id="@+id/tabLayoutHolder"
                      android:layout_height="wrap_content">
             <com.google.android.material.tabs.TabLayout
                     android:background="@drawable/toolbar_bg"
