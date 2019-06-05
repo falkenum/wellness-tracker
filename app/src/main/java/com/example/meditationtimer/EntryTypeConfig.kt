@@ -230,7 +230,6 @@ class EntryTypes {
 class EntryCardView(context: Context) : androidx.cardview.widget.CardView(context) {
 
     init {
-        // TODO remove redundant CardView in the hierarchy
         LayoutInflater.from(context).inflate(R.layout.view_entry_card, this, true)
     }
 

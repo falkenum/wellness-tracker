@@ -36,27 +36,19 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
     }
 
     override fun onTabSelected(tab: TabLayout.Tab?) {
+        selectedType = tab!!.text.toString()
         onTabSelectedActions.forEach { onTabSelectedAction -> onTabSelectedAction(tab!!) }
     }
 
     private lateinit var navController: NavController
 
-   val selectedType : String
-        get() {
-            return findViewById<TabLayout>(R.id.tabLayout).run {
-                getTabAt(selectedTabPosition)!!.text.toString()
-            }
-        }
+   var selectedType = EntryTypes.getTypes()[0]
 
     private val onTabSelectedActions = mutableListOf<(TabLayout.Tab) -> Unit>()
-    private val fragmentsToShowTabs = mutableListOf<Int>()
+    private val fragmentsToShowTabs = listOf(R.id.homeFragment, R.id.newEntryFragment)
 
     fun addOnTabSelectedAction(action : (TabLayout.Tab) -> Unit) {
         onTabSelectedActions.add(action)
-    }
-
-    fun showTabsForFragment(fragmentId : Int) {
-        fragmentsToShowTabs.add(fragmentId)
     }
 
     private fun setupReminders() {
@@ -155,9 +147,6 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
             updateTabLayout(destination)
             hideKeyboard()
         }
-
-        navController.navigate(R.id.homeFragment)
-        navController.graph.startDestination = R.id.homeFragment
 
         val drawerLayout = findViewById<DrawerLayout>(R.id.layout_main_drawer)
         NavigationUI.setupWithNavController(toolbar, navController, drawerLayout)

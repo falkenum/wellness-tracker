@@ -13,7 +13,7 @@ open class MainFragment : Fragment() {
         super.onStart()
         ObjectAnimator.ofFloat((view!! as ViewGroup), "translationX", 0f, -100f).apply {
             duration = 1000
-            start()
+//            start()
         }
     }
 

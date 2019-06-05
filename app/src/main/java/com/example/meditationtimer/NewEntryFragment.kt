@@ -57,7 +57,6 @@ class NewEntryFragment : MainFragment() {
             addOnTabSelectedAction { tab ->
                 updateDataInputType(tab.text.toString())
             }
-           showTabsForFragment(R.id.newEntryFragment)
             selectedType
         }
 

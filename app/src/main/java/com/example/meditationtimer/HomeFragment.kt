@@ -47,7 +47,6 @@ class HomeFragment : MainFragment() {
 
     private lateinit var rootView : View
 
-
     private fun updateStats() {
 
         // to be called after accessing the database
@@ -124,8 +123,6 @@ class HomeFragment : MainFragment() {
                 if (isVisible)
                     updateStats()
             }
-
-            showTabsForFragment(R.id.homeFragment)
         }
 
 
