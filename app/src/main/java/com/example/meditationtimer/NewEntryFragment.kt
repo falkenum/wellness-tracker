@@ -19,7 +19,7 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 
-class NewEntryFragment : Fragment() {
+class NewEntryFragment : MainFragment() {
 
     companion object ARGUMENT_KEYS {
         const val ENTRY_TYPE = "com.example.meditationtimer.ENTRY_TYPE"
@@ -57,6 +57,7 @@ class NewEntryFragment : Fragment() {
             addOnTabSelectedAction { tab ->
                 updateDataInputType(tab.text.toString())
             }
+           showTabsForFragment(R.id.newEntryFragment)
             selectedType
         }
 
@@ -74,7 +75,6 @@ class NewEntryFragment : Fragment() {
 
         // set the initial data input
         updateDataInputType(selectedType)
-
 
         return rootView
     }

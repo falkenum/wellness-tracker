@@ -1,37 +1,23 @@
 package com.example.meditationtimer
 
-import android.animation.Animator
-import android.animation.AnimatorSet
-import android.animation.LayoutTransition
-import android.animation.ObjectAnimator
 import java.time.*
 import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.transition.Scene
-import android.view.Gravity
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.navigation.NavController
-import androidx.navigation.findNavController
+import androidx.navigation.*
 import androidx.navigation.ui.NavigationUI
-import androidx.transition.ChangeBounds
 import androidx.transition.Fade
-import androidx.transition.Slide
 import androidx.transition.TransitionManager
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.tabs.TabLayout
 import kotlinx.android.synthetic.main.activity_main.*
-import org.apache.commons.net.ftp.FTP
 import org.apache.commons.net.ftp.FTPClient
-import java.io.BufferedInputStream
-import java.io.FileInputStream
-import java.net.InetAddress
 
 class BundleKeys {
     companion object {
@@ -54,6 +40,24 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
     }
 
     private lateinit var navController: NavController
+
+   val selectedType : String
+        get() {
+            return findViewById<TabLayout>(R.id.tabLayout).run {
+                getTabAt(selectedTabPosition)!!.text.toString()
+            }
+        }
+
+    private val onTabSelectedActions = mutableListOf<(TabLayout.Tab) -> Unit>()
+    private val fragmentsToShowTabs = mutableListOf<Int>()
+
+    fun addOnTabSelectedAction(action : (TabLayout.Tab) -> Unit) {
+        onTabSelectedActions.add(action)
+    }
+
+    fun showTabsForFragment(fragmentId : Int) {
+        fragmentsToShowTabs.add(fragmentId)
+    }
 
     private fun setupReminders() {
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -89,24 +93,9 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
                     firstAlarmTimeMillis, millisInDay, receiverPendingIntent)
             }
         }
-
-
-
     }
 
-   val selectedType : String
-        get() {
-            return findViewById<TabLayout>(R.id.tabLayout).run {
-                getTabAt(selectedTabPosition)!!.text.toString()
-            }
-        }
-
-    private val onTabSelectedActions = MutableList(0) { { tab : TabLayout.Tab -> } }
-    fun addOnTabSelectedAction(onTabSelectedAction : (TabLayout.Tab) -> Unit) {
-        onTabSelectedActions.add(onTabSelectedAction)
-    }
-
-    private fun fadeHistoryButton(fadeIn : Boolean) {
+    private fun updateHistoryButton(fadeIn : Boolean) {
         val fade = Fade(if (fadeIn) Fade.IN else Fade.OUT).apply {
             // 400 ms transition
             this.duration = 400
@@ -129,13 +118,9 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
     private fun onDatabaseLoaded() {
         setContentView(R.layout.activity_main)
         findViewById<TabLayout>(R.id.tabLayout)!!.run {
-            for (type in EntryTypes.getTypes()) {
-                addTab(newTab().setText(type))
-            }
-
+            EntryTypes.getTypes().forEach { addTab(newTab().setText(it)) }
             addOnTabSelectedListener(this@MainActivity)
         }
-
 
         // this is creating the service if it does not exist
         startService(Intent(this, TimerService::class.java))
@@ -143,43 +128,50 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         setupReminders()
 
         navController = findNavController(R.id.nav_host_fragment)
-        navController.navigate(R.id.homeFragment)
-        navController.graph.startDestination = R.id.homeFragment
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar).apply {
             inflateMenu(R.menu.menu_options)
 
             // only one menu item currently
             setOnMenuItemClickListener {
+//                navController.navigate(R.id.historyFragment, null, navOptions)
                 navController.navigate(R.id.historyFragment)
                 true
             }
         }
 
+        // each fragment tells mainactivity if it wants the type tabs and any menu options for that fragment.
+        // mainactivity calls back to fragment before navigation.
+
         // showing history option only on home page
         navController.addOnDestinationChangedListener { _, destination, _ ->
+            // if any fragment has requested to show some options on the toolbar, then show them
+            // TODO
             val showHistoryButton = when (destination.id) {
                 R.id.homeFragment -> true
                 else -> false
             }
-
-            val showTabLayout = when (destination.id) {
-                R.id.newEntryFragment -> true
-                R.id.homeFragment -> true
-                else -> false
-            }
-
-            fadeHistoryButton(showHistoryButton)
-            changeTabDrawer(showTabLayout)
-
+            updateHistoryButton(showHistoryButton)
+            updateTabLayout(destination)
             hideKeyboard()
         }
+
+        navController.navigate(R.id.homeFragment)
+        navController.graph.startDestination = R.id.homeFragment
 
         val drawerLayout = findViewById<DrawerLayout>(R.id.layout_main_drawer)
         NavigationUI.setupWithNavController(toolbar, navController, drawerLayout)
 
         val drawerContent = findViewById<NavigationView>(R.id.view_drawer_content)
         NavigationUI.setupWithNavController(drawerContent, navController)
+
+        changeTabDrawer(true)
+    }
+
+    private fun updateTabLayout(destination : NavDestination) {
+        // if any fragment has requested tabLayout, then show it
+        val showTabLayout = fragmentsToShowTabs.any { it == destination.id }
+        changeTabDrawer(showTabLayout)
     }
 
     private fun hideKeyboard() {

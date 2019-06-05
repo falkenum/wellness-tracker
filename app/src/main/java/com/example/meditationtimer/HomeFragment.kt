@@ -13,7 +13,7 @@ import org.json.JSONObject
 import java.time.Duration
 import java.time.Instant
 
-class HomeFragment : Fragment() {
+class HomeFragment : MainFragment() {
     companion object {
         const val YEAR = "year"
         const val MONTH = "month"
@@ -124,6 +124,8 @@ class HomeFragment : Fragment() {
                 if (isVisible)
                     updateStats()
             }
+
+            showTabsForFragment(R.id.homeFragment)
         }
 
 

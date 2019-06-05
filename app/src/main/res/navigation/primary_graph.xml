@@ -15,7 +15,7 @@
               android:label="Home">
         <action android:id="@+id/action_homeFragment_to_timerFragment" app:destination="@id/timerFragment"/>
         <action android:id="@+id/action_homeFragment_to_historyFragment" app:destination="@id/historyFragment"
-        />
+                app:launchSingleTop="true"/>
         <action android:id="@+id/action_homeFragment_to_newEntryFragment" app:destination="@id/newEntryFragment"
         />
     </fragment>

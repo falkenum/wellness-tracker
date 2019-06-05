@@ -13,7 +13,7 @@ import java.lang.IllegalStateException
 import java.time.*
 import androidx.navigation.fragment.findNavController
 
-class HistoryFragment : androidx.fragment.app.Fragment() {
+class HistoryFragment : MainFragment() {
 
     class DeleteEntryDialogFragment() : androidx.fragment.app.DialogFragment() {
         lateinit var messageStr : String

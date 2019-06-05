@@ -13,7 +13,7 @@ import android.widget.TextView
 import java.lang.String.format
 import java.util.*
 
-class TimerFragment : androidx.fragment.app.Fragment() {
+class TimerFragment : MainFragment() {
     private var timerService: TimerService? = null
     private lateinit var rootView: View
     private var lengthMinutes: Long = 10
