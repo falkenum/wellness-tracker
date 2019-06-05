@@ -126,7 +126,6 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
 
             // only one menu item currently
             setOnMenuItemClickListener {
-//                navController.navigate(R.id.historyFragment, null, navOptions)
                 navController.navigate(R.id.historyFragment)
                 true
             }
