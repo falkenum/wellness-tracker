@@ -1,12 +1,7 @@
 package com.example.meditationtimer
 
 import android.content.Context
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
-import android.util.AttributeSet
-import android.util.Log
 import android.util.TypedValue
-import android.view.Gravity
 import android.widget.LinearLayout
 import android.widget.TextView
 

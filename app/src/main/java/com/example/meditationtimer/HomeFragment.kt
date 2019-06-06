@@ -1,14 +1,11 @@
 package com.example.meditationtimer
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import com.google.android.material.tabs.TabLayout
 import org.json.JSONObject
 import java.time.Duration
 import java.time.Instant

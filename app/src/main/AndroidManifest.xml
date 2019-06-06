@@ -3,6 +3,7 @@
           package="com.example.meditationtimer">
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
             android:allowBackup="true"
@@ -12,35 +13,35 @@
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
         <service
-                android:name=".BackupService"
+                android:name="com.example.meditationtimer.BackupService"
                 android:enabled="true"
                 android:exported="true">
         </service>
 
         <receiver
-                android:name=".ReminderReceiver"
+                android:name="com.example.meditationtimer.ReminderReceiver"
                 android:enabled="true"
                 android:exported="true">
         </receiver>
         <receiver
-                android:name=".AlarmReceiver"
+                android:name="com.example.meditationtimer.AlarmReceiver"
                 android:enabled="true"
                 android:exported="true">
         </receiver>
 
         <service
-                android:name=".BellService"
+                android:name="com.example.meditationtimer.BellService"
                 android:enabled="true"
                 android:exported="true">
         </service>
         <service
-                android:name=".TimerService"
+                android:name="com.example.meditationtimer.TimerService"
                 android:enabled="true"
                 android:exported="true">
         </service>
 
         <activity
-                android:name=".MainActivity"
+                android:name="com.example.meditationtimer.MainActivity"
                 android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

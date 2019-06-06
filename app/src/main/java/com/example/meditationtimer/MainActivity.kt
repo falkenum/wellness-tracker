@@ -114,8 +114,9 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
             addOnTabSelectedListener(this@MainActivity)
         }
 
-        // this is creating the service if it does not exist
+        // these are creating services
         startService(Intent(this, TimerService::class.java))
+        startService(Intent(this, BackupService::class.java))
 
         setupReminders()
 

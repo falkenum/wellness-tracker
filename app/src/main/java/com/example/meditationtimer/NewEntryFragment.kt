@@ -9,11 +9,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.navigation.fragment.findNavController
-import kotlinx.android.synthetic.main.fragment_new_entry.*
-import org.w3c.dom.Text
 import java.time.*
 import java.time.format.DateTimeFormatter
 import java.util.*

@@ -3,7 +3,6 @@ package com.example.meditationtimer
 import android.content.Context
 import android.graphics.drawable.GradientDrawable
 import android.text.InputType
-import android.util.TypedValue
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
