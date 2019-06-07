@@ -1,10 +1,12 @@
 package com.example.meditationtimer
 
+import android.accounts.Account
 import java.time.*
 import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
@@ -14,10 +16,16 @@ import androidx.navigation.*
 import androidx.navigation.ui.NavigationUI
 import androidx.transition.Fade
 import androidx.transition.TransitionManager
+import com.google.android.gms.auth.GoogleAuthUtil
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.Scopes
+import com.google.android.gms.common.api.Scope
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.tabs.TabLayout
 import kotlinx.android.synthetic.main.activity_main.*
-import org.apache.commons.net.ftp.FTPClient
+import okhttp3.*
 
 class BundleKeys {
     companion object {
@@ -35,17 +43,21 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
     override fun onTabUnselected(tab: TabLayout.Tab?) {
     }
 
-    override fun onTabSelected(tab: TabLayout.Tab?) {
-        selectedType = tab!!.text.toString()
-        onTabSelectedActions.forEach { onTabSelectedAction -> onTabSelectedAction(tab!!) }
+    override fun onTabSelected(tab: TabLayout.Tab) {
+        selectedType = tab.text.toString()
+        onTabSelectedActions.forEach { onTabSelectedAction -> onTabSelectedAction(tab) }
     }
 
     private lateinit var navController: NavController
 
-   var selectedType = EntryTypes.getTypes()[0]
+    var selectedType = EntryTypes.getTypes()[0]
 
     private val onTabSelectedActions = mutableListOf<(TabLayout.Tab) -> Unit>()
     private val fragmentsToShowTabs = listOf(R.id.homeFragment, R.id.newEntryFragment)
+    private val scope =  Scope(Scopes.DRIVE_APPFOLDER)
+    private companion object {
+        const val RC_SIGN_IN = 1
+    }
 
     fun addOnTabSelectedAction(action : (TabLayout.Tab) -> Unit) {
         onTabSelectedActions.add(action)
@@ -169,20 +181,62 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         imm.hideSoftInputFromWindow(view.windowToken, 0)
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == RC_SIGN_IN) {
+            val account = GoogleSignIn.getSignedInAccountFromIntent(data).result
+            account?.run { makeRequest(this) }
+        }
+    }
+
+    private fun doNetworkTasks() {
+        // Configure sign-in to request the user's ID, email address, and basic
+        // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestScopes(scope)
+            .build()
+
+        val googleClient = GoogleSignIn.getClient(this, gso)
+        val account = GoogleSignIn.getLastSignedInAccount(this)
+        if (account == null) startActivityForResult(googleClient.signInIntent, RC_SIGN_IN)
+        else makeRequest(account)
+
+    }
+
+    private fun makeRequest(googleAccount : GoogleSignInAccount) {
+
+        val token = GoogleAuthUtil.getToken(this, googleAccount.account, scope.scopeUri)
+        val url = "https://www.googleapis.com/drive/v2/about"
+
+        val auth = object : Authenticator {
+            override fun authenticate(route: Route?, response: Response): Request? {
+                return response.request.newBuilder()
+                    .removeHeader("Authorization")
+                    .addHeader("Authorization", "Bearer $token")
+                    .build()
+            }
+
+        }
+
+        val httpClient = OkHttpClient.Builder()
+            .authenticator(auth)
+            .build()
+
+        val request = Request.Builder()
+            .url(url)
+            .build()
+
+        Thread {
+            val response = httpClient.newCall(request).execute()
+            Log.d("debugging", response.body!!.string())
+        }.start()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val ftpClient = FTPClient()
-//        ftpClient.connect(InetAddress.getByName(server))
-//        ftpClient.login(user, password)
-//        ftpClient.changeWorkingDirectory(serverRoad)
-//        ftpClient.setFileType(FTP.BINARY_FILE_TYPE)
-
-//        val buffIn = BufferedInputStream(FileInputStream(file))
-//        ftpClient.enterLocalPassiveMode()
-//        ftpClient.storeFile("test.txt", buffIn)
-//        buffIn.close()
-//        ftpClient.logout()
+        doNetworkTasks()
 
         Thread {
             LogEntryDatabase.init(this)
