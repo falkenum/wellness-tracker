@@ -43,7 +43,7 @@ data class Entry(val dateTime : ZonedDateTime,
     companion object {
         fun newMeditationEntry(dateTime: ZonedDateTime, duration: Duration) : Entry {
             return Entry(dateTime, EntryTypes.MEDITATION).apply {
-                data.put(MeditationConfig.DURATION, duration)
+                data.put(MeditationConfig.DURATION_MIN, duration)
             }
         }
         fun isValidEntry(entry : Entry) : Boolean {

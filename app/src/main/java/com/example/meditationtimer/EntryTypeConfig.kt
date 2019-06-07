@@ -145,10 +145,10 @@ abstract class EntryTypeConfig {
 
 class MeditationConfig: EntryTypeConfig() {
     companion object {
-        const val DURATION = "duration"
+        const val DURATION_MIN = "duration"
     }
 
-    override val defaultData : JSONObject = JSONObject(mapOf(DURATION to "10"))
+    override val defaultData : JSONObject = JSONObject(mapOf(DURATION_MIN to "10"))
 
     override fun getBgColor(context: Context): Int {
         return context.resources.getColor(R.color.colorMeditation, null)
@@ -203,17 +203,37 @@ class DrugUseConfig : EntryTypeConfig() {
     override fun getDailyReminderTimes(): List<LocalTime>? = null
 }
 
+class ExerciseConfig : EntryTypeConfig() {
+    companion object {
+        const val TYPE = "type"
+        const val DURATION_MIN = "duration"
+    }
+
+    override val defaultData : JSONObject = JSONObject(mapOf(
+        TYPE to "Lifting",
+        DURATION_MIN to "60"
+    ))
+
+    override fun getBgColor(context: Context): Int {
+        return context.resources.getColor(R.color.colorDrugUse, null)
+    }
+
+    override fun getDailyReminderTimes(): List<LocalTime>? = null
+}
+
 class EntryTypes {
 
     companion object {
         const val MEDITATION = "Meditation"
         const val MOOD = "Mood"
         const val DRUG_USE = "Drug use"
+        const val EXERCISE = "Exercise"
 
         private val ENTRY_TYPE_CONFIGS : HashMap<String, EntryTypeConfig> = hashMapOf(
             MEDITATION to MeditationConfig(),
             MOOD to MoodConfig(),
-            DRUG_USE to DrugUseConfig()
+            DRUG_USE to DrugUseConfig(),
+            EXERCISE to ExerciseConfig()
         )
 
         fun getTypes() : List<String> {
