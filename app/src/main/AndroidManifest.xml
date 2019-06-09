@@ -12,36 +12,37 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
+
         <service
-                android:name="com.example.meditationtimer.BackupService"
+                android:name=".BackupService"
                 android:enabled="true"
                 android:exported="true">
         </service>
 
         <receiver
-                android:name="com.example.meditationtimer.ReminderReceiver"
+                android:name=".ReminderReceiver"
                 android:enabled="true"
                 android:exported="true">
         </receiver>
         <receiver
-                android:name="com.example.meditationtimer.AlarmReceiver"
+                android:name=".AlarmReceiver"
                 android:enabled="true"
                 android:exported="true">
         </receiver>
 
         <service
-                android:name="com.example.meditationtimer.BellService"
+                android:name=".BellService"
                 android:enabled="true"
                 android:exported="true">
         </service>
         <service
-                android:name="com.example.meditationtimer.TimerService"
+                android:name=".TimerService"
                 android:enabled="true"
                 android:exported="true">
         </service>
 
         <activity
-                android:name="com.example.meditationtimer.MainActivity"
+                android:name=".MainActivity"
                 android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

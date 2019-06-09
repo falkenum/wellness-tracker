@@ -237,7 +237,7 @@ class EntryTypes {
         )
 
         fun getTypes() : List<String> {
-            return ENTRY_TYPE_CONFIGS.keys.toList()
+            return ENTRY_TYPE_CONFIGS.keys.toList().sorted()
         }
 
         fun getConfig(type : String) : EntryTypeConfig {

@@ -19,8 +19,4 @@
         <action android:id="@+id/action_homeFragment_to_newEntryFragment" app:destination="@id/newEntryFragment"
         />
     </fragment>
-    <fragment android:id="@+id/blankFragment2" android:name="com.example.meditationtimer.BlankFragment"
-              android:label="fragment_blank" tools:layout="@layout/fragment_blank">
-        <action android:id="@+id/action_blankFragment2_to_homeFragment" app:destination="@id/homeFragment"/>
-    </fragment>
 </navigation>

@@ -1,14 +1,17 @@
 package com.example.meditationtimer
 
-import android.accounts.Account
 import java.time.*
 import android.app.*
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.webkit.WebResourceRequest
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
@@ -16,16 +19,22 @@ import androidx.navigation.*
 import androidx.navigation.ui.NavigationUI
 import androidx.transition.Fade
 import androidx.transition.TransitionManager
-import com.google.android.gms.auth.GoogleAuthUtil
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.auth.api.Auth
+import com.google.android.gms.auth.api.signin.*
+import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.Scopes
+import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.common.api.Scope
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.tabs.TabLayout
+import com.google.api.client.extensions.android.http.AndroidHttp
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
+import com.google.api.client.json.gson.GsonFactory
+import com.google.api.services.drive.Drive
+import com.google.api.services.drive.DriveScopes
 import kotlinx.android.synthetic.main.activity_main.*
-import okhttp3.*
+import java.io.IOException
+import java.util.*
 
 class BundleKeys {
     companion object {
@@ -34,7 +43,6 @@ class BundleKeys {
         const val REMINDER_ID = "reminder id"
     }
 }
-
 
 class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
     override fun onTabReselected(tab: TabLayout.Tab?) {
@@ -54,7 +62,6 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
 
     private val onTabSelectedActions = mutableListOf<(TabLayout.Tab) -> Unit>()
     private val fragmentsToShowTabs = listOf(R.id.homeFragment, R.id.newEntryFragment)
-    private val scope =  Scope(Scopes.DRIVE_APPFOLDER)
     private companion object {
         const val RC_SIGN_IN = 1
     }
@@ -181,62 +188,68 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         imm.hideSoftInputFromWindow(view.windowToken, 0)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
+    private val driveScope = DriveScopes.DRIVE
 
-        if (requestCode == RC_SIGN_IN) {
-            val account = GoogleSignIn.getSignedInAccountFromIntent(data).result
-            account?.run { makeRequest(this) }
-        }
+    private fun requestSignIn() {
+
+        val signInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .requestEmail()
+                        .requestScopes(Scope(driveScope))
+                        .build()
+        val client = GoogleSignIn.getClient(this, signInOptions)
+
+        // The result of the sign-in Intent is handled in onActivityResult.
+        startActivityForResult(client.signInIntent, RC_SIGN_IN)
     }
 
-    private fun doNetworkTasks() {
-        // Configure sign-in to request the user's ID, email address, and basic
-        // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestScopes(scope)
-            .build()
-
-        val googleClient = GoogleSignIn.getClient(this, gso)
-        val account = GoogleSignIn.getLastSignedInAccount(this)
-        if (account == null) startActivityForResult(googleClient.signInIntent, RC_SIGN_IN)
-        else makeRequest(account)
-
-    }
-
-    private fun makeRequest(googleAccount : GoogleSignInAccount) {
-
-        val token = GoogleAuthUtil.getToken(this, googleAccount.account, scope.scopeUri)
-        val url = "https://www.googleapis.com/drive/v2/about"
-
-        val auth = object : Authenticator {
-            override fun authenticate(route: Route?, response: Response): Request? {
-                return response.request.newBuilder()
-                    .removeHeader("Authorization")
-                    .addHeader("Authorization", "Bearer $token")
+    private fun handleSignInResult(result : Intent) {
+        GoogleSignIn.getSignedInAccountFromIntent(result)
+            .addOnSuccessListener { googleAccount ->
+                // Use the authenticated account to sign in to the Drive service.
+                val credential = GoogleAccountCredential.usingOAuth2(
+                    this, Collections.singleton(driveScope))
+                credential.selectedAccount = googleAccount.getAccount()
+                val googleDriveService = Drive.Builder(
+                        AndroidHttp.newCompatibleTransport(),
+                        GsonFactory(),
+                        credential)
+                    .setApplicationName("Drive API Migration")
                     .build()
+
+
+//                 The DriveServiceHelper encapsulates all REST API and SAF functionality.
+//                 Its instantiation is required before handling any onClick actions.
+                val driveServiceHelper = DriveServiceHelper(googleDriveService)
+
+                Thread {
+                    driveServiceHelper.queryFiles()
+                        .addOnSuccessListener { fileList ->
+                            for (file in fileList.files) {
+                                println(file.name)
+                            }
+                        }
+                        .addOnFailureListener {
+                            Log.e("query error", it.toString())
+                        }
+                }.start()
             }
 
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        when (requestCode) {
+            RC_SIGN_IN ->
+                if (resultCode == Activity.RESULT_OK && data != null) {
+                    handleSignInResult(data)
+                }
+
         }
-
-        val httpClient = OkHttpClient.Builder()
-            .authenticator(auth)
-            .build()
-
-        val request = Request.Builder()
-            .url(url)
-            .build()
-
-        Thread {
-            val response = httpClient.newCall(request).execute()
-            Log.d("debugging", response.body!!.string())
-        }.start()
+        super.onActivityResult(requestCode, resultCode, data)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        doNetworkTasks()
+        requestSignIn()
 
         Thread {
             LogEntryDatabase.init(this)
