@@ -91,8 +91,8 @@ class DriveServiceHelper(private val mDriveService: Drive) {
     /**
      * Updates the file identified by `fileId` with the given `name` and `content`.
      */
-    fun saveFile(fileId: String, name: String, content: String): Task<Void> {
-        return Tasks.call {
+    fun saveFile(fileId: String, name: String, content: String): Task<Any> {
+        return Tasks.call (executor, Callable {
             // Create a File containing any metadata changes.
             val metadata = File().setName(name)
 
@@ -101,8 +101,8 @@ class DriveServiceHelper(private val mDriveService: Drive) {
 
             // Update the metadata and contents.
             mDriveService.files().update(fileId, metadata, contentStream).execute()
-            null
-        }
+            Any()
+        })
     }
 
     /**
@@ -115,7 +115,6 @@ class DriveServiceHelper(private val mDriveService: Drive) {
  * Developer's Console](https://play.google.com/apps/publish) and be submitted to Google for verification.
      */
     fun queryFiles(): Task<FileList> {
-        // TODO fix "calls" like this
         return Tasks.call (executor, Callable {
              mDriveService.files().list().setSpaces("drive").execute()
         })
@@ -139,7 +138,7 @@ class DriveServiceHelper(private val mDriveService: Drive) {
     fun openFileUsingStorageAccessFramework(
         contentResolver: ContentResolver, uri: Uri
     ): Task<Pair<String, String>> {
-        return Tasks.call {
+        return Tasks.call (executor, Callable {
             // Retrieve the document's display name from its metadata.
             lateinit var name: String
             contentResolver.query(uri, null, null, null, null)!!.use { cursor ->
@@ -166,6 +165,6 @@ class DriveServiceHelper(private val mDriveService: Drive) {
             }
 
             Pair.create(name, content)
-        }
+        })
     }
 }

@@ -4,14 +4,10 @@ import java.time.*
 import android.app.*
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.webkit.WebResourceRequest
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
@@ -19,11 +15,7 @@ import androidx.navigation.*
 import androidx.navigation.ui.NavigationUI
 import androidx.transition.Fade
 import androidx.transition.TransitionManager
-import com.google.android.gms.auth.api.Auth
 import com.google.android.gms.auth.api.signin.*
-import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.Scopes
-import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.common.api.Scope
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.tabs.TabLayout
@@ -33,7 +25,6 @@ import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import kotlinx.android.synthetic.main.activity_main.*
-import java.io.IOException
 import java.util.*
 
 class BundleKeys {
@@ -156,8 +147,7 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
 
         // showing history option only on home page
         navController.addOnDestinationChangedListener { _, destination, _ ->
-            // if any fragment has requested to show some options on the toolbar, then show them
-            // TODO
+            // TODO if any fragment has requested to show some options on the toolbar, then show them
             val showHistoryButton = when (destination.id) {
                 R.id.homeFragment -> true
                 else -> false
@@ -198,49 +188,52 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
                         .build()
         val client = GoogleSignIn.getClient(this, signInOptions)
 
+        val googleAccount = GoogleSignIn.getLastSignedInAccount(this)
+
+        Log.d("requestSignIn: googleAccount", "${googleAccount == null}.")
+
         // The result of the sign-in Intent is handled in onActivityResult.
-        startActivityForResult(client.signInIntent, RC_SIGN_IN)
+        if (googleAccount == null) startActivityForResult(client.signInIntent, RC_SIGN_IN)
+        else doDriveTasks(googleAccount)
+
     }
 
-    private fun handleSignInResult(result : Intent) {
-        GoogleSignIn.getSignedInAccountFromIntent(result)
-            .addOnSuccessListener { googleAccount ->
-                // Use the authenticated account to sign in to the Drive service.
-                val credential = GoogleAccountCredential.usingOAuth2(
-                    this, Collections.singleton(driveScope))
-                credential.selectedAccount = googleAccount.getAccount()
-                val googleDriveService = Drive.Builder(
-                        AndroidHttp.newCompatibleTransport(),
-                        GsonFactory(),
-                        credential)
-                    .setApplicationName("Drive API Migration")
-                    .build()
+    private fun doDriveTasks(googleAccount : GoogleSignInAccount) {
+        // Use the authenticated account to sign in to the Drive service.
+        val credential = GoogleAccountCredential.usingOAuth2(
+            this, Collections.singleton(driveScope))
+        credential.selectedAccount = googleAccount.getAccount()
+        val googleDriveService = Drive.Builder(
+            AndroidHttp.newCompatibleTransport(),
+            GsonFactory(),
+            credential)
+            .setApplicationName("Wellness Tracker")
+            .build()
 
 
 //                 The DriveServiceHelper encapsulates all REST API and SAF functionality.
 //                 Its instantiation is required before handling any onClick actions.
-                val driveServiceHelper = DriveServiceHelper(googleDriveService)
+        val driveServiceHelper = DriveServiceHelper(googleDriveService)
 
-                Thread {
-                    driveServiceHelper.queryFiles()
-                        .addOnSuccessListener { fileList ->
-                            for (file in fileList.files) {
-                                println(file.name)
-                            }
-                        }
-                        .addOnFailureListener {
-                            Log.e("query error", it.toString())
-                        }
-                }.start()
+        driveServiceHelper.queryFiles()
+            .addOnSuccessListener { fileList ->
+                for (file in fileList.files) {
+                    println(file.name)
+                }
             }
-
+            .addOnFailureListener {
+                Log.e("query error", it.toString())
+            }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode) {
             RC_SIGN_IN ->
                 if (resultCode == Activity.RESULT_OK && data != null) {
-                    handleSignInResult(data)
+                    GoogleSignIn.getSignedInAccountFromIntent(data)
+                        .addOnSuccessListener { googleAccount ->
+                            doDriveTasks(googleAccount)
+                        }
                 }
 
         }
