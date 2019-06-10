@@ -142,9 +142,9 @@ class NewEntryFragment : MainFragment() {
 
         Thread {
             if (!Entry.isValidEntry(newEntry)) {
-                DebugDialogFragment().apply {
+                Utility.ErrorDialogFragment().apply {
                     message = "Could not add invalid entry $newEntry"
-                }.show(fragmentManager!!, "InvalidEntryDialog")
+                }.show(fragmentManager!!, null)
             }
             else {
                 LogEntryDatabase.instance.entryDao().insert(newEntry)

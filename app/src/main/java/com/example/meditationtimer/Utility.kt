@@ -16,19 +16,32 @@ class Utility {
                 context.resources.displayMetrics).roundToInt()
         }
     }
-}
 
-class DebugDialogFragment : DialogFragment() {
+    open class InfoDialogFragment : DialogFragment() {
+        protected open val messageTag = "INFO"
 
-    var message = ""
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return activity!!.let {
-            val builder = AlertDialog.Builder(it)
+        var message = "[empty message]"
+        val seperator = ": "
 
-            builder.setMessage("DEBUG: $message")
-                .setPositiveButton("Ok",
-                    DialogInterface.OnClickListener { _, _ -> })
-            builder.create()
+        override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+            return activity!!.let {
+                val builder = AlertDialog.Builder(it)
+
+                builder.setMessage(messageTag + seperator + message)
+                    .setPositiveButton("Ok",
+                        DialogInterface.OnClickListener { _, _ -> })
+                builder.create()
+            }
         }
     }
+
+    class ErrorDialogFragment : InfoDialogFragment() {
+        override val messageTag = "ERROR"
+    }
+
+    class DebugDialogFragment : InfoDialogFragment() {
+        override val messageTag = "DEBUG"
+    }
+
 }
+

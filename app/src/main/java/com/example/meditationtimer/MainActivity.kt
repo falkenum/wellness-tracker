@@ -17,6 +17,8 @@ import androidx.transition.Fade
 import androidx.transition.TransitionManager
 import com.google.android.gms.auth.api.signin.*
 import com.google.android.gms.common.api.Scope
+import com.google.android.gms.tasks.Task
+import com.google.android.gms.tasks.Tasks
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.tabs.TabLayout
 import com.google.api.client.extensions.android.http.AndroidHttp
@@ -180,7 +182,7 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
 
     private val driveScope = DriveScopes.DRIVE
 
-    private fun requestSignIn() {
+    private fun requestSignIn() : GoogleSignInAccount? {
 
         val signInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                         .requestEmail()
@@ -188,14 +190,15 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
                         .build()
         val client = GoogleSignIn.getClient(this, signInOptions)
 
-        val googleAccount = GoogleSignIn.getLastSignedInAccount(this)
-
+        var googleAccount = GoogleSignIn.getLastSignedInAccount(this)
         Log.d("requestSignIn: googleAccount", "${googleAccount == null}.")
-
         // The result of the sign-in Intent is handled in onActivityResult.
-        if (googleAccount == null) startActivityForResult(client.signInIntent, RC_SIGN_IN)
-        else doDriveTasks(googleAccount)
+        if (googleAccount == null) {
+            startActivityForResult(client.signInIntent, RC_SIGN_IN)
+            googleAccount = GoogleSignIn.getLastSignedInAccount(this)
+        }
 
+        return googleAccount
     }
 
     private fun doDriveTasks(googleAccount : GoogleSignInAccount) {
@@ -207,42 +210,55 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
             AndroidHttp.newCompatibleTransport(),
             GsonFactory(),
             credential)
-            .setApplicationName("Wellness Tracker")
+            .setApplicationName(getString(R.string.app_name))
             .build()
 
 
-//                 The DriveServiceHelper encapsulates all REST API and SAF functionality.
-//                 Its instantiation is required before handling any onClick actions.
-        val driveServiceHelper = DriveServiceHelper(googleDriveService)
+        syncDatabaseFiles(googleDriveService).apply {
+            addOnFailureListener {e ->
+                val errorMessage = "Failed to sync with remote database"
+                val tag = "doDriveTasks()"
+                Log.e(tag, errorMessage )
+                Log.e(tag, e.toString() )
 
-        driveServiceHelper.queryFiles()
-            .addOnSuccessListener { fileList ->
-                for (file in fileList.files) {
-                    println(file.name)
-                }
+                Utility.ErrorDialogFragment().apply {
+                    message = errorMessage
+                }.show(supportFragmentManager, null)
             }
-            .addOnFailureListener {
-                Log.e("query error", it.toString())
-            }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        when (requestCode) {
-            RC_SIGN_IN ->
-                if (resultCode == Activity.RESULT_OK && data != null) {
-                    GoogleSignIn.getSignedInAccountFromIntent(data)
-                        .addOnSuccessListener { googleAccount ->
-                            doDriveTasks(googleAccount)
-                        }
-                }
 
         }
-        super.onActivityResult(requestCode, resultCode, data)
+
     }
+
+    private fun syncDatabaseFiles(googleDriveService : Drive) : Task<Any> {
+        return Tasks.call {
+            // check local and remote file status, exists or not, which is newer.
+            // copy newer to null or older side
+
+//            val remoteDir = googleDriveService.files().list().setSpaces("appDataFolder").execute().files
+//            val remoteLastUpdatedTime = remoteDir.find { file -> file.name == LogEntryDatabase.DB_NAME }?.modifiedTime
+//
+            // find the databases directory
+            val localDir = filesDir.parentFile.listFiles().find { file -> file.name == "databases" }
+
+
+            for (file in localDir!!.listFiles()) {
+                Log.d("syncDataBaseFile", file.absolutePath)
+
+//                googleDriveService.files().update()
+//                Log.d("syncDataBaseFile", file.canonicalPath)
+            }
+
+//            val localLastUpdated
+        }
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        requestSignIn()
+        val account = requestSignIn()
+
+        if (account != null) doDriveTasks(account)
 
         Thread {
             LogEntryDatabase.init(this)
@@ -259,12 +275,12 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
                 }
 
             if (invalidEntries.size > 0) {
-                DebugDialogFragment().apply {
+                Utility.DebugDialogFragment().apply {
                     message = "Deleted ${invalidEntries.size} invalid entries: "
                     for (entry in invalidEntries) {
                         message = message + "; " + entry.toString()
                     }
-                }.show(supportFragmentManager, "DebugDialog")
+                }.show(supportFragmentManager, null)
             }
 
             runOnUiThread {

@@ -124,7 +124,7 @@ abstract class LogEntryDatabase : RoomDatabase() {
     abstract fun configDao(): ConfigDao
 
     companion object {
-        private const val DB_NAME = "log-entries.db"
+        const val DB_NAME = "log-entries.db"
         lateinit var instance : LogEntryDatabase
             private set
 
