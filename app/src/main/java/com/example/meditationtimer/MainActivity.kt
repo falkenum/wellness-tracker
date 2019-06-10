@@ -23,38 +23,36 @@ import com.google.android.material.navigation.NavigationView
 import com.google.android.material.tabs.TabLayout
 import com.google.api.client.extensions.android.http.AndroidHttp
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
+import com.google.api.client.http.ByteArrayContent
 import com.google.api.client.json.gson.GsonFactory
+import com.google.api.client.util.IOUtils
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
+import com.google.api.services.drive.model.File
 import kotlinx.android.synthetic.main.activity_main.*
+import java.io.ByteArrayInputStream
+import java.lang.StringBuilder
 import java.util.*
+import java.util.concurrent.Callable
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 
 class BundleKeys {
     companion object {
-        const val TIMER_SERVICE_BINDER = "timer service binder"
         const val REMINDER_TYPE = "reminder type"
         const val REMINDER_ID = "reminder id"
     }
 }
 
 class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
-    override fun onTabReselected(tab: TabLayout.Tab?) {
-    }
-
-    override fun onTabUnselected(tab: TabLayout.Tab?) {
-    }
-
-    override fun onTabSelected(tab: TabLayout.Tab) {
-        selectedType = tab.text.toString()
-        onTabSelectedActions.forEach { onTabSelectedAction -> onTabSelectedAction(tab) }
-    }
-
-    private lateinit var navController: NavController
 
     var selectedType = EntryTypes.getTypes()[0]
+    private lateinit var navController: NavController
 
     private val onTabSelectedActions = mutableListOf<(TabLayout.Tab) -> Unit>()
     private val fragmentsToShowTabs = listOf(R.id.homeFragment, R.id.newEntryFragment)
+    private val executor = Executors.newSingleThreadExecutor()
+
     private companion object {
         const val RC_SIGN_IN = 1
     }
@@ -166,6 +164,9 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         NavigationUI.setupWithNavController(drawerContent, navController)
 
         changeTabDrawer(true)
+
+        // view set up, now attempt network tasks
+        requestSignIn()
     }
 
     private fun updateTabLayout(destination : NavDestination) {
@@ -180,25 +181,25 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         imm.hideSoftInputFromWindow(view.windowToken, 0)
     }
 
-    private val driveScope = DriveScopes.DRIVE
+    private val driveScope = DriveScopes.DRIVE_APPDATA
 
-    private fun requestSignIn() : GoogleSignInAccount? {
+    private fun requestSignIn() {
 
         val signInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                         .requestEmail()
                         .requestScopes(Scope(driveScope))
                         .build()
         val client = GoogleSignIn.getClient(this, signInOptions)
+//        client.signOut()
 
-        var googleAccount = GoogleSignIn.getLastSignedInAccount(this)
+        val googleAccount = GoogleSignIn.getLastSignedInAccount(this)
         Log.d("requestSignIn: googleAccount", "${googleAccount == null}.")
-        // The result of the sign-in Intent is handled in onActivityResult.
-        if (googleAccount == null) {
-            startActivityForResult(client.signInIntent, RC_SIGN_IN)
-            googleAccount = GoogleSignIn.getLastSignedInAccount(this)
-        }
 
-        return googleAccount
+        // The result of the sign-in Intent is handled in onActivityResult.
+        if (googleAccount == null) startActivityForResult(client.signInIntent, RC_SIGN_IN)
+
+        // if already signed in, use the network
+        else doDriveTasks(googleAccount)
     }
 
     private fun doDriveTasks(googleAccount : GoogleSignInAccount) {
@@ -218,47 +219,127 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
             addOnFailureListener {e ->
                 val errorMessage = "Failed to sync with remote database"
                 val tag = "doDriveTasks()"
-                Log.e(tag, errorMessage )
-                Log.e(tag, e.toString() )
+
 
                 Utility.ErrorDialogFragment().apply {
                     message = errorMessage
                 }.show(supportFragmentManager, null)
+
+                val stackTraceStr = e.stackTrace.run {
+                    fold("$e\n") { accString, elt ->
+                        accString.plus("$elt\n")
+                    }
+                }
+
+                Log.e(tag, "$errorMessage: due to... \n$stackTraceStr")
             }
-
         }
-
     }
 
     private fun syncDatabaseFiles(googleDriveService : Drive) : Task<Any> {
-        return Tasks.call {
+        return Tasks.call (executor, Callable {
             // check local and remote file status, exists or not, which is newer.
             // copy newer to null or older side
 
-//            val remoteDir = googleDriveService.files().list().setSpaces("appDataFolder").execute().files
-//            val remoteLastUpdatedTime = remoteDir.find { file -> file.name == LogEntryDatabase.DB_NAME }?.modifiedTime
-//
             // find the databases directory
             val localDir = filesDir.parentFile.listFiles().find { file -> file.name == "databases" }
+            val tag = "syncDataBaseFile()"
+
+            val remoteRootFolder = "appDataFolder"
+            val remoteFiles = googleDriveService
+                .files()
+                .list()
+                .setSpaces(remoteRootFolder)
+                .execute()
+                .files
 
 
-            for (file in localDir!!.listFiles()) {
-                Log.d("syncDataBaseFile", file.absolutePath)
+            Log.d(tag, "Number of remote files: ${remoteFiles.size}")
+            remoteFiles.forEach {file ->
+                val debugStr = StringBuilder().run {
+                    append("remote file found")
+                    append("\nname: ${file.name}")
+                    append("\nid: ${file.id}")
 
-//                googleDriveService.files().update()
-//                Log.d("syncDataBaseFile", file.canonicalPath)
+                    toString()
+                }
+
+                Log.d(tag, debugStr)
             }
 
-//            val localLastUpdated
+
+            for (localFile in localDir!!.listFiles()) {
+                val metadata = File().apply {
+                    name = localFile.name
+                }
+
+                val content = StringBuilder().run {
+                    localFile.bufferedReader().lines().forEach { append(it).append('\n') }
+                    toString()
+                }
+
+                val contentStream = ByteArrayContent.fromString(null, content)
+
+                val backup = remoteFiles.find { remoteFile -> remoteFile.name == localFile.name }
+                val fileHasBackup = backup != null
+
+                val debugStr = StringBuilder().run {
+                    append("local file found")
+                    append("\nname: ${localFile.name}")
+                    append("\nhas backup: $fileHasBackup")
+
+                    toString()
+                }
+
+                Log.d(tag, debugStr)
+
+                googleDriveService.files().run {
+                    if (fileHasBackup) {
+                        Log.d(tag, "updating remote file ${localFile.name}")
+                        update(backup!!.id, metadata, contentStream)
+                    }
+                    else {
+                        Log.d(tag, "creating remote file ${localFile.name}")
+                        create(metadata, contentStream)
+                    }
+                }.execute()
+            }
+
+
+//            Log.d(tag, remoteFiles.size.toString())
+//            Log.d(tag, remoteFiles[0].parents.size.toString())
+
+//            val aboutRemote = googleDriveService.about().get().apply { fields = "*" }.execute()
+
+
+//            val remoteLastUpdatedTime = remoteDir.find { file -> file.name == LogEntryDatabase.DB_NAME }?.modifiedTime
+
+//            for (file in remoteDir) {
+//                Log.d("syncDataBaseFile(): local file", file.name)
+//            }
+
+
+            Any()
+        })
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        when (requestCode) {
+            RC_SIGN_IN -> {
+                val account = GoogleSignIn.getSignedInAccountFromIntent(data).result
+
+                if (account != null) doDriveTasks(account)
+                else Utility.InfoDialogFragment().apply {
+                    message = "Account not logged in, cannot sync database"
+                }.show(supportFragmentManager, null)
+            }
         }
     }
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val account = requestSignIn()
-
-        if (account != null) doDriveTasks(account)
 
         Thread {
             LogEntryDatabase.init(this)
@@ -290,6 +371,17 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         }.start()
 
 
+    }
+
+    override fun onTabReselected(tab: TabLayout.Tab?) {
+    }
+
+    override fun onTabUnselected(tab: TabLayout.Tab?) {
+    }
+
+    override fun onTabSelected(tab: TabLayout.Tab) {
+        selectedType = tab.text.toString()
+        onTabSelectedActions.forEach { onTabSelectedAction -> onTabSelectedAction(tab) }
     }
 }
 
