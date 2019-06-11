@@ -85,6 +85,15 @@
                      app:layout_constraintTop_toBottomOf="@+id/textView6"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+    <Button
+            android:text="Backup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:id="@+id/backupButton" android:layout_gravity="center"/>
+    <Button
+            android:text="sign out"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:id="@+id/signOutButton"
+            android:layout_gravity="center_horizontal" android:layout_marginTop="8dp"/>
 
 </LinearLayout>
 

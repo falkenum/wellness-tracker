@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
@@ -25,16 +26,13 @@ import com.google.api.client.extensions.android.http.AndroidHttp
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.http.ByteArrayContent
 import com.google.api.client.json.gson.GsonFactory
-import com.google.api.client.util.IOUtils
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import com.google.api.services.drive.model.File
 import kotlinx.android.synthetic.main.activity_main.*
-import java.io.ByteArrayInputStream
+import kotlinx.android.synthetic.main.fragment_home.*
 import java.lang.StringBuilder
-import java.util.*
 import java.util.concurrent.Callable
-import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
 class BundleKeys {
@@ -52,6 +50,10 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
     private val onTabSelectedActions = mutableListOf<(TabLayout.Tab) -> Unit>()
     private val fragmentsToShowTabs = listOf(R.id.homeFragment, R.id.newEntryFragment)
     private val executor = Executors.newSingleThreadExecutor()
+    private val appDataScope = DriveScopes.DRIVE_APPDATA
+    private val driveFileScope = DriveScopes.DRIVE_FILE
+    private lateinit var googleSignInClient : GoogleSignInClient
+
 
     private companion object {
         const val RC_SIGN_IN = 1
@@ -130,7 +132,26 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
 
         setupReminders()
 
+        val signInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestEmail()
+            .requestScopes(Scope(appDataScope), Scope(driveFileScope))
+            .build()
+        googleSignInClient = GoogleSignIn.getClient(this, signInOptions)
+
         navController = findNavController(R.id.nav_host_fragment)
+
+        val tag = "onDatabaseLoaded()"
+        backupButton.setOnClickListener {
+            Log.d(tag, "Backup button pressed")
+            requestSignIn()
+        }
+
+        signOutButton.setOnClickListener {
+            Log.d(tag, "Signing out")
+            googleSignInClient.signOut()
+
+            Toast.makeText(this, "Signed out out of account", Toast.LENGTH_SHORT).show()
+        }
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar).apply {
             inflateMenu(R.menu.menu_options)
@@ -164,9 +185,6 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         NavigationUI.setupWithNavController(drawerContent, navController)
 
         changeTabDrawer(true)
-
-        // view set up, now attempt network tasks
-        requestSignIn()
     }
 
     private fun updateTabLayout(destination : NavDestination) {
@@ -181,32 +199,26 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         imm.hideSoftInputFromWindow(view.windowToken, 0)
     }
 
-    private val driveScope = DriveScopes.DRIVE_APPDATA
-
     private fun requestSignIn() {
-
-        val signInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                        .requestEmail()
-                        .requestScopes(Scope(driveScope))
-                        .build()
-        val client = GoogleSignIn.getClient(this, signInOptions)
+//        client.revokeAccess()
 //        client.signOut()
 
         val googleAccount = GoogleSignIn.getLastSignedInAccount(this)
-        Log.d("requestSignIn: googleAccount", "${googleAccount == null}.")
+        Log.d("requestSignIn()", "signed in account: ${googleAccount?.email ?: "null"}")
 
         // The result of the sign-in Intent is handled in onActivityResult.
-        if (googleAccount == null) startActivityForResult(client.signInIntent, RC_SIGN_IN)
+//        if (googleAccount == null) startActivityForResult(client.signInIntent, RC_SIGN_IN)
+        startActivityForResult(googleSignInClient.signInIntent, RC_SIGN_IN)
 
         // if already signed in, use the network
-        else doDriveTasks(googleAccount)
+//        else doDriveTasks(googleAccount)
     }
 
     private fun doDriveTasks(googleAccount : GoogleSignInAccount) {
         // Use the authenticated account to sign in to the Drive service.
         val credential = GoogleAccountCredential.usingOAuth2(
-            this, Collections.singleton(driveScope))
-        credential.selectedAccount = googleAccount.getAccount()
+            this, listOf(appDataScope, driveFileScope))
+        credential.selectedAccount = googleAccount.account
         val googleDriveService = Drive.Builder(
             AndroidHttp.newCompatibleTransport(),
             GsonFactory(),
@@ -216,10 +228,14 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
 
 
         syncDatabaseFiles(googleDriveService).apply {
+            addOnSuccessListener {
+                Toast.makeText(this@MainActivity,
+                    "Synced local database with Google Drive", Toast.LENGTH_SHORT).show()
+            }
+
             addOnFailureListener {e ->
                 val errorMessage = "Failed to sync with remote database"
                 val tag = "doDriveTasks()"
-
 
                 Utility.ErrorDialogFragment().apply {
                     message = errorMessage
@@ -238,40 +254,53 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
 
     private fun syncDatabaseFiles(googleDriveService : Drive) : Task<Any> {
         return Tasks.call (executor, Callable {
-            // check local and remote file status, exists or not, which is newer.
-            // copy newer to null or older side
+//            googleDriveService.files().emptyTrash().execute()
 
             // find the databases directory
             val localDir = filesDir.parentFile.listFiles().find { file -> file.name == "databases" }
             val tag = "syncDataBaseFile()"
 
-            val remoteRootFolder = "appDataFolder"
-            val remoteFiles = googleDriveService
-                .files()
-                .list()
-                .setSpaces(remoteRootFolder)
-                .execute()
-                .files
+            Log.d(tag, "preparing to sync...")
 
+            val backupFolderName = "WellnessTracker.backup"
+            val remoteRoot = "drive"
+            val remoteFiles = googleDriveService.files().list().apply{fields = "*"}
+                .setSpaces(remoteRoot).execute().files
+//                .filter { file -> file.name.contains(LogEntryDatabase.DB_NAME) }
 
-            Log.d(tag, "Number of remote files: ${remoteFiles.size}")
-            remoteFiles.forEach {file ->
-                val debugStr = StringBuilder().run {
-                    append("remote file found")
-                    append("\nname: ${file.name}")
-                    append("\nid: ${file.id}")
-
-                    toString()
+            // find backup folder or create it
+            val backupFolderMetadata : File = remoteFiles.find { it.name == backupFolderName } ?: run {
+                val newBackupFolderMetadata = File().apply {
+                    name = backupFolderName
+                    val folderMimeType = "application/vnd.google-apps.folder"
+                    mimeType = folderMimeType
                 }
 
-                Log.d(tag, debugStr)
+                Log.d(tag, "Creating new backup folder on remote")
+                // create the new folder and store its new metadata from the server
+                googleDriveService.files().create(newBackupFolderMetadata).apply { fields = "id" }.execute()
             }
 
+            Log.d(tag, "Number of remote files: ${remoteFiles.size}")
+
+//            var numFilesWithParent = 0
+            remoteFiles.forEach { file ->
+                Log.d(tag, "File ${file.name} parents: ${file.parents}")
+
+
+//                googleDriveService.files().delete(file.id).execute()
+//                Log.d(tag, "deleted file ${file.name}")
+
+//                file.parents?.let { parents ->
+//                    numFilesWithParent++
+//                    if (parents[0] == backupFolderMetadata.id) {
+//                    }
+//                }
+            }
+
+//            Log.d(tag, "$numFilesWithParent files have at least one parent")
 
             for (localFile in localDir!!.listFiles()) {
-                val metadata = File().apply {
-                    name = localFile.name
-                }
 
                 val content = StringBuilder().run {
                     localFile.bufferedReader().lines().forEach { append(it).append('\n') }
@@ -280,13 +309,21 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
 
                 val contentStream = ByteArrayContent.fromString(null, content)
 
-                val backup = remoteFiles.find { remoteFile -> remoteFile.name == localFile.name }
-                val fileHasBackup = backup != null
+                val remoteFileMetadata = remoteFiles.find { remoteFile ->
+                    // the false means to not include this file if it has no parents
+
+                    val nameMatches = remoteFile.name == localFile.name
+                    val parentMatches = remoteFile.parents?.contains(backupFolderMetadata.id) ?: false
+
+                    nameMatches && parentMatches
+                }
+                val fileHasBackup = remoteFileMetadata != null
 
                 val debugStr = StringBuilder().run {
-                    append("local file found")
+                    append("\nlocal file found")
                     append("\nname: ${localFile.name}")
                     append("\nhas backup: $fileHasBackup")
+//                    append("\nbackup's parents : ${backup?.parents ?: "null"}")
 
                     toString()
                 }
@@ -296,28 +333,21 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
                 googleDriveService.files().run {
                     if (fileHasBackup) {
                         Log.d(tag, "updating remote file ${localFile.name}")
-                        update(backup!!.id, metadata, contentStream)
+                        update(remoteFileMetadata!!.id, null, contentStream)
                     }
                     else {
+                        val metadata = File().apply {
+                            name = localFile.name
+
+                            // set the main backup folder as its parent
+                            parents = mutableListOf(backupFolderMetadata.id)
+                        }
+
                         Log.d(tag, "creating remote file ${localFile.name}")
                         create(metadata, contentStream)
                     }
                 }.execute()
             }
-
-
-//            Log.d(tag, remoteFiles.size.toString())
-//            Log.d(tag, remoteFiles[0].parents.size.toString())
-
-//            val aboutRemote = googleDriveService.about().get().apply { fields = "*" }.execute()
-
-
-//            val remoteLastUpdatedTime = remoteDir.find { file -> file.name == LogEntryDatabase.DB_NAME }?.modifiedTime
-
-//            for (file in remoteDir) {
-//                Log.d("syncDataBaseFile(): local file", file.name)
-//            }
-
 
             Any()
         })
