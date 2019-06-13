@@ -2,9 +2,12 @@ package com.example.meditationtimer
 
 import java.time.*
 import android.app.*
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Bundle
+import android.os.IBinder
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -18,22 +21,12 @@ import androidx.transition.Fade
 import androidx.transition.TransitionManager
 import com.google.android.gms.auth.api.signin.*
 import com.google.android.gms.common.api.Scope
-import com.google.android.gms.tasks.Task
-import com.google.android.gms.tasks.Tasks
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.tabs.TabLayout
-import com.google.api.client.extensions.android.http.AndroidHttp
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
-import com.google.api.client.http.ByteArrayContent
-import com.google.api.client.json.gson.GsonFactory
-import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
-import com.google.api.services.drive.model.File
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_home.*
-import java.lang.StringBuilder
-import java.util.concurrent.Callable
-import java.util.concurrent.Executors
 
 class BundleKeys {
     companion object {
@@ -49,11 +42,20 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
 
     private val onTabSelectedActions = mutableListOf<(TabLayout.Tab) -> Unit>()
     private val fragmentsToShowTabs = listOf(R.id.homeFragment, R.id.newEntryFragment)
-    private val executor = Executors.newSingleThreadExecutor()
-    private val appDataScope = DriveScopes.DRIVE_APPDATA
-    private val driveFileScope = DriveScopes.DRIVE_FILE
     private lateinit var googleSignInClient : GoogleSignInClient
+    private var backupService: BackupService? = null
+    private val appDataScope = DriveScopes.DRIVE_APPDATA
+    private val driveFileScope = DriveScopes.DRIVE
 
+
+    private val backupServiceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
+            val backupServiceBinder = (binder as BackupService.BackupBinder)
+            backupService = backupServiceBinder.getService()
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) = Unit
+    }
 
     private companion object {
         const val RC_SIGN_IN = 1
@@ -126,8 +128,6 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
             addOnTabSelectedListener(this@MainActivity)
         }
 
-        // these are creating services
-        startService(Intent(this, TimerService::class.java))
         startService(Intent(this, BackupService::class.java))
 
         setupReminders()
@@ -152,6 +152,7 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
 
             Toast.makeText(this, "Signed out out of account", Toast.LENGTH_SHORT).show()
         }
+
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar).apply {
             inflateMenu(R.menu.menu_options)
@@ -200,10 +201,8 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
     }
 
     private fun requestSignIn() {
-//        client.revokeAccess()
-//        client.signOut()
-
         val googleAccount = GoogleSignIn.getLastSignedInAccount(this)
+        signedInUser.text = googleAccount?.email ?: "Not signed in"
         Log.d("requestSignIn()", "signed in account: ${googleAccount?.email ?: "null"}")
 
         // The result of the sign-in Intent is handled in onActivityResult.
@@ -214,153 +213,17 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
 //        else doDriveTasks(googleAccount)
     }
 
-    private fun doDriveTasks(googleAccount : GoogleSignInAccount) {
-        // Use the authenticated account to sign in to the Drive service.
-        val credential = GoogleAccountCredential.usingOAuth2(
-            this, listOf(appDataScope, driveFileScope))
-        credential.selectedAccount = googleAccount.account
-        val googleDriveService = Drive.Builder(
-            AndroidHttp.newCompatibleTransport(),
-            GsonFactory(),
-            credential)
-            .setApplicationName(getString(R.string.app_name))
-            .build()
-
-
-        syncDatabaseFiles(googleDriveService).apply {
-            addOnSuccessListener {
-                Toast.makeText(this@MainActivity,
-                    "Synced local database with Google Drive", Toast.LENGTH_SHORT).show()
-            }
-
-            addOnFailureListener {e ->
-                val errorMessage = "Failed to sync with remote database"
-                val tag = "doDriveTasks()"
-
-                Utility.ErrorDialogFragment().apply {
-                    message = errorMessage
-                }.show(supportFragmentManager, null)
-
-                val stackTraceStr = e.stackTrace.run {
-                    fold("$e\n") { accString, elt ->
-                        accString.plus("$elt\n")
-                    }
-                }
-
-                Log.e(tag, "$errorMessage: due to... \n$stackTraceStr")
-            }
-        }
-    }
-
-    private fun syncDatabaseFiles(googleDriveService : Drive) : Task<Any> {
-        return Tasks.call (executor, Callable {
-//            googleDriveService.files().emptyTrash().execute()
-
-            // find the databases directory
-            val localDir = filesDir.parentFile.listFiles().find { file -> file.name == "databases" }
-            val tag = "syncDataBaseFile()"
-
-            Log.d(tag, "preparing to sync...")
-
-            val backupFolderName = "WellnessTracker.backup"
-            val remoteRoot = "drive"
-            val remoteFiles = googleDriveService.files().list().apply{fields = "*"}
-                .setSpaces(remoteRoot).execute().files
-//                .filter { file -> file.name.contains(LogEntryDatabase.DB_NAME) }
-
-            // find backup folder or create it
-            val backupFolderMetadata : File = remoteFiles.find { it.name == backupFolderName } ?: run {
-                val newBackupFolderMetadata = File().apply {
-                    name = backupFolderName
-                    val folderMimeType = "application/vnd.google-apps.folder"
-                    mimeType = folderMimeType
-                }
-
-                Log.d(tag, "Creating new backup folder on remote")
-                // create the new folder and store its new metadata from the server
-                googleDriveService.files().create(newBackupFolderMetadata).apply { fields = "id" }.execute()
-            }
-
-            Log.d(tag, "Number of remote files: ${remoteFiles.size}")
-
-//            var numFilesWithParent = 0
-            remoteFiles.forEach { file ->
-                Log.d(tag, "File ${file.name} parents: ${file.parents}")
-
-
-//                googleDriveService.files().delete(file.id).execute()
-//                Log.d(tag, "deleted file ${file.name}")
-
-//                file.parents?.let { parents ->
-//                    numFilesWithParent++
-//                    if (parents[0] == backupFolderMetadata.id) {
-//                    }
-//                }
-            }
-
-//            Log.d(tag, "$numFilesWithParent files have at least one parent")
-
-            for (localFile in localDir!!.listFiles()) {
-
-                val content = StringBuilder().run {
-                    localFile.bufferedReader().lines().forEach { append(it).append('\n') }
-                    toString()
-                }
-
-                val contentStream = ByteArrayContent.fromString(null, content)
-
-                val remoteFileMetadata = remoteFiles.find { remoteFile ->
-                    // the false means to not include this file if it has no parents
-
-                    val nameMatches = remoteFile.name == localFile.name
-                    val parentMatches = remoteFile.parents?.contains(backupFolderMetadata.id) ?: false
-
-                    nameMatches && parentMatches
-                }
-                val fileHasBackup = remoteFileMetadata != null
-
-                val debugStr = StringBuilder().run {
-                    append("\nlocal file found")
-                    append("\nname: ${localFile.name}")
-                    append("\nhas backup: $fileHasBackup")
-//                    append("\nbackup's parents : ${backup?.parents ?: "null"}")
-
-                    toString()
-                }
-
-                Log.d(tag, debugStr)
-
-                googleDriveService.files().run {
-                    if (fileHasBackup) {
-                        Log.d(tag, "updating remote file ${localFile.name}")
-                        update(remoteFileMetadata!!.id, null, contentStream)
-                    }
-                    else {
-                        val metadata = File().apply {
-                            name = localFile.name
-
-                            // set the main backup folder as its parent
-                            parents = mutableListOf(backupFolderMetadata.id)
-                        }
-
-                        Log.d(tag, "creating remote file ${localFile.name}")
-                        create(metadata, contentStream)
-                    }
-                }.execute()
-            }
-
-            Any()
-        })
-    }
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         when (requestCode) {
             RC_SIGN_IN -> {
-                val account = GoogleSignIn.getSignedInAccountFromIntent(data).result
+                val googleAccount = GoogleSignIn.getSignedInAccountFromIntent(data).result
 
-                if (account != null) doDriveTasks(account)
+                val credential = GoogleAccountCredential.usingOAuth2(
+                    this, listOf(appDataScope, driveFileScope))
+                credential.selectedAccount = googleAccount?.account
+                if (googleAccount != null) backupService!!.doDriveTasks(credential)
                 else Utility.InfoDialogFragment().apply {
                     message = "Account not logged in, cannot sync database"
                 }.show(supportFragmentManager, null)
@@ -370,6 +233,9 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val backupServiceIntent = Intent(applicationContext, BackupService::class.java)
+        bindService(backupServiceIntent, backupServiceConnection, 0)
 
         Thread {
             LogEntryDatabase.init(this)
@@ -403,15 +269,17 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
 
     }
 
-    override fun onTabReselected(tab: TabLayout.Tab?) {
-    }
-
-    override fun onTabUnselected(tab: TabLayout.Tab?) {
+    override fun onDestroy() {
+        unbindService(backupServiceConnection)
+        super.onDestroy()
     }
 
     override fun onTabSelected(tab: TabLayout.Tab) {
         selectedType = tab.text.toString()
         onTabSelectedActions.forEach { onTabSelectedAction -> onTabSelectedAction(tab) }
     }
+
+    override fun onTabReselected(tab: TabLayout.Tab?) = Unit
+    override fun onTabUnselected(tab: TabLayout.Tab?) = Unit
 }
 

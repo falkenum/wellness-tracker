@@ -92,8 +92,6 @@ class TimerFragment : MainFragment() {
                               container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
 
-        // get connection to the timer service
-        activity!!.bindService(Intent(activity, TimerService::class.java), timerConnection, 0)
 
         // setup the layout
         rootView = inflater.inflate(R.layout.fragment_timer, container, false)
@@ -102,6 +100,14 @@ class TimerFragment : MainFragment() {
         rootView.findViewById<Button>(R.id.minus).setOnClickListener { onMinusClick() }
 
         return rootView
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        activity!!.startService(Intent(activity, TimerService::class.java))
+
+        // get connection to the timer service
+        activity!!.bindService(Intent(activity, TimerService::class.java), timerConnection, 0)
     }
 
     override fun onDestroy() {
