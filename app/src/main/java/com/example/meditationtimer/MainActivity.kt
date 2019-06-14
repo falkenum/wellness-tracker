@@ -23,7 +23,10 @@ import com.google.android.gms.auth.api.signin.*
 import com.google.android.gms.common.api.Scope
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.tabs.TabLayout
+import com.google.api.client.extensions.android.http.AndroidHttp
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
+import com.google.api.client.json.gson.GsonFactory
+import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_home.*
@@ -223,37 +226,52 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
                 val credential = GoogleAccountCredential.usingOAuth2(
                     this, listOf(appDataScope, driveFileScope))
                 credential.selectedAccount = googleAccount?.account
+                val googleDriveService : Drive = Drive.Builder(
+                    AndroidHttp.newCompatibleTransport(),
+                    GsonFactory(),
+                    credential)
+                    .setApplicationName(getString(R.string.app_name))
+                    .build()
 
-                if (googleAccount != null) backupService!!.syncDatabaseFiles(credential).apply {
-                        addOnSuccessListener {
-                            Toast.makeText(this@MainActivity,
-                                "Synced local database with Google Drive", Toast.LENGTH_SHORT).show()
-                            //TODO record success datetime in database
-                        }
 
-                        addOnFailureListener {e ->
-                            val errorMessage = "Failed to sync with remote database"
-                            val tag = "syncDatabaseFiles()"
+                if (googleAccount != null) backupService!!.init(googleDriveService).addOnSuccessListener {
+                    doSync()
+                }.addOnFailureListener {
+                    Utility.ErrorDialogFragment().apply {
+                        message = "Failed to initialize backup service"
+                    }.show(supportFragmentManager, null)
+                }
 
-                            Utility.ErrorDialogFragment().apply {
-                                message = errorMessage
-                            }.show(supportFragmentManager, null)
-
-                            //TODO record error datetime in database
-
-                            val stackTraceStr = e.stackTrace.run {
-                                fold("$e\n") { accString, elt ->
-                                    accString.plus("$elt\n")
-                                }
-                            }
-
-                            Log.e(tag, "$errorMessage: due to... \n$stackTraceStr")
-                        }
-                    }
 
                 else Utility.InfoDialogFragment().apply {
                     message = "Account not logged in, cannot sync database"
                 }.show(supportFragmentManager, null)
+            }
+        }
+    }
+    private fun doSync() {
+        backupService!!.syncDatabaseFiles().apply {
+
+            addOnSuccessListener {
+                Toast.makeText(this@MainActivity,
+                    "Synced local database with Google Drive", Toast.LENGTH_SHORT).show()
+            }
+
+            addOnFailureListener {e ->
+                val errorMessage = "Failed to sync with remote database"
+                val tag = "syncDatabaseFiles()"
+
+                Utility.ErrorDialogFragment().apply {
+                    message = errorMessage
+                }.show(supportFragmentManager, null)
+
+                val stackTraceStr = e.stackTrace.run {
+                    fold("$e\n") { accString, elt ->
+                        accString.plus("$elt\n")
+                    }
+                }
+
+                Log.e(tag, "$errorMessage: due to... \n$stackTraceStr")
             }
         }
     }
