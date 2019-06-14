@@ -210,7 +210,7 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         startActivityForResult(googleSignInClient.signInIntent, RC_SIGN_IN)
 
         // if already signed in, use the network
-//        else doDriveTasks(googleAccount)
+//        else syncDatabaseFiles(googleAccount)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -223,7 +223,34 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
                 val credential = GoogleAccountCredential.usingOAuth2(
                     this, listOf(appDataScope, driveFileScope))
                 credential.selectedAccount = googleAccount?.account
-                if (googleAccount != null) backupService!!.doDriveTasks(credential)
+
+                if (googleAccount != null) backupService!!.syncDatabaseFiles(credential).apply {
+                        addOnSuccessListener {
+                            Toast.makeText(this@MainActivity,
+                                "Synced local database with Google Drive", Toast.LENGTH_SHORT).show()
+                            //TODO record success datetime in database
+                        }
+
+                        addOnFailureListener {e ->
+                            val errorMessage = "Failed to sync with remote database"
+                            val tag = "syncDatabaseFiles()"
+
+                            Utility.ErrorDialogFragment().apply {
+                                message = errorMessage
+                            }.show(supportFragmentManager, null)
+
+                            //TODO record error datetime in database
+
+                            val stackTraceStr = e.stackTrace.run {
+                                fold("$e\n") { accString, elt ->
+                                    accString.plus("$elt\n")
+                                }
+                            }
+
+                            Log.e(tag, "$errorMessage: due to... \n$stackTraceStr")
+                        }
+                    }
+
                 else Utility.InfoDialogFragment().apply {
                     message = "Account not logged in, cannot sync database"
                 }.show(supportFragmentManager, null)
