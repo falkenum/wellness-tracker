@@ -149,7 +149,7 @@ class BackupService : Service() {
 
     fun init(googleDriveService: Drive) : Task<BackupService> {
         return Tasks.call(executor, Callable {
-            localFile = java.io.File("${filesDir.absolutePath}/databases/${LogEntryDatabase.DB_NAME}")
+            localFile = java.io.File("${filesDir.parent}/databases/${LogEntryDatabase.DB_NAME}")
 
             this.googleDriveService = googleDriveService
 
@@ -159,19 +159,29 @@ class BackupService : Service() {
 
     fun backupDatabaseFiles() : Task<Unit> {
         return Tasks.call (executor, Callable {
+            // wal checkpoint for the SQLite database
+            // basically preparing the database to be synced
+            LogEntryDatabase.checkpoint()
 
             // will overwrite remote db with local
             fileSyncHelper!!.syncLocalAndRemote(localFile, null)
         })
     }
 
-    fun syncDatabaseFiles() : Task<Unit> {
+    fun restoreDatabaseFiles() : Task<Unit> {
         return Tasks.call (executor, Callable {
 
-            // wal checkpoint for the SQLite database
-            // basically preparing the database to be synced
-            // TODO this won't work because local database is always newer. need to merge entries from each db
-            LogEntryDatabase.checkpoint()
+//             will overwrite local db with remote
+            fileSyncHelper!!.run {
+                val remoteFileMetadata = listRemoteFiles().find { it.parents == listOf(backupFolderMetadata) }
+
+                syncLocalAndRemote(null, remoteFileMetadata)
+            }
+        })
+    }
+
+    fun syncDatabaseFiles() : Task<Unit> {
+        return Tasks.call (executor, Callable {
 
             val tag = "syncDataBaseFile()"
 

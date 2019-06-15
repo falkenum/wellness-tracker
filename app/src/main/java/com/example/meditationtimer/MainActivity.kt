@@ -140,20 +140,21 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
             .requestScopes(Scope(appDataScope), Scope(driveFileScope))
             .build()
         googleSignInClient = GoogleSignIn.getClient(this, signInOptions)
+        requestSignIn()
 
         navController = findNavController(R.id.nav_host_fragment)
 
         val tag = "onDatabaseLoaded()"
-        backupButton.setOnClickListener {
-            Log.d(tag, "Backup button pressed")
-            requestSignIn()
-        }
+//        backupButton.setOnClickListener {
+//            Log.d(tag, "Backup button pressed")
+//            requestSignIn()
+//        }
 
         signOutButton.setOnClickListener {
             Log.d(tag, "Signing out")
             googleSignInClient.signOut()
 
-            Toast.makeText(this, "Signed out out of account", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Signed out of account", Toast.LENGTH_SHORT).show()
         }
 
 
@@ -234,11 +235,12 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
                     .build()
 
 
-                if (googleAccount != null) backupService!!.init(googleDriveService).addOnSuccessListener {
-                    doSync()
-                }.addOnFailureListener {
-                    Utility.ErrorDialogFragment().apply {
-                        message = "Failed to initialize backup service"
+                if (googleAccount != null) backupService!!.init(googleDriveService)
+                    .addOnSuccessListener {
+                        Log.d("onActivityResult()", "Initialized backup service")
+                    }.addOnFailureListener {
+                        Utility.ErrorDialogFragment().apply {
+                            message = "Failed to initialize backup service"
                     }.show(supportFragmentManager, null)
                 }
 
@@ -249,6 +251,28 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
             }
         }
     }
+
+    fun onBackupAndRestore(view : View) {
+        when (view.id) {
+            R.id.backupButton -> doBackup()
+            R.id.restoreButton -> doRestore()
+        }
+    }
+
+    private fun doBackup() {
+        backupService!!.backupDatabaseFiles().addOnSuccessListener {
+            Toast.makeText(this@MainActivity,
+                "Backed up local database to Google Drive", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun doRestore() {
+        backupService!!.restoreDatabaseFiles().addOnSuccessListener {
+            Toast.makeText(this@MainActivity,
+                "Restored local database from Google Drive", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun doSync() {
         backupService!!.syncDatabaseFiles().apply {
 
