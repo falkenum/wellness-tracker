@@ -72,7 +72,7 @@ interface EntryDao{
 
 
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.FAIL)
     fun insert(entry: Entry)
 
     @Delete
@@ -123,20 +123,32 @@ abstract class LogEntryDatabase : RoomDatabase() {
     abstract fun entryDao(): EntryDao
     abstract fun configDao(): ConfigDao
 
+
     companion object {
-        const val DB_NAME = "log-entries.db"
+        const val DB_NAME_PRIMARY = "log-entries.db"
         lateinit var instance : LogEntryDatabase
             private set
+
+        fun insertEntriesFromDbFile(filePath : String) {
+
+            val query = "attach \'$filePath\' as toMerge;" +
+                    "BEGIN;insert into Entry select * from toMerge.Entry;COMMIT;detach toMerge;"
+            instance.configDao().rawQuery(SimpleSQLiteQuery(query))
+        }
 
         fun checkpoint() {
             instance.configDao().rawQuery(SimpleSQLiteQuery("pragma wal_checkpoint(full)"))
         }
 
-        fun init(context: Context) {
-            instance = Room.databaseBuilder(context.applicationContext,
-                LogEntryDatabase::class.java, DB_NAME)
+        fun init(context: Context, dbName : String) : LogEntryDatabase {
+            val newDb = Room.databaseBuilder(context.applicationContext,
+                LogEntryDatabase::class.java, dbName)
                 .addMigrations(MIGRATION_5_6, MIGRATION_6_7)
                 .build()
+
+            if (dbName == DB_NAME_PRIMARY) instance = newDb
+
+            return newDb
         }
     }
 }

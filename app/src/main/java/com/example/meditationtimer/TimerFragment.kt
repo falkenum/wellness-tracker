@@ -36,8 +36,7 @@ class TimerFragment : MainFragment() {
             }
         }
 
-        override fun onServiceDisconnected(name: ComponentName?) {
-        }
+        override fun onServiceDisconnected(name: ComponentName?) = Unit
     }
 
     private fun setTimerStr(minutes: Long, seconds: Long) {

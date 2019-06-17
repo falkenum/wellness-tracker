@@ -5,26 +5,23 @@ import android.content.Context
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
-import android.telecom.Call
 import android.util.Log
 import com.example.meditationtimer.BackupService.Companion.REMOTE_FS
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
-import com.google.api.client.extensions.android.http.AndroidHttp
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.http.ByteArrayContent
-import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.model.File
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 
-class FileSyncHelper(private val googleDriveService : Drive, context: Context) {
+class FileSyncHelper(private val googleDriveService : Drive, private val context: Context) {
     companion object {
         const val BACKUP_FOLDER_NAME = "WellnessTracker.backup"
+        const val FILENAME = LogEntryDatabase.DB_NAME_PRIMARY
     }
 
-    val backupFolderMetadata : File = listRemoteFiles().find { it.name == BACKUP_FOLDER_NAME } ?: run {
+    private val backupFolderMetadata : File = listRemoteFiles().find { it.name == BACKUP_FOLDER_NAME } ?: run {
             val newBackupFolderMetadata = File().apply {
                 name = BACKUP_FOLDER_NAME
                 val folderMimeType = "application/vnd.google-apps.folder"
@@ -34,28 +31,31 @@ class FileSyncHelper(private val googleDriveService : Drive, context: Context) {
             // create the new folder and store its new metadata from the server
             googleDriveService.files().create(newBackupFolderMetadata).apply { fields = "id" }.execute()
         }
+
+    private val remoteFileMetadata : File? = listRemoteFiles().find {remoteFile ->
+        val nameMatches = remoteFile.name == FILENAME
+        val parentMatches = remoteFile.parents?.contains(backupFolderMetadata.id) ?: false
+
+        nameMatches && parentMatches
+    }
+
     private val localSyncDir = context.filesDir.parentFile.listFiles().find { file -> file.name == "databases" }!!
 
-    fun listRemoteFiles() : List<File> {
+    private fun listRemoteFiles() : List<File> {
         return googleDriveService.files().list().apply{fields = "*"}
                 .setSpaces(REMOTE_FS).execute().files
     }
 
-    fun updateRemoteWithLocal(remoteFileMetadata : File?, localFile : java.io.File) {
+    private fun updateRemoteWithLocal(localFile : java.io.File) {
         val remoteExists = remoteFileMetadata != null
 
-        val content = StringBuilder().run {
-            localFile.readLines().forEach { append(it).append('\n') }
-            toString()
-        }
-
-        val contentStream = ByteArrayContent.fromString(null, content)
-
+//            Log.d(tag, "file size: ${localFile.readBytes().size}")
+        val content = localFile.readBytes()
+        val contentStream = ByteArrayContent(null, content)
 
         googleDriveService.files().run {
             if (remoteExists) {
                 // either get remote data or push local data
-
 //                Log.d(tag, "updating remote file ${localFile.name}")
                 update(remoteFileMetadata!!.id, null, contentStream)
             }
@@ -73,21 +73,51 @@ class FileSyncHelper(private val googleDriveService : Drive, context: Context) {
         }.execute()
     }
 
-    fun updateLocalWithRemote(localFile : java.io.File?, remoteFileMetadata : File) {
-        val bytes = googleDriveService.files().get(remoteFileMetadata.id).executeAsInputStream().readBytes()
+    private fun updateLocalWithRemote() {
+        val bytes = googleDriveService.files()
+            .get(remoteFileMetadata!!.id).executeMediaAsInputStream().readBytes()
+        val tag = "updateLocalWithremote()"
 
-        if (localFile != null) {
-            localFile
+        val restoreFilename = "restore-$FILENAME"
+
+        java.io.File("${localSyncDir.path}/$restoreFilename").run {
+            writeBytes(bytes)
+            Log.d(tag, "file $name exists: ${exists()}")
+
+            Log.d(tag, "file size: ${readBytes().size}")
+
+
+//            LogEntryDatabase.insertEntriesFromDbFile(path)
+
+            val restoreDb = LogEntryDatabase.init(context, restoreFilename)
+
+            val restoreEntries = restoreDb.entryDao().getAll()
+            val localEntries = LogEntryDatabase.instance.entryDao().getAll()
+
+            Log.d(tag, "Number of entries in restore db: ${restoreEntries.size}")
+
+//            LogEntryDatabase.insertEntriesFromDbFile(path)
+
+            // find the entries that are in the restore database but not local database
+            for (restoreEntry in restoreEntries) {
+                localEntries.find { localEntry -> localEntry.dateTime == restoreEntry.dateTime &&
+                                localEntry.type == restoreEntry.type }.let { entry ->
+
+                    // if it doesn't exist locally, add it
+                    if (entry == null) {
+                        LogEntryDatabase.instance.entryDao().insert(restoreEntry)
+                    }
+
+                }
+            }
+
+            restoreDb.close()
         }
-        else {
-            // create the file with the known root
-            val newFile = java.io.File(localSyncDir.absolutePath + remoteFileMetadata.name)
-            newFile
-        }.writeBytes(bytes)
 
+        localSyncDir.list().forEach { Log.d(tag, it) }
     }
 
-    fun syncLocalAndRemote(localFile : java.io.File?, remoteFileMetadata : File?) {
+    fun syncLocalAndRemote(localFile : java.io.File?) {
 
         val tag = "syncLocalAndRemote()"
 
@@ -101,18 +131,18 @@ class FileSyncHelper(private val googleDriveService : Drive, context: Context) {
                 // if local file is newer
                 if (localLastModified >= remoteLastModified) {
                     Log.d(tag, "local is newer; updating remote with local data")
-                    updateRemoteWithLocal(remoteFileMetadata, localFile)
+                    updateRemoteWithLocal(localFile)
                 }
                 else {
                     Log.d(tag, "remote is newer; updating local with remote data")
-                    updateLocalWithRemote(localFile, remoteFileMetadata)
+                    updateLocalWithRemote()
                 }
             }
 
             // copy local to remote
-            Pair(false, true) -> updateRemoteWithLocal(remoteFileMetadata, localFile!!)
+            Pair(false, true) -> updateRemoteWithLocal(localFile!!)
             // copy remote to local
-            Pair(true, false) -> updateLocalWithRemote(localFile, remoteFileMetadata!!)
+            Pair(true, false) -> updateLocalWithRemote()
         }
 
     }
@@ -149,7 +179,7 @@ class BackupService : Service() {
 
     fun init(googleDriveService: Drive) : Task<BackupService> {
         return Tasks.call(executor, Callable {
-            localFile = java.io.File("${filesDir.parent}/databases/${LogEntryDatabase.DB_NAME}")
+            localFile = java.io.File("${filesDir.parent}/databases/${LogEntryDatabase.DB_NAME_PRIMARY}")
 
             this.googleDriveService = googleDriveService
 
@@ -164,7 +194,7 @@ class BackupService : Service() {
             LogEntryDatabase.checkpoint()
 
             // will overwrite remote db with local
-            fileSyncHelper!!.syncLocalAndRemote(localFile, null)
+            fileSyncHelper!!.syncLocalAndRemote(localFile)
         })
     }
 
@@ -173,46 +203,34 @@ class BackupService : Service() {
 
 //             will overwrite local db with remote
             fileSyncHelper!!.run {
-                val remoteFileMetadata = listRemoteFiles().find { it.parents == listOf(backupFolderMetadata) }
-
-                syncLocalAndRemote(null, remoteFileMetadata)
+                syncLocalAndRemote(null)
             }
         })
     }
 
-    fun syncDatabaseFiles() : Task<Unit> {
-        return Tasks.call (executor, Callable {
-
-            val tag = "syncDataBaseFile()"
-
-            Log.d(tag, "preparing to sync...")
-
-            val remoteFiles = fileSyncHelper!!.listRemoteFiles()
-
-            Log.d(tag, "Number of remote files: ${remoteFiles.size}")
-
-            val remoteFileMetadata = remoteFiles.find { remoteFile ->
-                // the false means to not include this file if it has no parents
-
-                val nameMatches = remoteFile.name == localFile!!.name
-                val parentMatches =
-                    remoteFile.parents?.contains(fileSyncHelper!!.backupFolderMetadata.id) ?: false
-
-                nameMatches && parentMatches
-            }
-
-
-            val debugStr = StringBuilder().run {
-                append("\nfilename: ${localFile!!.name}")
-                append("\nremote exists: ${remoteFileMetadata != null}")
-                toString()
-            }
-
-            Log.d(tag, debugStr)
-
-            fileSyncHelper!!.syncLocalAndRemote(localFile, remoteFileMetadata)
-        })
-    }
+//    fun syncDatabaseFiles() : Task<Unit> {
+//        return Tasks.call (executor, Callable {
+//
+//            val tag = "syncDataBaseFile()"
+//
+//            Log.d(tag, "preparing to sync...")
+//
+//            val remoteFiles = fileSyncHelper!!.listRemoteFiles()
+//
+//            Log.d(tag, "Number of remote files: ${remoteFiles.size}")
+//
+//
+//            val debugStr = StringBuilder().run {
+//                append("\nfilename: ${localFile!!.name}")
+//                append("\nremote exists: ${remoteFileMetadata != null}")
+//                toString()
+//            }
+//
+//            Log.d(tag, debugStr)
+//
+//            fileSyncHelper!!.syncLocalAndRemote(localFile, remoteFileMetadata)
+//        })
+//    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         return START_STICKY

@@ -124,7 +124,7 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         tabLayout.visibility = if (open) View.VISIBLE else View.GONE
     }
 
-    private fun onDatabaseLoaded() {
+    private fun onDatabaseValidated() {
         setContentView(R.layout.activity_main)
         findViewById<TabLayout>(R.id.tabLayout)!!.run {
             EntryTypes.getTypes().forEach { addTab(newTab().setText(it)) }
@@ -144,7 +144,7 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
 
         navController = findNavController(R.id.nav_host_fragment)
 
-        val tag = "onDatabaseLoaded()"
+        val tag = "onDatabaseValidated()"
 //        backupButton.setOnClickListener {
 //            Log.d(tag, "Backup button pressed")
 //            requestSignIn()
@@ -273,32 +273,32 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         }
     }
 
-    private fun doSync() {
-        backupService!!.syncDatabaseFiles().apply {
-
-            addOnSuccessListener {
-                Toast.makeText(this@MainActivity,
-                    "Synced local database with Google Drive", Toast.LENGTH_SHORT).show()
-            }
-
-            addOnFailureListener {e ->
-                val errorMessage = "Failed to sync with remote database"
-                val tag = "syncDatabaseFiles()"
-
-                Utility.ErrorDialogFragment().apply {
-                    message = errorMessage
-                }.show(supportFragmentManager, null)
-
-                val stackTraceStr = e.stackTrace.run {
-                    fold("$e\n") { accString, elt ->
-                        accString.plus("$elt\n")
-                    }
-                }
-
-                Log.e(tag, "$errorMessage: due to... \n$stackTraceStr")
-            }
-        }
-    }
+//    private fun doSync() {
+//        backupService!!.syncDatabaseFiles().apply {
+//
+//            addOnSuccessListener {
+//                Toast.makeText(this@MainActivity,
+//                    "Synced local database with Google Drive", Toast.LENGTH_SHORT).show()
+//            }
+//
+//            addOnFailureListener {e ->
+//                val errorMessage = "Failed to sync with remote database"
+//                val tag = "syncDatabaseFiles()"
+//
+//                Utility.ErrorDialogFragment().apply {
+//                    message = errorMessage
+//                }.show(supportFragmentManager, null)
+//
+//                val stackTraceStr = e.stackTrace.run {
+//                    fold("$e\n") { accString, elt ->
+//                        accString.plus("$elt\n")
+//                    }
+//                }
+//
+//                Log.e(tag, "$errorMessage: due to... \n$stackTraceStr")
+//            }
+//        }
+//    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -307,7 +307,7 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         bindService(backupServiceIntent, backupServiceConnection, 0)
 
         Thread {
-            LogEntryDatabase.init(this)
+            LogEntryDatabase.init(this, LogEntryDatabase.DB_NAME_PRIMARY)
 
             val entryDao = LogEntryDatabase.instance.entryDao()
             val entries = entryDao.getAll()
@@ -330,7 +330,7 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
             }
 
             runOnUiThread {
-                onDatabaseLoaded()
+                onDatabaseValidated()
             }
 
         }.start()
