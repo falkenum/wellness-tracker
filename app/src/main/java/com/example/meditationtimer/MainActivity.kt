@@ -252,26 +252,26 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         }
     }
 
-    fun onBackupAndRestore(view : View) {
+    fun onSync(view : View) {
         when (view.id) {
-            R.id.backupButton -> doBackup()
-            R.id.restoreButton -> doRestore()
+            R.id.syncButton -> doSync()
+//            R.id.restoreButton -> doRestore()
         }
     }
 
-    private fun doBackup() {
-        backupService!!.backupDatabaseFiles().addOnSuccessListener {
+    private fun doSync() {
+        backupService!!.syncDatabaseFiles().addOnSuccessListener {
             Toast.makeText(this@MainActivity,
-                "Backed up local database to Google Drive", Toast.LENGTH_SHORT).show()
+                "Synced local database with Google Drive", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun doRestore() {
-        backupService!!.restoreDatabaseFiles().addOnSuccessListener {
-            Toast.makeText(this@MainActivity,
-                "Restored local database from Google Drive", Toast.LENGTH_SHORT).show()
-        }
-    }
+//    private fun doRestore() {
+//        backupService!!.restoreDatabaseFiles().addOnSuccessListener {
+//            Toast.makeText(this@MainActivity,
+//                "Restored local database from Google Drive", Toast.LENGTH_SHORT).show()
+//        }
+//    }
 
 //    private fun doSync() {
 //        backupService!!.syncDatabaseFiles().apply {

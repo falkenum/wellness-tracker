@@ -121,45 +121,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" android:layout_weight="1" android:minWidth="8dp"/>
             <Button
-                    android:text="Backup"
-                    android:onClick="onBackupAndRestore"
+                    android:text="Sync"
+                    android:onClick="onSync"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:id="@+id/backupButton"
-                    android:layout_gravity="end"/>
-        </LinearLayout>
-        <LinearLayout
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" android:layout_marginTop="8dp">
-            <LinearLayout
-                    android:orientation="vertical"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent">
-                <Space
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" android:layout_weight="1"/>
-                <TextView
-                        android:text="Last restored"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="16dp" android:includeFontPadding="false"/>
-                <TextView
-                        android:text="TextView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" android:layout_weight="1"
-                        android:textSize="16dp" android:includeFontPadding="false" android:textStyle="bold"/>
-                <Space
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" android:layout_weight="1"/>
-            </LinearLayout>
-            <Space
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" android:layout_weight="1" android:minWidth="8dp"/>
-            <Button
-                    android:text="Restore"
-                    android:layout_width="wrap_content"
-                    android:onClick="onBackupAndRestore"
-                    android:layout_height="wrap_content" android:id="@+id/restoreButton"
+                    android:layout_height="wrap_content" android:id="@+id/syncButton"
                     android:layout_gravity="end"/>
         </LinearLayout>
         <LinearLayout
