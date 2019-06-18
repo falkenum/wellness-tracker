@@ -239,10 +239,13 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
                     .addOnSuccessListener {
                         Log.d("onActivityResult()", "Initialized backup service")
                     }.addOnFailureListener {
+
+                        it.printStackTrace()
+
                         Utility.ErrorDialogFragment().apply {
                             message = "Failed to initialize backup service"
-                    }.show(supportFragmentManager, null)
-                }
+                        }.show(supportFragmentManager, null)
+                    }
 
 
                 else Utility.InfoDialogFragment().apply {
@@ -265,40 +268,6 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
                 "Synced local database with Google Drive", Toast.LENGTH_SHORT).show()
         }
     }
-
-//    private fun doRestore() {
-//        backupService!!.restoreDatabaseFiles().addOnSuccessListener {
-//            Toast.makeText(this@MainActivity,
-//                "Restored local database from Google Drive", Toast.LENGTH_SHORT).show()
-//        }
-//    }
-
-//    private fun doSync() {
-//        backupService!!.syncDatabaseFiles().apply {
-//
-//            addOnSuccessListener {
-//                Toast.makeText(this@MainActivity,
-//                    "Synced local database with Google Drive", Toast.LENGTH_SHORT).show()
-//            }
-//
-//            addOnFailureListener {e ->
-//                val errorMessage = "Failed to sync with remote database"
-//                val tag = "syncDatabaseFiles()"
-//
-//                Utility.ErrorDialogFragment().apply {
-//                    message = errorMessage
-//                }.show(supportFragmentManager, null)
-//
-//                val stackTraceStr = e.stackTrace.run {
-//                    fold("$e\n") { accString, elt ->
-//                        accString.plus("$elt\n")
-//                    }
-//                }
-//
-//                Log.e(tag, "$errorMessage: due to... \n$stackTraceStr")
-//            }
-//        }
-//    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
