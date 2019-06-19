@@ -5,7 +5,7 @@ import android.view.Menu
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 
-open class MainFragment : Fragment() {
+open class BaseFragment : Fragment() {
     var showTypeTabs = false
     var options : Menu? = null
 

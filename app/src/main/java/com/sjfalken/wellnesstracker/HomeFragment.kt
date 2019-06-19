@@ -10,7 +10,7 @@ import org.json.JSONObject
 import java.time.Duration
 import java.time.Instant
 
-class HomeFragment : MainFragment() {
+class HomeFragment : BaseFragment() {
     companion object {
         const val YEAR = "year"
         const val MONTH = "month"
@@ -107,6 +107,13 @@ class HomeFragment : MainFragment() {
         }.start()
     }
 
+    private val signedOutStr = "Not signed in"
+
+    private fun updateSignedInUser() {
+        val signedInUserView = rootView.findViewById<TextView>(R.id.signedInUser)
+        signedInUserView.text = (activity!! as MainActivity).signedInAccount?.email ?: signedOutStr
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         rootView = inflater.inflate(R.layout.fragment_home, container, false)
 
@@ -115,11 +122,27 @@ class HomeFragment : MainFragment() {
         }
 
 
-        (activity!! as MainActivity).apply {
+        val mainActivity = (activity!! as MainActivity)
+        rootView.findViewById<Button>(R.id.syncButton).setOnClickListener {
+            mainActivity.doSync()
+        }
+
+        updateSignedInUser()
+
+        mainActivity.apply {
             addOnTabSelectedAction {
                 if (isVisible)
                     updateStats()
             }
+            addOnSignInAction { googleAccount ->
+                updateSignedInUser()
+            }
+        }
+
+        rootView.findViewById<Button>(R.id.signOutButton).setOnClickListener {
+            mainActivity.signOut()
+
+            updateSignedInUser()
         }
 
 

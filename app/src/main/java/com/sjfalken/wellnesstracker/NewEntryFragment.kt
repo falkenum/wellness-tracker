@@ -16,7 +16,7 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 
-class NewEntryFragment : MainFragment() {
+class NewEntryFragment : BaseFragment() {
 
     companion object ARGUMENT_KEYS {
         const val ENTRY_TYPE = "com.sjfalken.wellnesstracker.ENTRY_TYPE"

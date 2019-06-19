@@ -41,9 +41,16 @@ class BundleKeys {
 class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
 
     var selectedType = EntryTypes.getTypes()[0]
+        private set
+
+    var signedInAccount : GoogleSignInAccount? = null
+        private set
+
     private lateinit var navController: NavController
 
     private val onTabSelectedActions = mutableListOf<(TabLayout.Tab) -> Unit>()
+    private val onSignInActions = mutableListOf<(googleAccount : GoogleSignInAccount?) -> Unit>()
+
     private val fragmentsToShowTabs = listOf(R.id.homeFragment, R.id.newEntryFragment)
     private lateinit var googleSignInClient : GoogleSignInClient
     private var backupService: BackupService? = null
@@ -66,6 +73,19 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
 
     fun addOnTabSelectedAction(action : (TabLayout.Tab) -> Unit) {
         onTabSelectedActions.add(action)
+    }
+
+    fun addOnSignInAction(action : (googleAccount : GoogleSignInAccount?) -> Unit) {
+        onSignInActions.add(action)
+    }
+
+    fun signOut() {
+        Log.d("signOut()", "Signing out")
+        googleSignInClient.signOut()
+
+        signedInAccount = null
+
+        Toast.makeText(this, "Signed out of account", Toast.LENGTH_SHORT).show()
     }
 
     private fun setupReminders() {
@@ -150,14 +170,6 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
 //            requestSignIn()
 //        }
 
-        signOutButton.setOnClickListener {
-            Log.d(tag, "Signing out")
-            googleSignInClient.signOut()
-
-            Toast.makeText(this, "Signed out of account", Toast.LENGTH_SHORT).show()
-        }
-
-
         val toolbar = findViewById<Toolbar>(R.id.toolbar).apply {
             inflateMenu(R.menu.menu_options)
 
@@ -204,17 +216,27 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         imm.hideSoftInputFromWindow(view.windowToken, 0)
     }
 
+//    val signedInEmail : String? = run {
+//        val googleAccount = GoogleSignIn.getLastSignedInAccount(this)
+//        googleAccount?.email
+//    }
+
     private fun requestSignIn() {
         val googleAccount = GoogleSignIn.getLastSignedInAccount(this)
-        signedInUser.text = googleAccount?.email ?: "Not signed in"
         Log.d("requestSignIn()", "signed in account: ${googleAccount?.email ?: "null"}")
 
         // The result of the sign-in Intent is handled in onActivityResult.
 //        if (googleAccount == null) startActivityForResult(client.signInIntent, RC_SIGN_IN)
+
+//        if (googleAccount?.email == null)
+
         startActivityForResult(googleSignInClient.signInIntent, RC_SIGN_IN)
 
-        // if already signed in, use the network
-//        else syncDatabaseFiles(googleAccount)
+//        else {
+//            googleSignInClient.silentSignIn()
+//            signedInAccount = googleAccount
+//        }
+
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -223,6 +245,9 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         when (requestCode) {
             RC_SIGN_IN -> {
                 val googleAccount = GoogleSignIn.getSignedInAccountFromIntent(data).result
+                signedInAccount = googleAccount
+                onSignInActions.forEach { it(googleAccount) }
+
 
                 val credential = GoogleAccountCredential.usingOAuth2(
                     this, listOf(appDataScope, driveFileScope))
@@ -255,14 +280,8 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         }
     }
 
-    fun onSync(view : View) {
-        when (view.id) {
-            R.id.syncButton -> doSync()
-//            R.id.restoreButton -> doRestore()
-        }
-    }
 
-    private fun doSync() {
+    fun doSync() {
         backupService!!.syncDatabaseFiles().addOnSuccessListener {
             Toast.makeText(this@MainActivity,
                 "Synced local database with Google Drive", Toast.LENGTH_SHORT).show()
