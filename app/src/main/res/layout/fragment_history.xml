@@ -12,10 +12,10 @@
         <Space
                 android:layout_width="match_parent"
                 android:layout_height="16dp"/>
-        <com.example.meditationtimer.CalendarView android:layout_width="match_parent"
-                                                  android:layout_height="wrap_content"
-                                                  android:id="@+id/calendarView">
-        </com.example.meditationtimer.CalendarView>
+        <com.sjfalken.wellnesstracker.CalendarView android:layout_width="match_parent"
+                                                   android:layout_height="wrap_content"
+                                                   android:id="@+id/calendarView">
+        </com.sjfalken.wellnesstracker.CalendarView>
         <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" android:id="@+id/dayInfoLayout" android:gravity="center"

@@ -1,4 +1,4 @@
-package com.example.meditationtimer
+package com.sjfalken.wellnesstracker
 
 import android.content.ComponentName
 import android.content.Intent

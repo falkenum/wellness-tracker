@@ -1,4 +1,4 @@
-package com.example.meditationtimer
+package com.sjfalken.wellnesstracker
 
 import org.junit.Test
 

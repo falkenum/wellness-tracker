@@ -1,4 +1,4 @@
-package com.example.meditationtimer
+package com.sjfalken.wellnesstracker
 
 import java.time.*
 import android.app.*

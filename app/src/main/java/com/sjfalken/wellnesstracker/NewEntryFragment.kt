@@ -1,4 +1,4 @@
-package com.example.meditationtimer
+package com.sjfalken.wellnesstracker
 
 import android.app.DatePickerDialog
 import android.app.Dialog
@@ -19,8 +19,8 @@ import java.util.*
 class NewEntryFragment : MainFragment() {
 
     companion object ARGUMENT_KEYS {
-        const val ENTRY_TYPE = "com.example.meditationtimer.ENTRY_TYPE"
-        const val DATE_TIME = "com.example.meditationtimer.DATE_TIME"
+        const val ENTRY_TYPE = "com.sjfalken.wellnesstracker.ENTRY_TYPE"
+        const val DATE_TIME = "com.sjfalken.wellnesstracker.DATE_TIME"
     }
 
     lateinit var dataInputView : EntryDataInputView

@@ -1,4 +1,4 @@
-package com.example.meditationtimer
+package com.sjfalken.wellnesstracker
 
 import android.content.Context
 import android.graphics.drawable.GradientDrawable

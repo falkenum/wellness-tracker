@@ -1,4 +1,4 @@
-package com.example.meditationtimer
+package com.sjfalken.wellnesstracker
 
 import android.app.Service
 import android.content.Context
@@ -6,7 +6,7 @@ import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import android.util.Log
-import com.example.meditationtimer.BackupService.Companion.REMOTE_FS
+import com.sjfalken.wellnesstracker.BackupService.Companion.REMOTE_FS
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import com.google.api.client.http.ByteArrayContent

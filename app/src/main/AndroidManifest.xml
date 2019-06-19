@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.example.meditationtimer">
+          package="com.sjfalken.wellnesstracker">
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -9,41 +9,41 @@
     <application
             android:allowBackup="true"
             android:icon="@mipmap/ic_launcher"
-            android:label="@string/app_name"
+            android:label="Wellness Tracker"
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
 
         <service
-                android:name=".BackupService"
+                android:name="com.sjfalken.wellnesstracker.BackupService"
                 android:enabled="true"
                 android:exported="true">
         </service>
 
         <receiver
-                android:name=".ReminderReceiver"
+                android:name="com.sjfalken.wellnesstracker.ReminderReceiver"
                 android:enabled="true"
                 android:exported="true">
         </receiver>
         <receiver
-                android:name=".AlarmReceiver"
+                android:name="com.sjfalken.wellnesstracker.AlarmReceiver"
                 android:enabled="true"
                 android:exported="true">
         </receiver>
 
         <service
-                android:name=".BellService"
+                android:name="com.sjfalken.wellnesstracker.BellService"
                 android:enabled="true"
                 android:exported="true">
         </service>
         <service
-                android:name=".TimerService"
+                android:name="com.sjfalken.wellnesstracker.TimerService"
                 android:enabled="true"
                 android:exported="true">
         </service>
 
         <activity
-                android:name=".MainActivity"
+                android:name="com.sjfalken.wellnesstracker.MainActivity"
                 android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
