@@ -134,7 +134,7 @@ class HomeFragment : BaseFragment() {
                 if (isVisible)
                     updateStats()
             }
-            addOnSignInAction { googleAccount ->
+            addOnSignInAction {
                 updateSignedInUser()
             }
         }

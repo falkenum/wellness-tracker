@@ -98,6 +98,14 @@ interface EntryDao{
 
         return getAllWithinDuration(startDateTime.toEpochSecond(), endDateTime.toEpochSecond())
     }
+
+    @Transaction
+    fun getAllForDateAndType(date : LocalDate, type : String) : List<Entry> {
+        val startDateTime = ZonedDateTime.of(date, LocalTime.MIN, ZoneId.systemDefault())
+        val endDateTime = ZonedDateTime.of(date, LocalTime.MAX, ZoneId.systemDefault())
+
+        return getAllWithinDurationAndType(startDateTime.toEpochSecond(), endDateTime.toEpochSecond(), type)
+    }
 }
 
 @Dao

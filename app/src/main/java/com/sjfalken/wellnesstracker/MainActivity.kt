@@ -30,6 +30,7 @@ import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_home.*
+import org.apache.commons.net.io.Util
 
 class BundleKeys {
     companion object {
@@ -51,7 +52,7 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
     private val onTabSelectedActions = mutableListOf<(TabLayout.Tab) -> Unit>()
     private val onSignInActions = mutableListOf<(googleAccount : GoogleSignInAccount?) -> Unit>()
 
-    private val fragmentsToShowTabs = listOf(R.id.homeFragment, R.id.newEntryFragment)
+    private val fragmentsToShowTabs = listOf(R.id.homeFragment, R.id.newEntryFragment, R.id.historyFragment)
     private lateinit var googleSignInClient : GoogleSignInClient
     private var backupService: BackupService? = null
     private val appDataScope = DriveScopes.DRIVE_APPDATA
@@ -285,6 +286,11 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         backupService!!.syncDatabaseFiles().addOnSuccessListener {
             Toast.makeText(this@MainActivity,
                 "Synced local database with Google Drive", Toast.LENGTH_SHORT).show()
+        }
+        .addOnFailureListener {
+            Utility.ErrorDialogFragment().apply {
+                message = "Failed to sync local database with Google Drive"
+            }.show(supportFragmentManager, null)
         }
     }
 

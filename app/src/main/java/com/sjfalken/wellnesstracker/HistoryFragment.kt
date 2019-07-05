@@ -4,6 +4,7 @@ import android.app.Dialog
 import android.content.*
 import android.os.Bundle
 import android.os.IBinder
+import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import android.view.LayoutInflater
 import android.view.View
@@ -45,21 +46,12 @@ class HistoryFragment : BaseFragment() {
     private lateinit var fm: androidx.fragment.app.FragmentManager
     private lateinit var entryDao: EntryDao
 
-    // null means no day is selected
-    private var selectedDayOFMonth : Int? = null
-        set(value) {
-            if (value != null && (value < 1 || value > calendarView.lengthOfMonth))
-                throw IllegalStateException("Invalid day $value")
-
-            field = value
-        }
-
     private val timerConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
             val timerServiceBinder = (binder as TimerService.TimerBinder)
 
             timerServiceBinder.getService().onTimerFinishTasks.add {
-                refreshTab()
+                refreshFragmentView()
             }
         }
 
@@ -77,7 +69,7 @@ class HistoryFragment : BaseFragment() {
                    Thread {
                        // delete entry
                        entryDao.delete(entry)
-                       refreshTab()
+                       refreshFragmentView()
                    }.start()
                }
                // confirm that the entry should be deleted
@@ -91,12 +83,14 @@ class HistoryFragment : BaseFragment() {
     }
 
     private fun showInfoForSelectedDay() {
-        if (selectedDayOFMonth == null) {
+        val selectedDayOfMonth = calendarView.selectedDate?.dayOfMonth
+        if (selectedDayOfMonth == null) {
             dayInfoLayout.visibility = View.GONE
             return
         }
 
-        val recordsForDay = monthEntries[selectedDayOFMonth!! - 1]
+        val recordsForDay = monthEntries[selectedDayOfMonth - 1]
+        Log.d("showInfoForSelectedDay", "number of records for day: ${recordsForDay.size}")
         numEntriesView.text = recordsForDay.size.toString()
 
         // remove all the cards, leave the summaryLayout at the beginning
@@ -110,21 +104,20 @@ class HistoryFragment : BaseFragment() {
         dayInfoLayout.visibility = View.VISIBLE
     }
 
-    private fun reloadMonthEntries() {
+    private fun loadMonthEntries() {
         // Make an array of lists containing the records for each day of the month
         monthEntries = Array(calendarView.yearMonthShown.lengthOfMonth())
             { ArrayList<Entry>(0) }
+        val selectedType = (activity!! as MainActivity).selectedType
 
-        for (record in entryDao.getAll()) {
-            val dateTime = record.dateTime
-
-            // if the record is in the shown month
-            if (YearMonth.from(dateTime) == calendarView.yearMonthShown) {
-                val dayOfMonth = MonthDay.from(dateTime).dayOfMonth
-
-                // add to the appropriate array list, zero indexed for the array
-                monthEntries[dayOfMonth - 1].add(record)
-            }
+        val year = calendarView.yearMonthShown.year
+        val month = calendarView.yearMonthShown.month
+        // for day in month
+        for (dayOfMonth in 1..calendarView.yearMonthShown.lengthOfMonth()) {
+            val date = LocalDate.of(year, month, dayOfMonth)
+            val records = entryDao.getAllForDateAndType(date, selectedType)
+            assert(monthEntries[dayOfMonth - 1].size == 0)
+            monthEntries[dayOfMonth - 1].addAll(records)
         }
     }
 
@@ -151,19 +144,16 @@ class HistoryFragment : BaseFragment() {
 
         // setting up calendar callbacks
         calendarView.onDaySelect = { dayOfMonth ->
-            selectedDayOFMonth = dayOfMonth
             showInfoForSelectedDay()
         }
 
         calendarView.onDayDeselect = {
             // make summary invisible again when no day is selected
-            selectedDayOFMonth = null
             showInfoForSelectedDay()
         }
 
         calendarView.onMonthChange = {
-            selectedDayOFMonth = null
-            refreshTab()
+            refreshFragmentView()
         }
 
         tabView.findViewById<Button>(R.id.addRecordButton).setOnClickListener {
@@ -180,7 +170,11 @@ class HistoryFragment : BaseFragment() {
 
 //        tabView.visibility = GONE
 
-        selectedDayOFMonth = LocalDate.now().dayOfMonth
+        (activity!! as MainActivity).let { mainActivity ->
+            mainActivity.addOnTabSelectedAction {
+                refreshFragmentView()
+            }
+        }
 
         return tabView
     }
@@ -188,12 +182,12 @@ class HistoryFragment : BaseFragment() {
     override fun onStart() {
         super.onStart()
 
-        refreshTab()
+        refreshFragmentView()
     }
 
-    private fun refreshTab() {
+    private fun refreshFragmentView() {
         Thread {
-            reloadMonthEntries()
+            loadMonthEntries()
             activity?.runOnUiThread {
                 fillCalendarDays()
                 showInfoForSelectedDay()

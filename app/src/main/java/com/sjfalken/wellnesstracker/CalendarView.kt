@@ -21,6 +21,11 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
     var yearMonthShown : YearMonth = YearMonth.now()
         private set
     val lengthOfMonth : Int get() = yearMonthShown.lengthOfMonth()
+    val selectedDate : LocalDate? get() {
+        return selectedDayView?.dayOfMonth?.let {
+            LocalDate.of(yearMonthShown.year, yearMonthShown.month, it)
+        }
+    }
 
     private var selectedDayView : DayView? = null
     var onDaySelect : ((Int) -> Unit)? = null
