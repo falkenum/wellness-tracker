@@ -7,4 +7,8 @@
           android:title="Timer"
           android:icon="@drawable/ic_timer"
     />
+    <item android:id="@id/mediaFragment"
+          android:title="Media"
+          android:icon="@drawable/ic_media"
+    />
 </menu>

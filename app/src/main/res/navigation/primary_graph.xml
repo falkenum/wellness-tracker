@@ -18,5 +18,8 @@
                 app:launchSingleTop="true"/>
         <action android:id="@+id/action_homeFragment_to_newEntryFragment" app:destination="@id/newEntryFragment"
         />
+        <action android:id="@+id/action_homeFragment_to_mediaFragment" app:destination="@id/mediaFragment"/>
     </fragment>
+    <fragment android:id="@+id/mediaFragment" android:name="com.sjfalken.wellnesstracker.MediaFragment"
+              android:label="MediaFragment"/>
 </navigation>
