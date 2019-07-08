@@ -29,7 +29,7 @@ class FileSyncHelper(private val googleDriveService : Drive, private val context
             }
 
             // create the new folder and store its new metadata from the server
-            googleDriveService.files().create(newBackupFolderMetadata).apply { fields = "id" }.execute()
+            googleDriveService.files().create(newBackupFolderMetadata).apply { fields = "playbackId" }.execute()
         }
 
     private val remoteFileMetadata : File = listRemoteFiles().find {remoteFile ->
@@ -45,7 +45,7 @@ class FileSyncHelper(private val googleDriveService : Drive, private val context
 
         val content = localFile.readBytes()
         val contentStream = ByteArrayContent(null, content)
-        googleDriveService.files().create(newFileMetadata, contentStream).apply { fields = "id" }.execute()
+        googleDriveService.files().create(newFileMetadata, contentStream).apply { fields = "playbackId" }.execute()
     }
 
     private val remoteFileContent = googleDriveService.files()

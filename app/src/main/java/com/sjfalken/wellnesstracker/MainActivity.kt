@@ -35,7 +35,7 @@ import org.apache.commons.net.io.Util
 class BundleKeys {
     companion object {
         const val REMINDER_TYPE = "reminder type"
-        const val REMINDER_ID = "reminder id"
+        const val REMINDER_ID = "reminder playbackId"
     }
 }
 
@@ -100,7 +100,7 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
             // if there are reminders for this config type, then make a pending intent for each one
             if (times != null) for (time in times) {
 
-                // using the request code also as a notification id for the reminder
+                // using the request code also as a notification playbackId for the reminder
                 receiverIntent.putExtra(BundleKeys.REMINDER_ID, requestCode)
                 // need a different request code for every alarm set
                 val receiverPendingIntent = PendingIntent.getBroadcast(applicationContext, requestCode,

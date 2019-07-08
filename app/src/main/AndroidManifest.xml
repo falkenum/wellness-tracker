@@ -4,7 +4,7 @@
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <application
             android:allowBackup="true"
@@ -13,37 +13,41 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
-
         <service
-                android:name="com.sjfalken.wellnesstracker.BackupService"
+                android:name=".MediaService"
+                android:enabled="true"
+                android:exported="true">
+        </service>
+        <service
+                android:name=".BackupService"
                 android:enabled="true"
                 android:exported="true">
         </service>
 
         <receiver
-                android:name="com.sjfalken.wellnesstracker.ReminderReceiver"
+                android:name=".ReminderReceiver"
                 android:enabled="true"
                 android:exported="true">
         </receiver>
         <receiver
-                android:name="com.sjfalken.wellnesstracker.AlarmReceiver"
+                android:name=".AlarmReceiver"
                 android:enabled="true"
                 android:exported="true">
         </receiver>
 
         <service
-                android:name="com.sjfalken.wellnesstracker.BellService"
+                android:name=".BellService"
                 android:enabled="true"
                 android:exported="true">
         </service>
         <service
-                android:name="com.sjfalken.wellnesstracker.TimerService"
+                android:name=".TimerService"
                 android:enabled="true"
                 android:exported="true">
         </service>
 
         <activity
-                android:name="com.sjfalken.wellnesstracker.MainActivity"
+                android:name=".MainActivity"
                 android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
