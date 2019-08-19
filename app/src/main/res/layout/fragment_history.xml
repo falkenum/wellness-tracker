@@ -12,16 +12,17 @@
         <Space
                 android:layout_width="match_parent"
                 android:layout_height="16dp"/>
-        <com.sjfalken.wellnesstracker.CalendarView android:layout_width="match_parent"
+        <com.sjfalken.wellnesstracker.CalendarView android:layout_width="wrap_content"
                                                    android:layout_height="wrap_content"
-                                                   android:id="@+id/calendarView">
+                                                   android:id="@+id/calendarView"
+                                                   android:layout_gravity="center_horizontal">
         </com.sjfalken.wellnesstracker.CalendarView>
         <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" android:id="@+id/dayInfoLayout" android:gravity="center"
                 android:orientation="vertical">
             <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="350dp"
                     android:layout_height="wrap_content"
                     android:id="@+id/summaryLayout">
 
@@ -32,7 +33,8 @@
                         android:textSize="18sp"
                         android:id="@+id/textView3"
                         app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent"
-                        android:layout_marginStart="16dp" android:layout_marginTop="8dp"/>
+                        android:layout_marginTop="8dp"
+                />
                 <TextView
                         android:text="0"
                         android:layout_width="wrap_content"
@@ -40,14 +42,16 @@
                         android:id="@+id/numRecords"
                         android:textSize="18sp"
                         app:layout_constraintBaseline_toBaselineOf="@+id/textView3"
-                        app:layout_constraintStart_toEndOf="@+id/textView3" android:layout_marginStart="8dp"/>
+                        app:layout_constraintStart_toEndOf="@+id/textView3" android:layout_marginStart="8dp"
+                />
                 />
                 <Button android:id="@+id/addRecordButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" android:text="New Entry"
                         android:textSize="14sp"
                         app:layout_constraintBaseline_toBaselineOf="@+id/numRecords"
-                        app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="16dp"/>
+                        app:layout_constraintEnd_toEndOf="parent"
+                />
             </androidx.constraintlayout.widget.ConstraintLayout>
             <LinearLayout android:orientation="vertical"
                           android:id="@+id/sessionCardsLayout"

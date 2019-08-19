@@ -42,7 +42,7 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
     }
 
     init {
-        layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
+        layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
         orientation = VERTICAL
         LayoutInflater.from(context).inflate(R.layout.view_calendar, this, true)
 
@@ -66,8 +66,10 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
 
     private open inner class EmptyDayView : TextView(context)  {
         init {
+            minWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                50f, context.resources.displayMetrics).toInt()
             layoutParams = TableRow.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
         }
     }
@@ -113,7 +115,6 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
         init {
             id = dayOfMonth
             background = context!!.getDrawable(R.drawable.calendar_day_bg)
-
             hasEntries = false
             highlighted = false
             selectedDay = false
@@ -176,8 +177,8 @@ class CalendarView(context : Context, attributeSet: AttributeSet) : LinearLayout
             }
         }
 
-        // clear all weeks to start fresh
-        calendarTable.removeAllViews()
+        // clear all weeks, leaving the day of week labels
+        for (i in 1 until calendarTable.childCount) calendarTable.removeViewAt(1)
 
         // starting with the first day of the month, we will populate the calendar
         var date = LocalDate.of(yearMonthShown.year, yearMonthShown.month, 1)

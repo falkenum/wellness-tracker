@@ -9,7 +9,7 @@
         <!--<item name="android:textColor">@color/text</item>-->
         <!--<item name="android:windowBackground">@color/appBackground</item>-->
         <item name="android:buttonStyle">@style/button</item>
-        <item name="android:textSize">@dimen/defaultTextSize</item>
+        <item name="android:textStyle">@style/text</item>
 
     </style>
 
@@ -19,6 +19,10 @@
         <item name="android:textAllCaps">true</item>
         <item name="android:fontFamily">sans-serif-medium</item>
         <item name="android:padding">10dp</item>
+    </style>
+    <style name="text" >
+        <item name="android:textColor">@color/text</item>
+        <item name="android:textSize">@dimen/defaultTextSize</item>
     </style>
 
 </resources>
