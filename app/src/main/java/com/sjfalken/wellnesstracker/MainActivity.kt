@@ -12,6 +12,8 @@ import android.os.IBinder
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -30,8 +32,8 @@ import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.fragment_home.*
-import org.apache.commons.net.io.Util
+import kotlinx.android.synthetic.main.view_drawer_header.*
+import kotlinx.android.synthetic.main.view_drawer_header.view.*
 
 class BundleKeys {
     companion object {
@@ -158,7 +160,7 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
     }
 
     private fun updateSignedInUser() {
-        signedInUser.text = signedInAccount?.email ?: "Not signed in"
+        nav_view.getHeaderView(0).signedInUser.text = signedInAccount?.email ?: "Not signed in"
     }
 
     private fun onDatabaseValidated() {
@@ -168,29 +170,29 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
             addOnTabSelectedListener(this@MainActivity)
         }
 
-        signInOutButton.apply {
-            setOnClickListener {
-                if (text == context.getString(R.string.sign_in)) {
-                    requestSignIn()
+        nav_view.getHeaderView(0).apply{
+            signInOutButton.apply {
+                setOnClickListener {
+                    if (text == getString(R.string.sign_in)) {
+                        requestSignIn()
+                    } else {
+                        signOut()
+                        text = getString(R.string.sign_in)
+                        updateSignedInUser()
+                    }
                 }
-                else {
-                    signOut()
-                    text = context.getString(R.string.sign_in)
+                addOnSignInAction {
+                    text = getString(R.string.sign_out)
                     updateSignedInUser()
                 }
             }
-        }
-
-        syncButton.setOnClickListener {
-            doSync()
+            syncButton.setOnClickListener {
+                doSync()
+            }
         }
 
         updateSignedInUser()
 
-        addOnSignInAction {
-            signInOutButton.text = getString(R.string.sign_out)
-            updateSignedInUser()
-        }
 
         startService(Intent(this, BackupService::class.java))
 
@@ -234,8 +236,7 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         val drawerLayout = findViewById<DrawerLayout>(R.id.layout_main_drawer)
         NavigationUI.setupWithNavController(toolbar, navController, drawerLayout)
 
-        val drawerContent = findViewById<NavigationView>(R.id.view_drawer_content)
-        NavigationUI.setupWithNavController(drawerContent, navController)
+        NavigationUI.setupWithNavController(nav_view, navController)
 
         changeTabDrawer(true)
     }
