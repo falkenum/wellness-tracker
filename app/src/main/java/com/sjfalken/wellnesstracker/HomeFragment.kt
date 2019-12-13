@@ -111,8 +111,7 @@ class HomeFragment : BaseFragment() {
 
 
     private fun updateSignedInUser() {
-        val signedInUserView = rootView.findViewById<TextView>(R.id.signedInUser)
-        signedInUserView.text = (activity!! as MainActivity)
+        rootView.signedInUser.text = (activity!! as MainActivity)
             .signedInAccount?.email ?: "Not signed in"
     }
 
@@ -129,15 +128,12 @@ class HomeFragment : BaseFragment() {
             mainActivity.doSync()
         }
 
-        updateSignedInUser()
-
         mainActivity.apply {
             addOnTabSelectedAction {
                 if (isVisible)
                     updateStats()
             }
             addOnSignInAction {
-                updateSignedInUser()
                 rootView.signInOutButton.text = context!!.getString(R.string.sign_out)
                 updateSignedInUser()
             }
@@ -168,6 +164,7 @@ class HomeFragment : BaseFragment() {
     override fun onStart() {
         super.onStart()
 
+        updateSignedInUser()
         updateStats()
     }
 }

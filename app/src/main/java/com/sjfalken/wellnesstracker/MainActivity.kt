@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
+import android.os.ConditionVariable
 import android.os.IBinder
 import android.util.Log
 import android.view.View
@@ -40,6 +41,7 @@ class BundleKeys {
 }
 
 class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
+    val backupServiceConnectedCV = ConditionVariable()
 
     var selectedType = EntryTypes.getTypes()[0]
         private set
@@ -63,6 +65,7 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
             val backupServiceBinder = (binder as BackupService.BackupBinder)
             backupService = backupServiceBinder.getService()
+            backupServiceConnectedCV.open()
         }
 
         override fun onServiceDisconnected(name: ComponentName?) = Unit
@@ -288,7 +291,7 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         super.onCreate(savedInstanceState)
 
         val backupServiceIntent = Intent(applicationContext, BackupService::class.java)
-        bindService(backupServiceIntent, backupServiceConnection, 0)
+        bindService(backupServiceIntent, backupServiceConnection, Context.BIND_AUTO_CREATE)
 
         Thread {
             LogEntryDatabase.init(this, LogEntryDatabase.DB_NAME_PRIMARY)
@@ -312,7 +315,7 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
                     }
                 }.show(supportFragmentManager, null)
             }
-
+            backupServiceConnectedCV.block()
             runOnUiThread {
                 onDatabaseValidated()
             }
