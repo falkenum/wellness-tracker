@@ -10,11 +10,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import java.lang.IllegalStateException
 import java.time.*
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.tabs.TabLayout
+import kotlinx.android.synthetic.main.activity_main.*
 
-class HistoryFragment : BaseFragment() {
+class HistoryFragment : BaseFragment(), TabLayout.OnTabSelectedListener {
 
     class DeleteEntryDialogFragment() : androidx.fragment.app.DialogFragment() {
         lateinit var messageStr : String
@@ -37,7 +38,7 @@ class HistoryFragment : BaseFragment() {
     }
 
     private lateinit var monthEntries : Array< ArrayList<Entry> >
-    private lateinit var tabView: ScrollView
+    private lateinit var fragmentView: ScrollView
     private lateinit var calendarView : CalendarView
     private lateinit var numEntriesView : TextView
     private lateinit var dayInfoLayout : LinearLayout
@@ -110,6 +111,7 @@ class HistoryFragment : BaseFragment() {
             { ArrayList<Entry>(0) }
         val selectedType = (activity!! as MainActivity).selectedType
 
+
         val year = calendarView.yearMonthShown.year
         val month = calendarView.yearMonthShown.month
         // for day in month
@@ -134,12 +136,12 @@ class HistoryFragment : BaseFragment() {
         }.start()
 
         inflater = inflaterArg
-        tabView = inflater.inflate(R.layout.fragment_history, container, false) as ScrollView
+        fragmentView = inflater.inflate(R.layout.fragment_history, container, false) as ScrollView
 
-        calendarView = tabView.findViewById(R.id.calendarView)
-        dayInfoLayout = tabView.findViewById(R.id.dayInfoLayout)
-        sessionCardsLayout = tabView.findViewById(R.id.sessionCardsLayout)
-        numEntriesView = tabView.findViewById(R.id.numRecords)
+        calendarView = fragmentView.findViewById(R.id.calendarView)
+        dayInfoLayout = fragmentView.findViewById(R.id.dayInfoLayout)
+        sessionCardsLayout = fragmentView.findViewById(R.id.sessionCardsLayout)
+        numEntriesView = fragmentView.findViewById(R.id.numRecords)
         fm = activity!!.supportFragmentManager
 
         // setting up calendar callbacks
@@ -156,7 +158,7 @@ class HistoryFragment : BaseFragment() {
             refreshFragmentView()
         }
 
-        tabView.findViewById<Button>(R.id.addRecordButton).setOnClickListener {
+        fragmentView.findViewById<Button>(R.id.addRecordButton).setOnClickListener {
             findNavController().run {
                 // argument to set date and time in new fragment
                 val destinationArgs = Bundle().apply {
@@ -168,24 +170,25 @@ class HistoryFragment : BaseFragment() {
 
         activity!!.bindService(Intent(activity, TimerService::class.java), timerConnection, 0)
 
-//        tabView.visibility = GONE
 
-        (activity!! as MainActivity).let { mainActivity ->
-            mainActivity.addOnTabSelectedAction {
-                refreshFragmentView()
-            }
-        }
+        activity!!.findViewById<TabLayout>(R.id.tabLayout).addOnTabSelectedListener(this)
 
-        return tabView
+        return fragmentView
+    }
+
+    override fun onTabReselected(p0: TabLayout.Tab?) { }
+    override fun onTabUnselected(p0: TabLayout.Tab?)  { }
+    override fun onTabSelected(tab : TabLayout.Tab) {
+        refreshFragmentView()
     }
 
     override fun onStart() {
         super.onStart()
-
         refreshFragmentView()
     }
 
     private fun refreshFragmentView() {
+        if (activity == null) return
         Thread {
             loadMonthEntries()
             activity?.runOnUiThread {

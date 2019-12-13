@@ -163,7 +163,8 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         googleSignInClient = GoogleSignIn.getClient(this, signInOptions)
         requestSignIn()
 
-        navController = findNavController(R.id.nav_host_fragment)
+
+        navController = Navigation.findNavController(this, R.id.nav_host_fragment)
 
         val tag = "onDatabaseValidated()"
 //        backupButton.setOnClickListener {
@@ -223,20 +224,38 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
 //    }
 
     private fun requestSignIn() {
-        val googleAccount = GoogleSignIn.getLastSignedInAccount(this)
-        Log.d("requestSignIn()", "signed in account: ${googleAccount?.email ?: "null"}")
+        googleSignInClient.silentSignIn().addOnSuccessListener { googleAccount ->
+            signedInAccount = googleAccount
+            onSignedIn()
+        }.addOnFailureListener {
+            startActivityForResult(googleSignInClient.signInIntent, RC_SIGN_IN)
+        }
+    }
 
-        // The result of the sign-in Intent is handled in onActivityResult.
-//        if (googleAccount == null) startActivityForResult(client.signInIntent, RC_SIGN_IN)
+    private fun onSignedIn() {
+        onSignInActions.forEach { it(signedInAccount) }
+        val credential = GoogleAccountCredential.usingOAuth2(
+            this, listOf(appDataScope, driveFileScope))
+        credential.selectedAccount = signedInAccount!!.account
+        val googleDriveService : Drive = Drive.Builder(
+            AndroidHttp.newCompatibleTransport(),
+            GsonFactory(),
+            credential)
+            .setApplicationName(getString(R.string.app_name))
+            .build()
 
-//        if (googleAccount?.email == null)
 
-        startActivityForResult(googleSignInClient.signInIntent, RC_SIGN_IN)
+        backupService!!.init(googleDriveService)
+            .addOnSuccessListener {
+                Log.d("onActivityResult()", "Initialized backup service")
+            }.addOnFailureListener {
 
-//        else {
-//            googleSignInClient.silentSignIn()
-//            signedInAccount = googleAccount
-//        }
+                it.printStackTrace()
+
+                Utility.ErrorDialogFragment().apply {
+                    message = "Failed to initialize backup service"
+                }.show(supportFragmentManager, null)
+            }
 
     }
 
@@ -245,38 +264,14 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
 
         when (requestCode) {
             RC_SIGN_IN -> {
-                val googleAccount = GoogleSignIn.getSignedInAccountFromIntent(data).result
-                signedInAccount = googleAccount
-                onSignInActions.forEach { it(googleAccount) }
-
-
-                val credential = GoogleAccountCredential.usingOAuth2(
-                    this, listOf(appDataScope, driveFileScope))
-                credential.selectedAccount = googleAccount?.account
-                val googleDriveService : Drive = Drive.Builder(
-                    AndroidHttp.newCompatibleTransport(),
-                    GsonFactory(),
-                    credential)
-                    .setApplicationName(getString(R.string.app_name))
-                    .build()
-
-
-                if (googleAccount != null) backupService!!.init(googleDriveService)
-                    .addOnSuccessListener {
-                        Log.d("onActivityResult()", "Initialized backup service")
-                    }.addOnFailureListener {
-
-                        it.printStackTrace()
-
-                        Utility.ErrorDialogFragment().apply {
-                            message = "Failed to initialize backup service"
-                        }.show(supportFragmentManager, null)
-                    }
-
-
-                else Utility.InfoDialogFragment().apply {
-                    message = "Account not logged in, cannot sync database"
-                }.show(supportFragmentManager, null)
+                GoogleSignIn.getSignedInAccountFromIntent(data).addOnSuccessListener { account ->
+                    signedInAccount = account
+                    onSignedIn()
+                }.addOnFailureListener {
+                    Utility.InfoDialogFragment().apply {
+                        message = "Account not logged in, cannot sync database"
+                    }.show(supportFragmentManager, null)
+                }
             }
         }
     }
