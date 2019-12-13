@@ -6,8 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.navigation.fragment.findNavController
-import kotlinx.android.synthetic.main.fragment_home.*
-import kotlinx.android.synthetic.main.fragment_home.view.*
+import kotlinx.android.synthetic.main.activity_main.*
 import org.json.JSONObject
 import java.time.Duration
 import java.time.Instant
@@ -110,10 +109,6 @@ class HomeFragment : BaseFragment() {
     }
 
 
-    private fun updateSignedInUser() {
-        rootView.signedInUser.text = (activity!! as MainActivity)
-            .signedInAccount?.email ?: "Not signed in"
-    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         rootView = inflater.inflate(R.layout.fragment_home, container, false)
@@ -122,32 +117,12 @@ class HomeFragment : BaseFragment() {
             findNavController().navigate(R.id.newEntryFragment)
         }
 
-
         val mainActivity = (activity!! as MainActivity)
-        rootView.findViewById<Button>(R.id.syncButton).setOnClickListener {
-            mainActivity.doSync()
-        }
 
         mainActivity.apply {
             addOnTabSelectedAction {
                 if (isVisible)
                     updateStats()
-            }
-            addOnSignInAction {
-                rootView.signInOutButton.text = context!!.getString(R.string.sign_out)
-                updateSignedInUser()
-            }
-        }
-        rootView.signInOutButton.apply {
-            setOnClickListener {
-                if (text == context.getString(R.string.sign_in)) {
-                    mainActivity.requestSignIn()
-                }
-                else {
-                    mainActivity.signOut()
-                    text = context.getString(R.string.sign_in)
-                    updateSignedInUser()
-                }
             }
         }
 
@@ -164,7 +139,6 @@ class HomeFragment : BaseFragment() {
     override fun onStart() {
         super.onStart()
 
-        updateSignedInUser()
         updateStats()
     }
 }

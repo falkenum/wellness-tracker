@@ -2,12 +2,9 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:app="http://schemas.android.com/apk/res-auto"
               xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent" android:orientation="vertical"
               android:gravity="center_horizontal">
-
-    <Space
-            android:layout_width="match_parent"
-            android:layout_height="16dp"/>
 
     <Button android:layout_width="192dp" android:layout_height="wrap_content"
             android:text="New log entry"
@@ -86,81 +83,6 @@
                      app:layout_constraintTop_toBottomOf="@+id/textView6"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-    <Space
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:minHeight="16dp" android:layout_weight="1"/>
-    <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:layout_marginVertical="16dp">
-        <LinearLayout
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-            <LinearLayout
-                    android:orientation="vertical"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent">
-                <Space
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" android:layout_weight="1"/>
-                <TextView
-                        android:text="Last backed up"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="16dp" android:includeFontPadding="false"/>
-                <TextView
-                        android:text="TextView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" android:layout_weight="1"
-                        android:textSize="16dp" android:includeFontPadding="false" android:textStyle="bold"/>
-                <Space
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" android:layout_weight="1"/>
-            </LinearLayout>
-            <Space
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" android:layout_weight="1" android:minWidth="8dp"/>
-            <Button
-                    android:text="Sync"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:id="@+id/syncButton"
-                    android:layout_gravity="end"/>
-        </LinearLayout>
-        <LinearLayout
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" android:layout_marginTop="8dp">
-            <LinearLayout
-                    android:orientation="vertical"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent">
-                <Space
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" android:layout_weight="1"/>
-                <TextView
-                        android:text="Signed in as "
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" android:id="@+id/textView" android:layout_gravity="start"
-                        android:textSize="16sp" android:includeFontPadding="false"/>
-                <TextView
-                        android:text="TextView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" android:id="@+id/signedInUser"
-                        android:textSize="16sp" android:includeFontPadding="false" android:textStyle="bold"/>
-                <Space
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" android:layout_weight="1"/>
-            </LinearLayout>
-            <Space
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent" android:layout_weight="1" android:minWidth="8dp"/>
-            <Button
-                    android:text="sign out"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:id="@+id/signInOutButton"
-                    android:layout_gravity="end"/>
-        </LinearLayout>
-    </LinearLayout>
+
 </LinearLayout>
 

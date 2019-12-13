@@ -157,11 +157,39 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         tabLayout.visibility = if (open) View.VISIBLE else View.GONE
     }
 
+    private fun updateSignedInUser() {
+        signedInUser.text = signedInAccount?.email ?: "Not signed in"
+    }
+
     private fun onDatabaseValidated() {
         setContentView(R.layout.activity_main)
-        findViewById<TabLayout>(R.id.tabLayout)!!.run {
+        tabLayout.run {
             EntryTypes.getTypes().forEach { addTab(newTab().setText(it)) }
             addOnTabSelectedListener(this@MainActivity)
+        }
+
+        signInOutButton.apply {
+            setOnClickListener {
+                if (text == context.getString(R.string.sign_in)) {
+                    requestSignIn()
+                }
+                else {
+                    signOut()
+                    text = context.getString(R.string.sign_in)
+                    updateSignedInUser()
+                }
+            }
+        }
+
+        syncButton.setOnClickListener {
+            doSync()
+        }
+
+        updateSignedInUser()
+
+        addOnSignInAction {
+            signInOutButton.text = getString(R.string.sign_out)
+            updateSignedInUser()
         }
 
         startService(Intent(this, BackupService::class.java))
@@ -177,12 +205,6 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
 
 
         navController = Navigation.findNavController(this, R.id.nav_host_fragment)
-
-        val tag = "onDatabaseValidated()"
-//        backupButton.setOnClickListener {
-//            Log.d(tag, "Backup button pressed")
-//            requestSignIn()
-//        }
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar).apply {
             inflateMenu(R.menu.menu_options)

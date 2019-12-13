@@ -145,7 +145,7 @@ class HistoryFragment : BaseFragment(), TabLayout.OnTabSelectedListener {
         fm = activity!!.supportFragmentManager
 
         // setting up calendar callbacks
-        calendarView.onDaySelect = { dayOfMonth ->
+        calendarView.onDaySelect = {
             showInfoForSelectedDay()
         }
 
