@@ -158,7 +158,7 @@
             <Button
                     android:text="sign out"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:id="@+id/signOutButton"
+                    android:layout_height="wrap_content" android:id="@+id/signInOutButton"
                     android:layout_gravity="end"/>
         </LinearLayout>
     </LinearLayout>

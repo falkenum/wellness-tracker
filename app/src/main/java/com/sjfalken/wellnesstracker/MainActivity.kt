@@ -89,6 +89,15 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         Toast.makeText(this, "Signed out of account", Toast.LENGTH_SHORT).show()
     }
 
+    fun requestSignIn() {
+        googleSignInClient.silentSignIn().addOnSuccessListener { googleAccount ->
+            signedInAccount = googleAccount
+            onSignedIn()
+        }.addOnFailureListener {
+            startActivityForResult(googleSignInClient.signInIntent, RC_SIGN_IN)
+        }
+    }
+
     private fun setupReminders() {
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         var requestCode = 0
@@ -216,20 +225,6 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         val imm = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         val view = currentFocus ?: View(this)
         imm.hideSoftInputFromWindow(view.windowToken, 0)
-    }
-
-//    val signedInEmail : String? = run {
-//        val googleAccount = GoogleSignIn.getLastSignedInAccount(this)
-//        googleAccount?.email
-//    }
-
-    private fun requestSignIn() {
-        googleSignInClient.silentSignIn().addOnSuccessListener { googleAccount ->
-            signedInAccount = googleAccount
-            onSignedIn()
-        }.addOnFailureListener {
-            startActivityForResult(googleSignInClient.signInIntent, RC_SIGN_IN)
-        }
     }
 
     private fun onSignedIn() {

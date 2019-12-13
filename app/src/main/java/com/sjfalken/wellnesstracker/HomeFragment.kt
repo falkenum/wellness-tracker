@@ -6,6 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.navigation.fragment.findNavController
+import kotlinx.android.synthetic.main.fragment_home.*
+import kotlinx.android.synthetic.main.fragment_home.view.*
 import org.json.JSONObject
 import java.time.Duration
 import java.time.Instant
@@ -107,11 +109,11 @@ class HomeFragment : BaseFragment() {
         }.start()
     }
 
-    private val signedOutStr = "Not signed in"
 
     private fun updateSignedInUser() {
         val signedInUserView = rootView.findViewById<TextView>(R.id.signedInUser)
-        signedInUserView.text = (activity!! as MainActivity).signedInAccount?.email ?: signedOutStr
+        signedInUserView.text = (activity!! as MainActivity)
+            .signedInAccount?.email ?: "Not signed in"
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -136,15 +138,22 @@ class HomeFragment : BaseFragment() {
             }
             addOnSignInAction {
                 updateSignedInUser()
+                rootView.signInOutButton.text = context!!.getString(R.string.sign_out)
+                updateSignedInUser()
             }
         }
-
-        rootView.findViewById<Button>(R.id.signOutButton).setOnClickListener {
-            mainActivity.signOut()
-
-            updateSignedInUser()
+        rootView.signInOutButton.apply {
+            setOnClickListener {
+                if (text == context.getString(R.string.sign_in)) {
+                    mainActivity.requestSignIn()
+                }
+                else {
+                    mainActivity.signOut()
+                    text = context.getString(R.string.sign_in)
+                    updateSignedInUser()
+                }
+            }
         }
-
 
         rootView.findViewById<RadioGroup>(R.id.periodLengthRadioGroup).apply {
             setOnCheckedChangeListener { _, _ ->
