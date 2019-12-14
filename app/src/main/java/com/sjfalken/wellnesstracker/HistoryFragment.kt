@@ -64,7 +64,7 @@ class HistoryFragment : BaseFragment(), TabLayout.OnTabSelectedListener {
 
        return EntryCardView(activity!!).apply {
            insertEntryData(entry)
-
+           setBackgroundColor(activity!!.getColor(R.color.appBackground))
            setOnDelete {
                val deleteAction = {
                    Thread {

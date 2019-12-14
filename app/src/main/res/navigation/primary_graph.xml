@@ -19,7 +19,14 @@
         <action android:id="@+id/action_homeFragment_to_newEntryFragment" app:destination="@id/newEntryFragment"
         />
         <action android:id="@+id/action_homeFragment_to_mediaFragment" app:destination="@id/mediaFragment"/>
+        <action
+                android:id="@+id/action_homeFragment_to_settingsFragment"
+                app:destination="@id/settingsFragment" />
     </fragment>
     <fragment android:id="@+id/mediaFragment" android:name="com.sjfalken.wellnesstracker.MediaFragment"
-              android:label="MediaFragment"/>
+              android:label="Media"/>
+    <fragment
+            android:id="@+id/settingsFragment"
+            android:name="com.sjfalken.wellnesstracker.SettingsFragment"
+            android:label="Settings" />
 </navigation>

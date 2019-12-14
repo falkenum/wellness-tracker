@@ -44,8 +44,6 @@ class MediaListAdapter(private val size : Int) : RecyclerView.Adapter<MediaListA
         }
     }
 
-//    private val mediaFiles = mapOf(R.raw.meditation_affectionate_breathing to "Affectionate Breathing")
-
     override fun getItemCount(): Int = size
 
     override fun onBindViewHolder(holder: MediaListViewHolder, position: Int) {

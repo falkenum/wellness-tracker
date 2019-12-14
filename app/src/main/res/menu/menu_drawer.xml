@@ -11,4 +11,8 @@
           android:title="Media"
           android:icon="@drawable/ic_media"
     />
+    <item android:id="@id/settingsFragment"
+            android:title="Settings"
+            android:icon="@drawable/ic_settings"
+            />
 </menu>

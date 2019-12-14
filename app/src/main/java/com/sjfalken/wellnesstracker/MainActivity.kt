@@ -32,8 +32,8 @@ import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.view_drawer_header.*
-import kotlinx.android.synthetic.main.view_drawer_header.view.*
+import kotlinx.android.synthetic.main.fragment_settings.*
+import kotlinx.android.synthetic.main.fragment_settings.view.*
 
 class BundleKeys {
     companion object {
@@ -159,9 +159,6 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         tabLayout.visibility = if (open) View.VISIBLE else View.GONE
     }
 
-    private fun updateSignedInUser() {
-        nav_view.getHeaderView(0).signedInUser.text = signedInAccount?.email ?: "Not signed in"
-    }
 
     private fun onDatabaseValidated() {
         setContentView(R.layout.activity_main)
@@ -170,28 +167,6 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
             addOnTabSelectedListener(this@MainActivity)
         }
 
-        nav_view.getHeaderView(0).apply{
-            signInOutButton.apply {
-                setOnClickListener {
-                    if (text == getString(R.string.sign_in)) {
-                        requestSignIn()
-                    } else {
-                        signOut()
-                        text = getString(R.string.sign_in)
-                        updateSignedInUser()
-                    }
-                }
-                addOnSignInAction {
-                    text = getString(R.string.sign_out)
-                    updateSignedInUser()
-                }
-            }
-            syncButton.setOnClickListener {
-                doSync()
-            }
-        }
-
-        updateSignedInUser()
 
 
         startService(Intent(this, BackupService::class.java))
