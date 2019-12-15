@@ -72,7 +72,7 @@ interface EntryDao{
 
 
 
-    @Insert(onConflict = OnConflictStrategy.FAIL)
+    @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insert(entry: Entry)
 
     @Delete
@@ -126,7 +126,19 @@ val MIGRATION_6_7 = object : Migration(6, 7) {
     }
 }
 
-@Database(entities = [Entry::class], version = 7, exportSchema = false)
+val MIGRATION_7_8 = object : Migration(7, 8) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("DELETE FROM Entry WHERE type = 'Meditation'")
+    }
+}
+
+val MIGRATION_8_9 = object : Migration(8, 9) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("DELETE FROM Entry WHERE type = 'Mood'")
+    }
+}
+
+@Database(entities = [Entry::class], version = 9, exportSchema = false)
 abstract class LogEntryDatabase : RoomDatabase() {
     abstract fun entryDao(): EntryDao
     abstract fun configDao(): ConfigDao
@@ -151,7 +163,7 @@ abstract class LogEntryDatabase : RoomDatabase() {
         fun init(context: Context, dbName : String) : LogEntryDatabase {
             val newDb = Room.databaseBuilder(context.applicationContext,
                 LogEntryDatabase::class.java, dbName)
-                .addMigrations(MIGRATION_5_6, MIGRATION_6_7)
+                .addMigrations(MIGRATION_7_8, MIGRATION_8_9)
                 .build()
 
             if (dbName == DB_NAME_PRIMARY) instance = newDb
