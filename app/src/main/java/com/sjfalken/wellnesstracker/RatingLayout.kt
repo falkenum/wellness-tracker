@@ -1,6 +1,8 @@
 package com.sjfalken.wellnesstracker
 
 import android.content.Context
+import android.graphics.drawable.ShapeDrawable
+import android.graphics.drawable.shapes.OvalShape
 import android.util.TypedValue
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -8,7 +10,9 @@ import android.widget.TextView
 const val HIGHLIGHTED = 99
 const val NOT_HIGHLIGHTED = 0
 
-class RatingLayout(context: Context) : LinearLayout(context) {
+class RatingLayout(context: Context) : LinearLayout(context), EntryDatumHolder {
+    override val value: String
+        get() = getChildAt(selectedIndex).id.toString()
 
     inner class NumberView(shownNum : Int) : TextView(context) {
         var highlighted = false
@@ -19,7 +23,6 @@ class RatingLayout(context: Context) : LinearLayout(context) {
             }
 
         init {
-            numbers.add(this)
             id = shownNum
 
             layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
@@ -36,10 +39,10 @@ class RatingLayout(context: Context) : LinearLayout(context) {
 
             setOnClickListener {
                 // remove old highlight
-                numbers[selectedNumber - 1].highlighted = false
+                (getChildAt(selectedIndex) as NumberView).highlighted = false
 
                 // change selected to be this numberView
-                selectedNumber = id
+                selectedIndex = id + 2
 
                 // add new highlight
                 highlighted = true
@@ -47,17 +50,16 @@ class RatingLayout(context: Context) : LinearLayout(context) {
         }
     }
 
-    val numbers = ArrayList<NumberView>()
-    var selectedNumber : Int = 3
+    private var selectedIndex : Int = 2
 
     init {
         orientation = HORIZONTAL
         layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
 
         // populating with number views
-        for (i in 1..5)  addView(NumberView(i))
+        for (i in -2..2)  addView(NumberView(i))
 
-        // highlight number 3 by default
-        numbers[2].highlighted = true
+        (getChildAt(selectedIndex) as NumberView).highlighted = true
     }
+
 }

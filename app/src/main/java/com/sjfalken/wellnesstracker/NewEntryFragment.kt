@@ -23,7 +23,7 @@ class NewEntryFragment : BaseFragment() {
         const val DATE_TIME = "com.sjfalken.wellnesstracker.DATE_TIME"
     }
 
-    lateinit var dataInputView : EntryDataInputView
+    lateinit var dataInputLayout : EntryDataLayout
     lateinit var rootView : View
     lateinit var fm : FragmentManager
 
@@ -32,13 +32,13 @@ class NewEntryFragment : BaseFragment() {
 
     private fun updateDataInputType(type : String) {
         activity?.run {
-            dataInputView = EntryTypes.getConfig(type).getDataInputView(this)
+            dataInputLayout = EntryTypes.getConfig(type).getDataInputLayout(this)
         }
 
 
         rootView.findViewById<FrameLayout>(R.id.dataInputHolder)!!.run {
             removeAllViews()
-            addView(dataInputView)
+            addView(dataInputLayout)
         }
     }
 
@@ -138,7 +138,7 @@ class NewEntryFragment : BaseFragment() {
         val selectedType = (activity!! as MainActivity).selectedType
         val localDateTime = LocalDateTime.of(selectedDate, selectedTime)
         val dateTime = ZonedDateTime.of(localDateTime, ZoneId.systemDefault())
-        val newEntry = Entry(dateTime, selectedType, dataInputView.data)
+        val newEntry = Entry(dateTime, selectedType, dataInputLayout.data)
 
         Thread {
             if (!Entry.isValidEntry(newEntry)) {

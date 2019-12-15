@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.navigation.fragment.findNavController
-import kotlinx.android.synthetic.main.activity_main.*
 import org.json.JSONObject
 import java.time.Duration
 import java.time.Instant
@@ -82,7 +81,7 @@ class HomeFragment : BaseFragment() {
                     }
                 }
 
-                val averageValuesView = EntryDataView(context, averageValues)
+                val averageValuesView = EntryDataLayout(context, averageValues)
 
                 removeAllViews()
                 addView(averageValuesView)

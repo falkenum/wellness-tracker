@@ -13,8 +13,23 @@ import java.lang.String.format
 import java.time.*
 import java.time.format.DateTimeFormatter
 
+interface EntryDatumHolder{
+    val value : String
+}
 
-open class EntryDataView(context: Context, startingData : JSONObject)
+//abstract class EntryDatumView(context: Context) : View(context), EntryDatumInput
+
+class EntryDatumTextView(context: Context) : TextView(context), EntryDatumHolder {
+    override val value: String
+        get() = text.toString()
+}
+
+class EntryDatumEditText(context: Context) : EditText(context), EntryDatumHolder {
+    override val value: String
+        get() = text.toString()
+}
+
+open class EntryDataLayout(context: Context, startingData : JSONObject)
     : LinearLayout(context) {
 
     private val labelSuffix = ": "
@@ -29,29 +44,15 @@ open class EntryDataView(context: Context, startingData : JSONObject)
                     val row = getChildAt(rowIndex) as LinearLayout
 
                     val labelView = row.getChildAt(labelIndex) as TextView
-                    val valueView = row.getChildAt(valueIndex) as TextView
+                    val valueView = row.getChildAt(valueIndex) as EntryDatumHolder
                     // remove suffix
                     val label = labelView.text.toString().removeSuffix(labelSuffix)
-                    val value = valueView.text.toString()
+                    val value = valueView.value
 
                     put(label, value)
                 }
             }
         }
-//    fun put(key : String, value : String) {
-//        // find the row with this key
-//        for (childIndex in 0 until childCount) {
-//            val currentRow = getChildAt(childIndex) as LinearLayout
-//            val labelView = currentRow.getChildAt(labelIndex) as TextView
-//            val label = labelView.text.toString()
-//
-//            // if this is the row with the key
-//            if (label == key) {
-//                val valueView = currentRow.getChildAt(valueIndex) as TextView
-//                valueView.text = value
-//            }
-//        }
-//    }
 
     private fun getLabelView(label : String) : TextView {
         return TextView(context).apply {
@@ -64,8 +65,8 @@ open class EntryDataView(context: Context, startingData : JSONObject)
         super.addView(child)
     }
 
-    protected open fun getValueView(value : String) : TextView {
-        return TextView(context).apply {
+    protected open fun getValueView(value : String) : EntryDatumHolder {
+        return EntryDatumTextView(context).apply {
             val valueNumeric = value.toDoubleOrNull()
 
             //if it's a floating point, limit decimal places
@@ -98,30 +99,10 @@ open class EntryDataView(context: Context, startingData : JSONObject)
                 val value = startingData.getString(label)
                 addView(getLabelView(label))
                 addView(spaceView)
-                addView(getValueView(value).apply { gravity = Gravity.END })
+                (getValueView(value) as View).apply { gravity = Gravity.END; addView(this) }
             }
 
             addView(newRow)
-        }
-    }
-}
-
-class EntryDataInputView(context: Context, startingData : JSONObject)
-    : EntryDataView(context, startingData) {
-    override fun getValueView(value: String) : TextView {
-        return EditText(context).apply {
-            width = Utility.dpToPx(context, 100)
-            text.insert(0, value)
-            textAlignment = View.TEXT_ALIGNMENT_CENTER
-
-            val valueNumeric = value.toDoubleOrNull()
-            //if it's a number, change keyboard
-            if (valueNumeric != null) {
-                inputType = InputType.TYPE_CLASS_NUMBER
-            }
-            else {
-                inputType = InputType.TYPE_CLASS_TEXT
-            }
         }
     }
 }
@@ -134,12 +115,32 @@ abstract class EntryTypeConfig {
     abstract fun getBgColor(context: Context) : Int
     abstract fun getDailyReminderTimes(): List<LocalTime>?
 
-    fun getDataView(entry: Entry, context: Context): View {
-        return EntryDataView(context, entry.data)
+    class EntryDataTextInputLayout(context: Context, startingData : JSONObject)
+        : EntryDataLayout(context, startingData) {
+        override fun getValueView(value: String) : EntryDatumHolder {
+            return EntryDatumEditText(context).apply {
+                width = Utility.dpToPx(context, 100)
+                text.insert(0, value)
+                textAlignment = View.TEXT_ALIGNMENT_CENTER
+
+                val valueNumeric = value.toDoubleOrNull()
+                //if it's a number, change keyboard
+                if (valueNumeric != null) {
+                    inputType = InputType.TYPE_CLASS_NUMBER
+                }
+                else {
+                    inputType = InputType.TYPE_CLASS_TEXT
+                }
+            }
+        }
     }
 
-    open fun getDataInputView(context: Context): EntryDataInputView {
-        return EntryDataInputView(context, defaultData)
+    fun getDataLayout(entry: Entry, context: Context): EntryDataLayout {
+        return EntryDataLayout(context, entry.data)
+    }
+
+    open fun getDataInputLayout(context: Context): EntryDataLayout {
+        return EntryDataTextInputLayout(context, defaultData)
     }
 }
 
@@ -165,6 +166,13 @@ class MoodConfig : EntryTypeConfig() {
         const val RATING = "rating"
     }
 
+    class EntryDataMoodInputLayout(context: Context, startingData : JSONObject)
+        : EntryDataLayout(context, startingData) {
+        override fun getValueView(value: String): EntryDatumHolder {
+            return RatingLayout(context)
+        }
+    }
+
     override val defaultData : JSONObject = JSONObject(mapOf(RATING to "3"))
 
     override fun getBgColor(context: Context): Int {
@@ -173,13 +181,17 @@ class MoodConfig : EntryTypeConfig() {
 
     override fun getDailyReminderTimes(): List<LocalTime>? {
         // 10am and 6pm
-        return List(2) {
+        return List(1) {
             when (it) {
-                0 -> LocalTime.of(10, 0)
-                1 -> LocalTime.of(18, 0)
+                0 -> LocalTime.of(18, 0)
+//                1 -> LocalTime.of(18, 0)
                 else -> throw Exception("shouldn't happen")
             }
         }
+    }
+
+    override fun getDataInputLayout(context: Context): EntryDataLayout {
+        return EntryDataMoodInputLayout(context, defaultData)
     }
 }
 
@@ -256,7 +268,7 @@ class EntryCardView(context: Context) : androidx.cardview.widget.CardView(contex
         val timeStamp = entry.dateTime.format(DateTimeFormatter.ofPattern("hh:mm a"))
         val titleStr = "${entry.type} at $timeStamp"
         val bgColor = EntryTypes.getConfig(entry.type).getBgColor(context)
-        val dataView = EntryTypes.getConfig(entry.type).getDataView(entry, context)
+        val dataView = EntryTypes.getConfig(entry.type).getDataLayout(entry, context)
 
         findViewById<TextView>(R.id.recordTitle).text = titleStr
         findViewById<LinearLayout>(R.id.recordDataLayout).addView(dataView)
