@@ -6,6 +6,7 @@ import android.text.InputType
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.*
 import org.json.JSONObject
 import java.lang.Exception
@@ -57,6 +58,9 @@ open class EntryDataLayout(context: Context, startingData : JSONObject)
     private fun getLabelView(label : String) : TextView {
         return TextView(context).apply {
             text = label + labelSuffix
+            layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
+                gravity = Gravity.CENTER
+            }
         }
     }
 
@@ -85,11 +89,10 @@ open class EntryDataLayout(context: Context, startingData : JSONObject)
 
         for (label in startingData.keys()) {
             val newRow = LinearLayout(context).apply {
+//                setBackgroundColor(R.color.colorAccent)
                 orientation = HORIZONTAL
-                layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
-                    // I don't understand why this works, but it makes the children have RIGHT gravity too
-                gravity = Gravity.START
-            }
+                layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
+
                 val spaceView = Space(context).apply {
                     layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
                         weight = 1f

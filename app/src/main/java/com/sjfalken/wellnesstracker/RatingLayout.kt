@@ -28,7 +28,7 @@ class RatingLayout(context: Context) : LinearLayout(context), EntryDatumHolder {
             layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
             val padding = 40
             setPadding(padding, 0, padding, 0)
-            text = shownNum.toString()
+            text = if (shownNum > 0) "+$shownNum" else shownNum.toString()
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 30f)
 
             // Color used to highlight

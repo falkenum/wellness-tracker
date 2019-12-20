@@ -167,7 +167,9 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
             addOnTabSelectedListener(this@MainActivity)
         }
 
-
+        fab.setOnClickListener {
+            navController.navigate(R.id.newEntryFragment)
+        }
 
         startService(Intent(this, BackupService::class.java))
 
@@ -203,9 +205,18 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
                 R.id.homeFragment -> true
                 else -> false
             }
+            val showFab = when (destination.id) {
+                R.id.homeFragment -> true
+                R.id.historyFragment -> true
+                else -> false
+            }
+
             updateHistoryButton(showHistoryButton)
             updateTabLayout(destination)
             hideKeyboard()
+
+            if (showFab) fab.show()
+            else fab.hide()
         }
 
         val drawerLayout = findViewById<DrawerLayout>(R.id.layout_main_drawer)

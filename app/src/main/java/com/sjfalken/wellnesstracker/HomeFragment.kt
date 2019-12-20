@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.navigation.fragment.findNavController
+import kotlinx.android.synthetic.main.fragment_home.view.*
 import org.json.JSONObject
 import java.time.Duration
 import java.time.Instant
@@ -111,10 +112,6 @@ class HomeFragment : BaseFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         rootView = inflater.inflate(R.layout.fragment_home, container, false)
-
-        rootView.findViewById<Button>(R.id.newLogEntryButton).setOnClickListener {
-            findNavController().navigate(R.id.newEntryFragment)
-        }
 
         val mainActivity = (activity!! as MainActivity)
 

@@ -40,8 +40,6 @@ class HistoryFragment : BaseFragment(), TabLayout.OnTabSelectedListener {
     private lateinit var monthEntries : Array< ArrayList<Entry> >
     private lateinit var fragmentView: ScrollView
     private lateinit var calendarView : CalendarView
-    private lateinit var numEntriesView : TextView
-    private lateinit var dayInfoLayout : LinearLayout
     private lateinit var sessionCardsLayout : LinearLayout
     private lateinit var inflater: LayoutInflater
     private lateinit var fm: androidx.fragment.app.FragmentManager
@@ -86,13 +84,12 @@ class HistoryFragment : BaseFragment(), TabLayout.OnTabSelectedListener {
     private fun showInfoForSelectedDay() {
         val selectedDayOfMonth = calendarView.selectedDate?.dayOfMonth
         if (selectedDayOfMonth == null) {
-            dayInfoLayout.visibility = View.GONE
+            sessionCardsLayout.visibility = View.GONE
             return
         }
 
         val recordsForDay = monthEntries[selectedDayOfMonth - 1]
         Log.d("showInfoForSelectedDay", "number of records for day: ${recordsForDay.size}")
-        numEntriesView.text = recordsForDay.size.toString()
 
         // remove all the cards, leave the summaryLayout at the beginning
         sessionCardsLayout.removeAllViews()
@@ -102,7 +99,7 @@ class HistoryFragment : BaseFragment(), TabLayout.OnTabSelectedListener {
             sessionCardsLayout.addView(getEntryInfoCard(record))
         }
 
-        dayInfoLayout.visibility = View.VISIBLE
+        sessionCardsLayout.visibility = View.VISIBLE
     }
 
     private fun loadMonthEntries() {
@@ -139,9 +136,7 @@ class HistoryFragment : BaseFragment(), TabLayout.OnTabSelectedListener {
         fragmentView = inflater.inflate(R.layout.fragment_history, container, false) as ScrollView
 
         calendarView = fragmentView.findViewById(R.id.calendarView)
-        dayInfoLayout = fragmentView.findViewById(R.id.dayInfoLayout)
         sessionCardsLayout = fragmentView.findViewById(R.id.sessionCardsLayout)
-        numEntriesView = fragmentView.findViewById(R.id.numRecords)
         fm = activity!!.supportFragmentManager
 
         // setting up calendar callbacks
@@ -158,19 +153,7 @@ class HistoryFragment : BaseFragment(), TabLayout.OnTabSelectedListener {
             refreshFragmentView()
         }
 
-        fragmentView.findViewById<Button>(R.id.addRecordButton).setOnClickListener {
-            findNavController().run {
-                // argument to set date and time in new fragment
-                val destinationArgs = Bundle().apply {
-                    putString(NewEntryFragment.DATE_TIME, ZonedDateTime.now().toString())
-                }
-                navigate(R.id.newEntryFragment, destinationArgs)
-            }
-        }
-
         activity!!.bindService(Intent(activity, TimerService::class.java), timerConnection, 0)
-
-
         activity!!.findViewById<TabLayout>(R.id.tabLayout).addOnTabSelectedListener(this)
 
         return fragmentView
