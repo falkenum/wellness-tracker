@@ -3,5 +3,10 @@
     <string name="client_id">275654752708-lof613kc845ho42vb6s62enoqggp0vi8.apps.googleusercontent.com</string>
     <string name="sign_in">Sign In</string>
     <string name="sign_out">Sign Out</string>
-
+    <string-array name="period_lengths_array">
+        <item>Year</item>
+        <item>Month</item>
+        <item>Week</item>
+        <item>Day</item>
+    </string-array>
 </resources>

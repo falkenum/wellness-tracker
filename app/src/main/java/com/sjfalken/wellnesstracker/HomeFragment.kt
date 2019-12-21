@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.navigation.fragment.findNavController
 import kotlinx.android.synthetic.main.fragment_home.view.*
 import org.json.JSONObject
 import java.time.Duration
@@ -21,7 +20,7 @@ class HomeFragment : BaseFragment() {
 
     private val periodLengthDays : Long
         get() {
-            return when (checkedTimePeriod) {
+            return when (selectedTimePeriod) {
                 YEAR -> 365
                 MONTH -> 30
                 WEEK -> 7
@@ -30,15 +29,13 @@ class HomeFragment : BaseFragment() {
             }
         }
 
-    private val checkedTimePeriod : String
+    private val selectedTimePeriod : String
         get() {
-            val checkedRadioButtonId = rootView.findViewById<RadioGroup>(R.id.periodLengthRadioGroup)
-                .checkedRadioButtonId
-            return when (checkedRadioButtonId) {
-                R.id.yearButton -> YEAR
-                R.id.monthButton -> MONTH
-                R.id.weekButton -> WEEK
-                R.id.dayButton -> DAY
+            return when (rootView.spinner.selectedItemPosition) {
+                0 -> YEAR
+                1 -> MONTH
+                2 -> WEEK
+                3 -> DAY
                 else -> throw Exception("shouldn't get here")
             }
         }
@@ -50,20 +47,14 @@ class HomeFragment : BaseFragment() {
         // to be called after accessing the database
         // entries is a list with all entries of the type passed in
         val processEntries = { entries : List<Entry> ->
-            rootView.findViewById<TextView>(R.id.timePeriod).apply {
-                text = checkedTimePeriod
-            }
-
-            rootView.findViewById<TextView>(R.id.numEntriesView).apply {
-                text = entries.size.toString()
-            }
-
             rootView.findViewById<FrameLayout>(R.id.averageValuesHolder).apply {
                 val selectedType = (activity!! as MainActivity).selectedType
 
                 // find which values are numeric and can be processed
                 val defaultData = EntryTypes.getConfig(selectedType).defaultData
-                val averageValues = JSONObject()
+                val averageValues = JSONObject().apply {
+                    put("entry count", entries.size)
+                }
 
                 for (key in defaultData.keys()) {
                     val defaultValue = defaultData.get(key).toString()
@@ -122,11 +113,31 @@ class HomeFragment : BaseFragment() {
             }
         }
 
-        rootView.findViewById<RadioGroup>(R.id.periodLengthRadioGroup).apply {
-            setOnCheckedChangeListener { _, _ ->
-                updateStats()
+        rootView.spinner.apply {
+            adapter = ArrayAdapter.createFromResource(
+                mainActivity,
+                R.array.period_lengths_array,
+                android.R.layout.simple_spinner_item).apply {
+
+                setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             }
-            check(R.id.dayButton)
+
+            onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+                    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                }
+
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    updateStats()
+                }
+            }
+
+            setSelection(0)
         }
 
         return rootView
