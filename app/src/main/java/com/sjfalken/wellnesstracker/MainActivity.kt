@@ -1,5 +1,6 @@
 package com.sjfalken.wellnesstracker
 
+import android.animation.AnimatorInflater
 import java.time.*
 import android.app.*
 import android.content.ComponentName
@@ -14,12 +15,9 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.*
 import androidx.navigation.ui.NavigationUI
-import androidx.transition.Fade
-import androidx.transition.TransitionManager
 import com.google.android.gms.auth.api.signin.*
 import com.google.android.gms.common.api.Scope
 import com.google.android.material.tabs.TabLayout
@@ -134,13 +132,6 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         }
     }
 
-    private fun changeTabDrawer(open : Boolean) {
-
-        val tabLayout = findViewById<TabLayout>(R.id.tabLayout)
-
-    }
-
-
     private fun onDatabaseValidated() {
         setContentView(R.layout.activity_main)
         tabLayout.run {
@@ -151,7 +142,22 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         fab.setOnClickListener {
             navController.navigate(R.id.newEntryFragment)
         }
-//        appBarLayout.stateListAnimator = AnimatorInflater.loadStateListAnimator(this, R.animator.elevated)
+        appBarLayout.stateListAnimator = AnimatorInflater.loadStateListAnimator(this, R.animator.elevated)
+
+        bottom_navigation.setOnNavigationItemSelectedListener {
+            val destId = when(it.itemId) {
+                R.id.historyMenuItem -> R.id.historyFragment
+                R.id.statsMenuItem -> R.id.statsFragment
+                else -> throw Exception("shouldn't get here")
+            }
+
+            if (navController.currentDestination!!.id == destId)
+                false
+            else {
+                navController.navigate(destId)
+                true
+            }
+        }
 
         startService(Intent(this, BackupService::class.java))
 
@@ -167,13 +173,11 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
 
         navController = Navigation.findNavController(this, R.id.nav_host_fragment)
 
-
         // each fragment tells mainactivity if it wants the type tabs and any menu options for that fragment.
         // mainactivity calls back to fragment before navigation.
 
         // showing history option only on home page
         navController.addOnDestinationChangedListener { _, destination, _ ->
-            // TODO if any fragment has requested to show some options on the toolbar, then show them
             val showFab = when (destination.id) {
                 R.id.statsFragment -> true
                 R.id.historyFragment -> true
@@ -192,32 +196,16 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         NavigationUI.setupWithNavController(toolbar, navController, drawerLayout)
 
         NavigationUI.setupWithNavController(nav_view, navController)
-
-        tabLayout.visibility = View.VISIBLE
-        bottomNavigation.setOnNavigationItemSelectedListener {
-            val dest = when(it.itemId) {
-                R.id.statsMenuItem -> R.id.statsFragment
-                R.id.historyMenuItem -> R.id.historyFragment
-                else -> throw Exception("shouldn't get here")
-            }
-            if (dest != navController.currentDestination!!.id)
-                navController.navigate(dest)
-            true
-        }
-        bottomNavigation.setOnNavigationItemReselectedListener {
-            // do nothing
-        }
-
-
     }
 
     private fun updateBottomNavVisibility(destination : NavDestination) {
-        val showBottomNav = when (destination.id) {
+        // if any fragment has requested tabLayout, then show it
+        val showBottomNav = when(destination.id) {
             R.id.statsFragment -> true
             R.id.historyFragment -> true
             else -> false
         }
-        bottomNavigation.visibility = if (showBottomNav) View.VISIBLE else View.GONE
+        bottom_navigation.visibility = if (showBottomNav) View.VISIBLE else View.GONE
     }
 
     private fun updateTabLayoutVisibility(destination : NavDestination) {

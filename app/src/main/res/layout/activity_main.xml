@@ -46,10 +46,9 @@
                 android:layout_marginHorizontal="16dp"
                 app:navGraph="@navigation/primary_graph" />
         <Space
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:layout_width="wrap_content"
                 android:layout_weight="1.0"
-                />
+                android:layout_height="0dp"/>
         <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/fab"
                 app:backgroundTint="@color/colorPrimary"
@@ -60,16 +59,14 @@
                 app:srcCompat="@drawable/ic_plus"
                 />
         <com.google.android.material.bottomnavigation.BottomNavigationView
-                android:id="@+id/bottomNavigation"
+                android:id="@+id/bottom_navigation"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
                 android:background="@color/colorPrimary"
                 app:itemIconTint="@android:color/white"
                 app:itemTextColor="@android:color/white"
-                app:menu="@menu/menu_home_options"
-                />
-
+                app:menu="@menu/menu_home_bottom_nav" />
     </LinearLayout>
     <com.google.android.material.navigation.NavigationView
             android:layout_width="wrap_content"
