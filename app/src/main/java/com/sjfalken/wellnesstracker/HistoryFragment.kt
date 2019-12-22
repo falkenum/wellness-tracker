@@ -155,6 +155,7 @@ class HistoryFragment : BaseFragment(), TabLayout.OnTabSelectedListener {
 
         activity!!.bindService(Intent(activity, TimerService::class.java), timerConnection, 0)
         activity!!.findViewById<TabLayout>(R.id.tabLayout).addOnTabSelectedListener(this)
+//        (activity!! as MainActivity).tabLayout.addOnTabSelectedListener(this)
 
         return fragmentView
     }

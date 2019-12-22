@@ -5,12 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import kotlinx.android.synthetic.main.fragment_home.view.*
+import kotlinx.android.synthetic.main.fragment_stats.view.*
 import org.json.JSONObject
 import java.time.Duration
 import java.time.Instant
 
-class HomeFragment : BaseFragment() {
+class StatsFragment : BaseFragment() {
     companion object {
         const val YEAR = "year"
         const val MONTH = "month"
@@ -102,7 +102,7 @@ class HomeFragment : BaseFragment() {
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        rootView = inflater.inflate(R.layout.fragment_home, container, false)
+        rootView = inflater.inflate(R.layout.fragment_stats, container, false)
 
         val mainActivity = (activity!! as MainActivity)
 
