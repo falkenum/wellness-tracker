@@ -1,8 +1,6 @@
 package com.sjfalken.wellnesstracker
 
 import android.animation.AnimatorInflater
-import android.animation.ObjectAnimator
-import android.animation.StateListAnimator
 import java.time.*
 import android.app.*
 import android.content.ComponentName
@@ -15,19 +13,13 @@ import android.os.IBinder
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.Button
-import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.*
 import androidx.navigation.ui.NavigationUI
-import androidx.transition.Fade
-import androidx.transition.TransitionManager
 import com.google.android.gms.auth.api.signin.*
 import com.google.android.gms.common.api.Scope
-import com.google.android.material.navigation.NavigationView
 import com.google.android.material.tabs.TabLayout
 import com.google.api.client.extensions.android.http.AndroidHttp
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
@@ -35,8 +27,6 @@ import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.fragment_settings.*
-import kotlinx.android.synthetic.main.fragment_settings.view.*
 
 class BundleKeys {
     companion object {
@@ -59,7 +49,7 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
     private val onTabSelectedActions = mutableListOf<(TabLayout.Tab) -> Unit>()
     private val onSignInActions = mutableListOf<(googleAccount : GoogleSignInAccount?) -> Unit>()
 
-    private val fragmentsToShowTabs = listOf(R.id.homeFragment, R.id.newEntryFragment, R.id.historyFragment)
+    private val fragmentsToShowTabs = listOf(R.id.statsFragment, R.id.newEntryFragment, R.id.historyFragment)
     private lateinit var googleSignInClient : GoogleSignInClient
     private var backupService: BackupService? = null
     private val appDataScope = DriveScopes.DRIVE_APPDATA
@@ -142,27 +132,6 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         }
     }
 
-    private fun updateHistoryButton(fadeIn : Boolean) {
-        val fade = Fade(if (fadeIn) Fade.IN else Fade.OUT).apply {
-            // 400 ms transition
-            this.duration = 400
-        }
-
-        TransitionManager.beginDelayedTransition(toolbar, fade)
-
-        val historyActionButton = findViewById<View>(R.id.historyActionButton)
-        historyActionButton.visibility = if (fadeIn) View.VISIBLE else View.GONE
-
-    }
-
-    private fun changeTabDrawer(open : Boolean) {
-
-        val tabLayout = findViewById<TabLayout>(R.id.tabLayout)
-
-        tabLayout.visibility = if (open) View.VISIBLE else View.GONE
-    }
-
-
     private fun onDatabaseValidated() {
         setContentView(R.layout.activity_main)
         tabLayout.run {
@@ -174,9 +143,21 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
             navController.navigate(R.id.newEntryFragment)
         }
         appBarLayout.stateListAnimator = AnimatorInflater.loadStateListAnimator(this, R.animator.elevated)
-//        appBarLayout.stateListAnimator = StateListAnimator().apply {
-//            addState([], ObjectAnimator.ofFloat())
-//        }
+
+        bottom_navigation.setOnNavigationItemSelectedListener {
+            val destId = when(it.itemId) {
+                R.id.historyMenuItem -> R.id.historyFragment
+                R.id.statsMenuItem -> R.id.statsFragment
+                else -> throw Exception("shouldn't get here")
+            }
+
+            if (navController.currentDestination!!.id == destId)
+                false
+            else {
+                navController.navigate(destId)
+                true
+            }
+        }
 
         startService(Intent(this, BackupService::class.java))
 
@@ -192,34 +173,19 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
 
         navController = Navigation.findNavController(this, R.id.nav_host_fragment)
 
-        val toolbar = findViewById<Toolbar>(R.id.toolbar).apply {
-            inflateMenu(R.menu.menu_options)
-
-            // only one menu item currently
-            setOnMenuItemClickListener {
-                navController.navigate(R.id.historyFragment)
-                true
-            }
-        }
-
         // each fragment tells mainactivity if it wants the type tabs and any menu options for that fragment.
         // mainactivity calls back to fragment before navigation.
 
         // showing history option only on home page
         navController.addOnDestinationChangedListener { _, destination, _ ->
-            // TODO if any fragment has requested to show some options on the toolbar, then show them
-            val showHistoryButton = when (destination.id) {
-                R.id.homeFragment -> true
-                else -> false
-            }
             val showFab = when (destination.id) {
-                R.id.homeFragment -> true
+                R.id.statsFragment -> true
                 R.id.historyFragment -> true
                 else -> false
             }
 
-            updateHistoryButton(showHistoryButton)
-            updateTabLayout(destination)
+            updateBottomNavVisibility(destination)
+            updateTabLayoutVisibility(destination)
             hideKeyboard()
 
             if (showFab) fab.show()
@@ -230,14 +196,22 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         NavigationUI.setupWithNavController(toolbar, navController, drawerLayout)
 
         NavigationUI.setupWithNavController(nav_view, navController)
-
-        changeTabDrawer(true)
     }
 
-    private fun updateTabLayout(destination : NavDestination) {
+    private fun updateBottomNavVisibility(destination : NavDestination) {
+        // if any fragment has requested tabLayout, then show it
+        val showBottomNav = when(destination.id) {
+            R.id.statsFragment -> true
+            R.id.historyFragment -> true
+            else -> false
+        }
+        bottom_navigation.visibility = if (showBottomNav) View.VISIBLE else View.GONE
+    }
+
+    private fun updateTabLayoutVisibility(destination : NavDestination) {
         // if any fragment has requested tabLayout, then show it
         val showTabLayout = fragmentsToShowTabs.any { it == destination.id }
-        changeTabDrawer(showTabLayout)
+        tabLayout.visibility = if (showTabLayout) View.VISIBLE else View.GONE
     }
 
     private fun hideKeyboard() {
