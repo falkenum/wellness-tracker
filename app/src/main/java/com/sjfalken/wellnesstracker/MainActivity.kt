@@ -1,5 +1,8 @@
 package com.sjfalken.wellnesstracker
 
+import android.animation.AnimatorInflater
+import android.animation.ObjectAnimator
+import android.animation.StateListAnimator
 import java.time.*
 import android.app.*
 import android.content.ComponentName
@@ -170,6 +173,10 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         fab.setOnClickListener {
             navController.navigate(R.id.newEntryFragment)
         }
+        appBarLayout.stateListAnimator = AnimatorInflater.loadStateListAnimator(this, R.animator.elevated)
+//        appBarLayout.stateListAnimator = StateListAnimator().apply {
+//            addState([], ObjectAnimator.ofFloat())
+//        }
 
         startService(Intent(this, BackupService::class.java))
 

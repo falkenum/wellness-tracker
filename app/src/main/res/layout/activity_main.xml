@@ -15,26 +15,23 @@
 
         <androidx.coordinatorlayout.widget.CoordinatorLayout
                 android:layout_width="match_parent"
-                app:elevation="5dp"
                 android:layout_height="wrap_content">
 
             <!-- Scrollable view here -->
 
             <com.google.android.material.appbar.AppBarLayout
+                    android:id="@+id/appBarLayout"
                     android:layout_width="match_parent"
-                    app:elevation="5dp"
                     android:layout_height="wrap_content">
 
                 <androidx.appcompat.widget.Toolbar
                         android:layout_width="match_parent"
                         android:layout_height="?attr/actionBarSize"
-                        app:elevation="5dp"
                         android:id="@+id/toolbar"
                         />
                 <com.google.android.material.tabs.TabLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" android:id="@+id/tabLayout"
-                        app:elevation="5dp"
                         app:tabIndicatorHeight="5dp" />
 
             </com.google.android.material.appbar.AppBarLayout>
