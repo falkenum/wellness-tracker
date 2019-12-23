@@ -2,4 +2,5 @@
 <resources>
     <dimen name="defaultTextSize">18dp</dimen>
     <dimen name="buttonTextSize">18dp</dimen>
+    <dimen name="edgeMargin">16dp</dimen>
 </resources>

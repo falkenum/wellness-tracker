@@ -2,31 +2,32 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
             xmlns:tools="http://schemas.android.com/tools" android:id="@+id/nav_graph"
-            app:startDestination="@id/historyFragment">
+        app:startDestination="@id/homeFragment">
     <fragment android:id="@+id/timerFragment" android:name="com.sjfalken.wellnesstracker.TimerFragment"
               android:label="Timer"/>
-    <fragment android:id="@+id/historyFragment" android:name="com.sjfalken.wellnesstracker.HistoryFragment"
-              android:label="History">
-        <action android:id="@+id/action_historyFragment_to_newEntryFragment" app:destination="@id/newEntryFragment"/>
-    </fragment>
     <fragment android:id="@+id/newEntryFragment" android:name="com.sjfalken.wellnesstracker.NewEntryFragment"
               android:label="New Log Entry"/>
-    <fragment android:id="@+id/statsFragment" android:name="com.sjfalken.wellnesstracker.StatsFragment"
-              android:label="Stats">
-        <action android:id="@+id/action_homeFragment_to_timerFragment" app:destination="@id/timerFragment"/>
-        <action android:id="@+id/action_homeFragment_to_historyFragment" app:destination="@id/historyFragment"
-                app:launchSingleTop="true"/>
-        <action android:id="@+id/action_homeFragment_to_newEntryFragment" app:destination="@id/newEntryFragment"
-        />
-        <action android:id="@+id/action_homeFragment_to_mediaFragment" app:destination="@id/mediaFragment"/>
-        <action
-                android:id="@+id/action_homeFragment_to_settingsFragment"
-                app:destination="@id/settingsFragment" />
-    </fragment>
     <fragment android:id="@+id/mediaFragment" android:name="com.sjfalken.wellnesstracker.MediaFragment"
               android:label="Media"/>
     <fragment
             android:id="@+id/settingsFragment"
             android:name="com.sjfalken.wellnesstracker.SettingsFragment"
             android:label="Settings" />
+    <fragment
+            android:id="@+id/homeFragment"
+            android:name="com.sjfalken.wellnesstracker.HomeFragment"
+            android:label="Home" >
+        <action
+                android:id="@+id/action_homeFragment_to_settingsFragment"
+                app:destination="@id/settingsFragment" />
+        <action
+                android:id="@+id/action_homeFragment_to_timerFragment"
+                app:destination="@id/timerFragment" />
+        <action
+                android:id="@+id/action_homeFragment_to_mediaFragment"
+                app:destination="@id/mediaFragment" />
+        <action
+                android:id="@+id/action_homeFragment_to_newEntryFragment"
+                app:destination="@id/newEntryFragment" />
+    </fragment>
 </navigation>

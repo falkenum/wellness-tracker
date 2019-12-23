@@ -27,6 +27,7 @@ import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.fragment_home.*
 
 class BundleKeys {
     companion object {
@@ -49,7 +50,7 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
     private val onTabSelectedActions = mutableListOf<(TabLayout.Tab) -> Unit>()
     private val onSignInActions = mutableListOf<(googleAccount : GoogleSignInAccount?) -> Unit>()
 
-    private val fragmentsToShowTabs = listOf(R.id.statsFragment, R.id.newEntryFragment, R.id.historyFragment)
+    private val fragmentsToShowTabs = listOf(R.id.homeFragment, R.id.newEntryFragment)
     private lateinit var googleSignInClient : GoogleSignInClient
     private var backupService: BackupService? = null
     private val appDataScope = DriveScopes.DRIVE_APPDATA
@@ -145,18 +146,15 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         appBarLayout.stateListAnimator = AnimatorInflater.loadStateListAnimator(this, R.animator.elevated)
 
         bottom_navigation.setOnNavigationItemSelectedListener {
-            val destId = when(it.itemId) {
-                R.id.historyMenuItem -> R.id.historyFragment
-                R.id.statsMenuItem -> R.id.statsFragment
+            val pos = when (it.itemId) {
+                R.id.historyMenuItem -> HomeFragment.HISTORY_POS
+                R.id.statsMenuItem -> HomeFragment.STATS_POS
                 else -> throw Exception("shouldn't get here")
             }
 
-            if (navController.currentDestination!!.id == destId)
-                false
-            else {
-                navController.navigate(destId)
-                true
-            }
+            homePager.currentItem = pos
+
+            true
         }
 
         startService(Intent(this, BackupService::class.java))
@@ -179,8 +177,7 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         // showing history option only on home page
         navController.addOnDestinationChangedListener { _, destination, _ ->
             val showFab = when (destination.id) {
-                R.id.statsFragment -> true
-                R.id.historyFragment -> true
+                R.id.homeFragment -> true
                 else -> false
             }
 
@@ -201,8 +198,7 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
     private fun updateBottomNavVisibility(destination : NavDestination) {
         // if any fragment has requested tabLayout, then show it
         val showBottomNav = when(destination.id) {
-            R.id.statsFragment -> true
-            R.id.historyFragment -> true
+            R.id.homeFragment -> true
             else -> false
         }
         bottom_navigation.visibility = if (showBottomNav) View.VISIBLE else View.GONE

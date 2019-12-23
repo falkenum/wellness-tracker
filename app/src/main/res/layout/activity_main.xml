@@ -27,6 +27,7 @@
 
                 <androidx.appcompat.widget.Toolbar
                         android:id="@+id/toolbar"
+                        app:titleTextColor="@android:color/white"
                         android:layout_width="match_parent"
                         android:layout_height="?attr/actionBarSize" />
 
@@ -34,6 +35,7 @@
                         android:id="@+id/tabLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        app:tabTextColor="@android:color/white"
                         app:tabIndicatorHeight="5dp" />
 
             </com.google.android.material.appbar.AppBarLayout>
@@ -85,6 +87,7 @@
                 app:menu="@menu/menu_home_bottom_nav" />
     </androidx.constraintlayout.widget.ConstraintLayout>
     <com.google.android.material.navigation.NavigationView
+            app:headerLayout="@layout/nav_header"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="start"

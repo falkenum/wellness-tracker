@@ -2,7 +2,6 @@
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar.Bridge">
-        <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
@@ -10,6 +9,7 @@
         <item name="android:textViewStyle">@style/text</item>
         <item name="android:textAppearance">@style/text</item>
         <item name="android:colorBackground">@color/appBackground</item>
+        <item name="drawerArrowStyle">@style/drawerArrow</item>
 
     </style>
 
@@ -23,6 +23,9 @@
     <style name="text" >
         <item name="android:textColor">@color/text</item>
         <item name="android:textSize">@dimen/defaultTextSize</item>
+    </style>
+    <style name="drawerArrow" parent="@style/Widget.AppCompat.DrawerArrowToggle">
+        <item name="color">@android:color/white</item>
     </style>
 
 </resources>
