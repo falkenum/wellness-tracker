@@ -7,15 +7,18 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    <LinearLayout android:layout_width="match_parent"
-                  android:layout_height="match_parent"
-                  android:orientation="vertical"
-                  android:id="@+id/mainLayout"
-    >
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/mainLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
         <androidx.coordinatorlayout.widget.CoordinatorLayout
+                android:id="@+id/coordinatorLayout"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toTopOf="@+id/fragmentWithFab"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
             <com.google.android.material.appbar.AppBarLayout
                     android:id="@+id/appBarLayout"
@@ -23,51 +26,64 @@
                     android:layout_height="wrap_content">
 
                 <androidx.appcompat.widget.Toolbar
-                        android:layout_width="match_parent"
-                        android:layout_height="?attr/actionBarSize"
                         android:id="@+id/toolbar"
-                        />
-                <com.google.android.material.tabs.TabLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content" android:id="@+id/tabLayout"
+                        android:layout_height="?attr/actionBarSize" />
+
+                <com.google.android.material.tabs.TabLayout
+                        android:id="@+id/tabLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
                         app:tabIndicatorHeight="5dp" />
 
             </com.google.android.material.appbar.AppBarLayout>
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-        <androidx.fragment.app.FragmentContainerView
-                android:id="@+id/nav_host_fragment"
-                android:name="androidx.navigation.fragment.NavHostFragment"
+        <FrameLayout
+                android:id="@+id/fragmentWithFab"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
+                android:layout_below="@id/coordinatorLayout"
+                app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/coordinatorLayout">
 
-                app:defaultNavHost="true"
-                android:layout_marginVertical="16dp"
-                android:layout_marginHorizontal="16dp"
-                app:navGraph="@navigation/primary_graph" />
-        <Space
-                android:layout_width="wrap_content"
-                android:layout_weight="1.0"
-                android:layout_height="0dp"/>
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/fab"
-                app:backgroundTint="@color/colorPrimary"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|end"
-                android:layout_margin="16dp"
-                app:srcCompat="@drawable/ic_plus"
-                />
+            <androidx.fragment.app.FragmentContainerView
+                    android:id="@+id/nav_host_fragment"
+                    android:name="androidx.navigation.fragment.NavHostFragment"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+
+                    app:defaultNavHost="true"
+                    app:navGraph="@navigation/primary_graph" />
+            <!--            <Space-->
+            <!--                    android:layout_width="wrap_content"-->
+            <!--                    android:layout_weight="1.0"-->
+            <!--                    android:layout_height="0dp"/>-->
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/fab"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:layout_margin="16dp"
+                    app:backgroundTint="@color/colorPrimary"
+                    app:srcCompat="@drawable/ic_plus" />
+
+        </FrameLayout>
+
         <com.google.android.material.bottomnavigation.BottomNavigationView
                 android:id="@+id/bottom_navigation"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
+                android:layout_below="@id/fragmentWithFab"
                 android:background="@color/colorPrimary"
-                app:itemIconTint="@android:color/white"
-                app:itemTextColor="@android:color/white"
+                app:itemIconTint="@drawable/bottom_nav_colors"
+                app:itemTextColor="@drawable/bottom_nav_colors"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/fragmentWithFab"
                 app:menu="@menu/menu_home_bottom_nav" />
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
     <com.google.android.material.navigation.NavigationView
             android:layout_width="wrap_content"
             android:layout_height="match_parent"

@@ -15,7 +15,7 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.tabs.TabLayout
 import kotlinx.android.synthetic.main.activity_main.*
 
-class HistoryFragment : BaseFragment(), TabLayout.OnTabSelectedListener {
+class HistoryFragment : BaseFragment() {
 
     class DeleteEntryDialogFragment() : androidx.fragment.app.DialogFragment() {
         lateinit var messageStr : String
@@ -153,17 +153,11 @@ class HistoryFragment : BaseFragment(), TabLayout.OnTabSelectedListener {
             refreshFragmentView()
         }
 
-        activity!!.bindService(Intent(activity, TimerService::class.java), timerConnection, 0)
-        activity!!.findViewById<TabLayout>(R.id.tabLayout).addOnTabSelectedListener(this)
-//        (activity!! as MainActivity).tabLayout.addOnTabSelectedListener(this)
-
+        (activity!! as MainActivity).apply {
+            bindService(Intent(activity, TimerService::class.java), timerConnection, 0)
+            addOnTabSelectedAction { refreshFragmentView() }
+        }
         return fragmentView
-    }
-
-    override fun onTabReselected(p0: TabLayout.Tab?) { }
-    override fun onTabUnselected(p0: TabLayout.Tab?)  { }
-    override fun onTabSelected(tab : TabLayout.Tab) {
-        refreshFragmentView()
     }
 
     override fun onStart() {
