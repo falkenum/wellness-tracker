@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.*
 import androidx.navigation.ui.NavigationUI
+import androidx.viewpager.widget.ViewPager
 import com.google.android.gms.auth.api.signin.*
 import com.google.android.gms.common.api.Scope
 import com.google.android.material.tabs.TabLayout
@@ -36,7 +37,7 @@ class BundleKeys {
     }
 }
 
-class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
+class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener, ViewPager.OnPageChangeListener {
     val backupServiceConnectedCV = ConditionVariable()
 
     var selectedType = EntryTypes.getTypes()[0]
@@ -156,6 +157,8 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
 
             true
         }
+
+        homePager.addOnPageChangeListener(this)
 
         startService(Intent(this, BackupService::class.java))
 
@@ -321,7 +324,17 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         onTabSelectedActions.forEach { onTabSelectedAction -> onTabSelectedAction(tab) }
     }
 
+    override fun onPageSelected(position: Int) {
+        bottom_navigation.selectedItemId = when (position) {
+            HomeFragment.HISTORY_POS -> R.id.historyMenuItem
+            HomeFragment.STATS_POS -> R.id.statsMenuItem
+            else -> throw Exception("shouldn't get here")
+        }
+    }
+
     override fun onTabReselected(tab: TabLayout.Tab?) = Unit
     override fun onTabUnselected(tab: TabLayout.Tab?) = Unit
+    override fun onPageScrollStateChanged(state: Int) = Unit
+    override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) = Unit
 }
 
