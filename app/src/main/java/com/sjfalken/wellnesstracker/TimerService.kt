@@ -108,7 +108,7 @@ class TimerService : Service() {
         notifManager.createNotificationChannel(channel)
 
         bellPendingIntent = PendingIntent.getBroadcast(applicationContext, 0,
-            Intent(applicationContext, AlarmReceiver::class.java), 0)
+            Intent(applicationContext, TimerAlarmReceiver::class.java), 0)
 
         notifBuilder = Notification.Builder(this, channelId)
             .setSmallIcon(R.drawable.ic_timer_notif)

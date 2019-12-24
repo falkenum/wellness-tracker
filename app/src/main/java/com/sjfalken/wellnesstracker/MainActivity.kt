@@ -37,7 +37,7 @@ class BundleKeys {
     }
 }
 
-class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener, ViewPager.OnPageChangeListener {
+class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
     val backupServiceConnectedCV = ConditionVariable()
 
     var selectedType = EntryTypes.getTypes()[0]
@@ -46,7 +46,8 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener, ViewP
     var signedInAccount : GoogleSignInAccount? = null
         private set
 
-    private lateinit var navController: NavController
+    lateinit var navController: NavController
+        private set
 
     private val onTabSelectedActions = mutableListOf<(TabLayout.Tab) -> Unit>()
     private val onSignInActions = mutableListOf<(googleAccount : GoogleSignInAccount?) -> Unit>()
@@ -141,24 +142,7 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener, ViewP
             addOnTabSelectedListener(this@MainActivity)
         }
 
-        fab.setOnClickListener {
-            navController.navigate(R.id.newEntryFragment)
-        }
         appBarLayout.stateListAnimator = AnimatorInflater.loadStateListAnimator(this, R.animator.elevated)
-
-        bottom_navigation.setOnNavigationItemSelectedListener {
-            val pos = when (it.itemId) {
-                R.id.historyMenuItem -> HomeFragment.HISTORY_POS
-                R.id.statsMenuItem -> HomeFragment.STATS_POS
-                else -> throw Exception("shouldn't get here")
-            }
-
-            homePager.currentItem = pos
-
-            true
-        }
-
-        homePager.addOnPageChangeListener(this)
 
         startService(Intent(this, BackupService::class.java))
 
@@ -179,32 +163,14 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener, ViewP
 
         // showing history option only on home page
         navController.addOnDestinationChangedListener { _, destination, _ ->
-            val showFab = when (destination.id) {
-                R.id.homeFragment -> true
-                else -> false
-            }
-
-            updateBottomNavVisibility(destination)
             updateTabLayoutVisibility(destination)
             hideKeyboard()
-
-            if (showFab) fab.show()
-            else fab.hide()
         }
 
         val drawerLayout = findViewById<DrawerLayout>(R.id.layout_main_drawer)
         NavigationUI.setupWithNavController(toolbar, navController, drawerLayout)
 
         NavigationUI.setupWithNavController(nav_view, navController)
-    }
-
-    private fun updateBottomNavVisibility(destination : NavDestination) {
-        // if any fragment has requested tabLayout, then show it
-        val showBottomNav = when(destination.id) {
-            R.id.homeFragment -> true
-            else -> false
-        }
-        bottom_navigation.visibility = if (showBottomNav) View.VISIBLE else View.GONE
     }
 
     private fun updateTabLayoutVisibility(destination : NavDestination) {
@@ -319,22 +285,12 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener, ViewP
         super.onDestroy()
     }
 
+    override fun onTabReselected(tab: TabLayout.Tab?) = Unit
+    override fun onTabUnselected(tab: TabLayout.Tab?) = Unit
     override fun onTabSelected(tab: TabLayout.Tab) {
         selectedType = tab.text.toString()
         onTabSelectedActions.forEach { onTabSelectedAction -> onTabSelectedAction(tab) }
     }
 
-    override fun onPageSelected(position: Int) {
-        bottom_navigation.selectedItemId = when (position) {
-            HomeFragment.HISTORY_POS -> R.id.historyMenuItem
-            HomeFragment.STATS_POS -> R.id.statsMenuItem
-            else -> throw Exception("shouldn't get here")
-        }
-    }
-
-    override fun onTabReselected(tab: TabLayout.Tab?) = Unit
-    override fun onTabUnselected(tab: TabLayout.Tab?) = Unit
-    override fun onPageScrollStateChanged(state: Int) = Unit
-    override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) = Unit
 }
 

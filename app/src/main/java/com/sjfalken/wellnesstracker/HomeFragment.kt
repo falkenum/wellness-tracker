@@ -6,10 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
+import androidx.viewpager.widget.ViewPager
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.fragment_home.view.*
 
-class HomeFragment : BaseFragment() {
+class HomeFragment : BaseFragment(), ViewPager.OnPageChangeListener {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -26,17 +28,47 @@ class HomeFragment : BaseFragment() {
     var currentPosition = 0
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        view.homePager.adapter = object : FragmentPagerAdapter(
-            childFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
-            override fun getItem(position: Int): Fragment {
-                return when (position) {
-                    HISTORY_POS -> HistoryFragment()
-                    STATS_POS -> StatsFragment()
-                    else -> throw Exception("shouldn't get here")
+        view.homePager.apply {
+            adapter = object : FragmentPagerAdapter(
+                childFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
+                override fun getItem(position: Int): Fragment {
+                    return when (position) {
+                        HISTORY_POS -> HistoryFragment()
+                        STATS_POS -> StatsFragment()
+                        else -> throw Exception("shouldn't get here")
+                    }
                 }
+
+                override fun getCount(): Int = 2
             }
 
-            override fun getCount(): Int = 2
+            addOnPageChangeListener(this@HomeFragment)
+        }
+
+        view.fab.setOnClickListener {
+            (activity!! as MainActivity).navController.navigate(R.id.newEntryFragment)
+        }
+
+        view.bottom_navigation.setOnNavigationItemSelectedListener {
+            val pos = when (it.itemId) {
+                R.id.historyMenuItem -> HISTORY_POS
+                R.id.statsMenuItem -> STATS_POS
+                else -> throw Exception("shouldn't get here")
+            }
+
+            homePager.setCurrentItem(pos, true)
+
+            true
+        }
+    }
+
+    override fun onPageScrollStateChanged(state: Int) = Unit
+    override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) = Unit
+    override fun onPageSelected(position: Int) {
+        bottom_navigation.selectedItemId = when (position) {
+            HISTORY_POS -> R.id.historyMenuItem
+            STATS_POS -> R.id.statsMenuItem
+            else -> throw Exception("shouldn't get here")
         }
     }
 }

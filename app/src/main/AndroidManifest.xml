@@ -30,7 +30,7 @@
                 android:exported="true">
         </receiver>
         <receiver
-                android:name=".AlarmReceiver"
+                android:name=".TimerAlarmReceiver"
                 android:enabled="true"
                 android:exported="true">
         </receiver>
