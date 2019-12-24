@@ -1,23 +1,18 @@
 package com.sjfalken.wellnesstracker
 
 import android.animation.ObjectAnimator
+import android.os.Bundle
 import android.view.Menu
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.transition.Fade
+import androidx.transition.Slide
 
 open class BaseFragment : Fragment() {
-    var showTypeTabs = false
-    var options : Menu? = null
 
-    override fun onStart() {
-        super.onStart()
-        ObjectAnimator.ofFloat((view!! as ViewGroup), "translationX", 0f, -100f).apply {
-            duration = 1000
-//            start()
-        }
-    }
-
-    override fun onStop() {
-        super.onStop()
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enterTransition = Fade()
+        exitTransition = Fade()
     }
 }

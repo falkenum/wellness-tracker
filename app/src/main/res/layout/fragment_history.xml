@@ -15,9 +15,9 @@
         <com.sjfalken.wellnesstracker.CalendarView android:layout_width="wrap_content"
                                                    android:layout_height="wrap_content"
                                                    android:id="@+id/calendarView"
-                                                   android:layout_gravity="center_horizontal">
-        </com.sjfalken.wellnesstracker.CalendarView>
+                                                   android:layout_gravity="center_horizontal"/>
         <LinearLayout android:orientation="vertical"
+                android:animateLayoutChanges="true"
                 android:id="@+id/sessionCardsLayout"
                 android:layout_width="match_parent"
                 android:gravity="center_horizontal"

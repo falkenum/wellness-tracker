@@ -17,7 +17,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class HistoryFragment : BaseFragment() {
 
-    class DeleteEntryDialogFragment() : androidx.fragment.app.DialogFragment() {
+    class DeleteEntryDialogFragment : androidx.fragment.app.DialogFragment() {
         lateinit var messageStr : String
         lateinit var onConfirmDelete : () -> Unit
 
@@ -94,12 +94,12 @@ class HistoryFragment : BaseFragment() {
         // remove all the cards, leave the summaryLayout at the beginning
         sessionCardsLayout.removeAllViews()
 
+        sessionCardsLayout.visibility = View.VISIBLE
         // generate a cardview for each session of that day
         for (record in recordsForDay) {
             sessionCardsLayout.addView(getEntryInfoCard(record))
         }
 
-        sessionCardsLayout.visibility = View.VISIBLE
     }
 
     private fun loadMonthEntries() {
