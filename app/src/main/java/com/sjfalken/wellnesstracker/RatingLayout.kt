@@ -7,10 +7,12 @@ import android.util.TypedValue
 import android.widget.LinearLayout
 import android.widget.TextView
 
-const val HIGHLIGHTED = 99
-const val NOT_HIGHLIGHTED = 0
 
 class RatingLayout(context: Context) : LinearLayout(context), EntryDatumHolder {
+    companion object {
+        const val HIGHLIGHTED = 99
+        const val NOT_HIGHLIGHTED = 0
+    }
     override val value: String
         get() = getChildAt(selectedIndex).id.toString()
 

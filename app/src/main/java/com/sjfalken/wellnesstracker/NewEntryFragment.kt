@@ -18,9 +18,11 @@ import java.util.*
 
 class NewEntryFragment : BaseFragment() {
 
-    companion object ARGUMENT_KEYS {
-        const val ENTRY_TYPE = "com.sjfalken.wellnesstracker.ENTRY_TYPE"
-        const val DATE_TIME = "com.sjfalken.wellnesstracker.DATE_TIME"
+    class ArgumentKeys {
+        companion object {
+            const val ENTRY_TYPE = "com.sjfalken.wellnesstracker.ENTRY_TYPE"
+            const val DATE_TIME = "com.sjfalken.wellnesstracker.DATE_TIME"
+        }
     }
 
     lateinit var dataInputLayout : EntryDataLayout
@@ -46,9 +48,9 @@ class NewEntryFragment : BaseFragment() {
         rootView = inflater.inflate(R.layout.fragment_new_entry, container, false)
         fm = activity!!.supportFragmentManager
 
-        val dateTime = arguments?.run {
-            getString(DATE_TIME)
-        } ?: ZonedDateTime.now()
+//        val dateTime = arguments?.run {
+//            getString(ArgumentKeys.DATE_TIME)
+//        } ?: ZonedDateTime.now()
 
         val selectedType = (activity!! as MainActivity).run {
             addOnTabSelectedAction { tab ->

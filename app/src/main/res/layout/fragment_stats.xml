@@ -21,7 +21,7 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
         <Spinner
-                android:id="@+id/spinner"
+                android:id="@+id/periodLengthSpinner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:layout_constraintStart_toEndOf="@+id/textView3"
@@ -33,7 +33,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="start"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/spinner" />
+                app:layout_constraintTop_toBottomOf="@id/periodLengthSpinner" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 

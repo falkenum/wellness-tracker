@@ -160,7 +160,9 @@ class MeditationConfig: EntryTypeConfig() {
 
     override fun getDailyReminderTimes(): List<LocalTime>? {
         // 8am every day
-        return List(1) { LocalTime.of(8, 0) }
+        return listOf(
+            LocalTime.of(8, 0)
+        )
     }
 }
 

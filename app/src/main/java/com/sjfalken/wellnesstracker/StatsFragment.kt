@@ -31,7 +31,7 @@ class StatsFragment : BaseFragment() {
 
     private val selectedTimePeriod : String
         get() {
-            return when (rootView.spinner.selectedItemPosition) {
+            return when (rootView.periodLengthSpinner.selectedItemPosition) {
                 0 -> YEAR
                 1 -> MONTH
                 2 -> WEEK
@@ -113,7 +113,7 @@ class StatsFragment : BaseFragment() {
             }
         }
 
-        rootView.spinner.apply {
+        rootView.periodLengthSpinner.apply {
             adapter = ArrayAdapter.createFromResource(
                 mainActivity,
                 R.array.period_lengths_array,

@@ -30,14 +30,14 @@ import com.google.api.services.drive.DriveScopes
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_home.*
 
-class BundleKeys {
-    companion object {
-        const val REMINDER_TYPE = "reminder type"
-        const val REMINDER_ID = "reminder filename"
-    }
-}
 
 class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
+    class BundleKeys {
+        companion object {
+            const val REMINDER_TYPE = "reminder type"
+            const val REMINDER_ID = "reminder filename"
+        }
+    }
     val backupServiceConnectedCV = ConditionVariable()
 
     var selectedType = EntryTypes.getTypes()[0]
@@ -283,6 +283,18 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
     override fun onDestroy() {
         unbindService(backupServiceConnection)
         super.onDestroy()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val reminderType = intent.getStringExtra(BundleKeys.REMINDER_TYPE)
+        val args = Bundle().apply {
+            putString(NewEntryFragment.ArgumentKeys.ENTRY_TYPE, reminderType)
+        }
+
+        if (reminderType != null) {
+            navController.navigate(R.id.newEntryFragment, args, null)
+        }
     }
 
     override fun onTabReselected(tab: TabLayout.Tab?) = Unit
