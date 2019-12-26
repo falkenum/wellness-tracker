@@ -11,9 +11,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import java.time.*
-import androidx.navigation.fragment.findNavController
-import com.google.android.material.tabs.TabLayout
-import kotlinx.android.synthetic.main.activity_main.*
 
 class HistoryFragment : BaseFragment() {
 
@@ -44,6 +41,7 @@ class HistoryFragment : BaseFragment() {
     private lateinit var inflater: LayoutInflater
     private lateinit var fm: androidx.fragment.app.FragmentManager
     private lateinit var entryDao: EntryDao
+
 
     private val timerConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
@@ -106,17 +104,19 @@ class HistoryFragment : BaseFragment() {
         // Make an array of lists containing the records for each day of the month
         monthEntries = Array(calendarView.yearMonthShown.lengthOfMonth())
             { ArrayList<Entry>(0) }
-        val selectedType = (activity!! as MainActivity).selectedType
 
-
+        val selectedTypes = (parentFragment as HomeFragment).selectedTypes
         val year = calendarView.yearMonthShown.year
         val month = calendarView.yearMonthShown.month
         // for day in month
         for (dayOfMonth in 1..calendarView.yearMonthShown.lengthOfMonth()) {
-            val date = LocalDate.of(year, month, dayOfMonth)
-            val records = entryDao.getAllForDateAndType(date, selectedType)
-            assert(monthEntries[dayOfMonth - 1].size == 0)
-            monthEntries[dayOfMonth - 1].addAll(records)
+
+            for (type in selectedTypes) {
+                val date = LocalDate.of(year, month, dayOfMonth)
+                val records = entryDao.getAllForDateAndType(date, type)
+                assert(monthEntries[dayOfMonth - 1].size == 0)
+                monthEntries[dayOfMonth - 1].addAll(records)
+            }
         }
     }
 
@@ -155,7 +155,6 @@ class HistoryFragment : BaseFragment() {
 
         (activity!! as MainActivity).apply {
             bindService(Intent(activity, TimerService::class.java), timerConnection, 0)
-            addOnTabSelectedAction { refreshFragmentView() }
         }
         return fragmentView
     }

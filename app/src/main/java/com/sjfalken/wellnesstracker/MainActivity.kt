@@ -31,7 +31,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_home.*
 
 
-class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
+class MainActivity : AppCompatActivity() {
     class BundleKeys {
         companion object {
             const val REMINDER_TYPE = "reminder type"
@@ -39,9 +39,6 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         }
     }
     val backupServiceConnectedCV = ConditionVariable()
-
-    var selectedType = EntryTypes.getTypes()[0]
-        private set
 
     var signedInAccount : GoogleSignInAccount? = null
         private set
@@ -137,10 +134,6 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
 
     private fun onDatabaseValidated() {
         setContentView(R.layout.activity_main)
-        tabLayout.run {
-            EntryTypes.getTypes().forEach { addTab(newTab().setText(it)) }
-            addOnTabSelectedListener(this@MainActivity)
-        }
 
         appBarLayout.stateListAnimator = AnimatorInflater.loadStateListAnimator(this, R.animator.elevated)
 
@@ -162,8 +155,7 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         // mainactivity calls back to fragment before navigation.
 
         // showing history option only on home page
-        navController.addOnDestinationChangedListener { _, destination, _ ->
-            updateTabLayoutVisibility(destination)
+        navController.addOnDestinationChangedListener { _, _, _ ->
             hideKeyboard()
         }
 
@@ -171,12 +163,6 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         NavigationUI.setupWithNavController(toolbar, navController, drawerLayout)
 
         NavigationUI.setupWithNavController(nav_view, navController)
-    }
-
-    private fun updateTabLayoutVisibility(destination : NavDestination) {
-        // if any fragment has requested tabLayout, then show it
-        val showTabLayout = fragmentsToShowTabs.any { it == destination.id }
-        tabLayout.visibility = if (showTabLayout) View.VISIBLE else View.GONE
     }
 
     private fun hideKeyboard() {
@@ -295,13 +281,6 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         if (reminderType != null) {
             navController.navigate(R.id.newEntryFragment, args, null)
         }
-    }
-
-    override fun onTabReselected(tab: TabLayout.Tab?) = Unit
-    override fun onTabUnselected(tab: TabLayout.Tab?) = Unit
-    override fun onTabSelected(tab: TabLayout.Tab) {
-        selectedType = tab.text.toString()
-        onTabSelectedActions.forEach { onTabSelectedAction -> onTabSelectedAction(tab) }
     }
 
 }

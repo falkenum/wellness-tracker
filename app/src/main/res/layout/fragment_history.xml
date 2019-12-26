@@ -9,13 +9,13 @@
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-        <Space
+
+        <com.sjfalken.wellnesstracker.CalendarView
+                android:id="@+id/calendarView"
+                android:layout_marginHorizontal="@dimen/edgeMargin"
                 android:layout_width="match_parent"
-                android:layout_height="16dp"/>
-        <com.sjfalken.wellnesstracker.CalendarView android:layout_width="wrap_content"
-                                                   android:layout_height="wrap_content"
-                                                   android:id="@+id/calendarView"
-                                                   android:layout_gravity="center_horizontal"/>
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal" />
         <LinearLayout android:orientation="vertical"
                 android:animateLayoutChanges="true"
                 android:id="@+id/sessionCardsLayout"

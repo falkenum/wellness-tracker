@@ -6,10 +6,43 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
-    <ListView
-            android:id="@+id/listView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/edgeMargin"
+            android:layout_marginHorizontal="@dimen/edgeMargin"
+            >
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Number of entry types selected: "
+                />
+        <TextView
+                android:id="@+id/numEntryTypes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                />
+        <Space
+                android:layout_weight="1.0"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"/>
+        <Button
+                android:id="@+id/changeButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="change"
+                />
+    </LinearLayout>
+
+    <View
+            android:layout_width="match_parent"
+            android:layout_marginTop="8dp"
+            android:layout_height="1dp"
+            android:background="?android:attr/listDivider" />
 
     <FrameLayout
             android:id="@+id/frameLayout"
@@ -21,9 +54,7 @@
         <androidx.viewpager.widget.ViewPager
                 android:id="@+id/homePager"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-        </androidx.viewpager.widget.ViewPager>
+                android:layout_height="match_parent"/>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/fab"

@@ -25,9 +25,9 @@ class NewEntryFragment : BaseFragment() {
         }
     }
 
-    lateinit var dataInputLayout : EntryDataLayout
-    lateinit var rootView : View
-    lateinit var fm : FragmentManager
+    private lateinit var dataInputLayout : EntryDataLayout
+    private lateinit var rootView : View
+    private lateinit var fm : FragmentManager
 
     private var selectedTime = ZonedDateTime.now().toLocalTime()
     private var selectedDate = ZonedDateTime.now().toLocalDate()
@@ -48,16 +48,7 @@ class NewEntryFragment : BaseFragment() {
         rootView = inflater.inflate(R.layout.fragment_new_entry, container, false)
         fm = activity!!.supportFragmentManager
 
-//        val dateTime = arguments?.run {
-//            getString(ArgumentKeys.DATE_TIME)
-//        } ?: ZonedDateTime.now()
-
-        val selectedType = (activity!! as MainActivity).run {
-            addOnTabSelectedAction { tab ->
-                updateDataInputType(tab.text.toString())
-            }
-            selectedType
-        }
+        val selectedType = EntryTypes.MEDITATION
 
         rootView.findViewById<Button>(R.id.confirmButton).setOnClickListener {
             onConfirm()
@@ -137,7 +128,7 @@ class NewEntryFragment : BaseFragment() {
     }
 
     private fun onConfirm() {
-        val selectedType = (activity!! as MainActivity).selectedType
+        val selectedType = EntryTypes.MEDITATION
         val localDateTime = LocalDateTime.of(selectedDate, selectedTime)
         val dateTime = ZonedDateTime.of(localDateTime, ZoneId.systemDefault())
         val newEntry = Entry(dateTime, selectedType, dataInputLayout.data)

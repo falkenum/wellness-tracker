@@ -42,13 +42,15 @@ class StatsFragment : BaseFragment() {
 
     private lateinit var rootView : View
 
+    //TODO
+    private val selectedType = EntryTypes.MEDITATION
+
     private fun updateStats() {
 
         // to be called after accessing the database
         // entries is a list with all entries of the type passed in
         val processEntries = { entries : List<Entry> ->
             rootView.findViewById<FrameLayout>(R.id.averageValuesHolder).apply {
-                val selectedType = (activity!! as MainActivity).selectedType
 
                 // find which values are numeric and can be processed
                 val defaultData = EntryTypes.getConfig(selectedType).defaultData
@@ -89,7 +91,6 @@ class StatsFragment : BaseFragment() {
 
         // updating the statistics view
         Thread {
-            val selectedType = (activity!! as MainActivity).selectedType
             val entries = LogEntryDatabase.instance.entryDao()
                 .getAllWithinDurationAndType(startEpochSecond, endEpochSecond, selectedType)
 

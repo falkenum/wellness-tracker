@@ -21,13 +21,13 @@ class Utility {
         protected open val messageTag = "INFO"
 
         var message = "[empty message]"
-        val seperator = ": "
 
         override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
             return activity!!.let {
+                val separator = ": "
                 val builder = AlertDialog.Builder(it)
 
-                builder.setMessage(messageTag + seperator + message)
+                builder.setMessage(messageTag + separator + message)
                     .setPositiveButton("Ok",
                         DialogInterface.OnClickListener { _, _ -> })
                 builder.create()

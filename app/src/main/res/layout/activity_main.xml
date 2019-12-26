@@ -29,13 +29,6 @@
                     android:layout_height="?attr/actionBarSize"
                     app:titleTextColor="@android:color/white" />
 
-                <com.google.android.material.tabs.TabLayout
-                    android:id="@+id/tabLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:tabIndicatorHeight="5dp"
-                    app:tabTextColor="@android:color/white" />
-
             </com.google.android.material.appbar.AppBarLayout>
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
