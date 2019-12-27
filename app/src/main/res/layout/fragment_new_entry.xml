@@ -1,109 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                                                    xmlns:app="http://schemas.android.com/apk/res-auto"
-                                                    xmlns:tools="http://schemas.android.com/tools"
-                                                    android:orientation="vertical"
-                                                    android:layout_width="match_parent"
-                                                    android:layout_height="match_parent">
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/new_entry_dialog_bg"
+        android:orientation="vertical">
 
-    <LinearLayout
-            android:id="@+id/dateTimeLayout"
-            android:layout_width="0dp"
+    <Button
+            android:id="@+id/backButton"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/edgeMargin"
-            android:orientation="vertical"
+            android:layout_marginStart="@dimen/edgeMargin"
+            android:text="back"
+            android:visibility="invisible"
+            app:layout_constraintBaseline_toBaselineOf="@+id/nextConfirmButton"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    <androidx.viewpager.widget.ViewPager
+            android:id="@+id/newEntryPager"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/divider"
+            />
 
-        <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:orientation="horizontal">
 
-            <TextView
-                    android:id="@+id/textView4"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Date: " />
-
-            <TextView
-                    android:id="@+id/dateValueView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Today" />
-
-            <Space
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1" />
-
-            <Button
-                    android:id="@+id/modifyDateButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="end"
-                    android:text="modify" />
-        </LinearLayout>
-
-        <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-            <TextView
-                    android:id="@+id/textView2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Time: " />
-
-            <TextView
-                    android:id="@+id/timeValueView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Now" />
-
-            <Space
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1" />
-
-            <Button
-                    android:id="@+id/modifyTimeButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="end"
-                    android:text="modify" />
-        </LinearLayout>
-    </LinearLayout>
     <View
             android:id="@+id/divider"
             android:layout_width="match_parent"
-            android:layout_height="1.5dp"
+            android:layout_height="4dp"
+            android:layout_marginTop="16dp"
             android:background="?android:attr/listDivider"
+            app:layout_constraintBottom_toTopOf="@id/nextConfirmButton"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" android:layout_marginTop="16dp"
-            app:layout_constraintTop_toBottomOf="@+id/dateTimeLayout"/>
-    <!--<TextView android:layout_width="wrap_content" android:layout_height="wrap_content"-->
-    <!--android:text="Entry type" android:filename="@+filename/chosenType"-->
-    <!--/>-->
+            app:layout_constraintTop_toBottomOf="@id/newEntryPager" />
+
     <Button
+            android:id="@+id/nextConfirmButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="@dimen/edgeMargin"
+            android:layout_marginBottom="@dimen/edgeMargin"
             android:text="Confirm"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:id="@+id/confirmButton"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/dataInputHolder"
-            android:layout_marginTop="16dp"/>
+            app:layout_constraintTop_toBottomOf="@id/dataInputHolder" />
+
     <FrameLayout
-            android:orientation="vertical"
+            android:id="@+id/dataInputHolder"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:id="@+id/dataInputHolder"
-            app:layout_constraintStart_toStartOf="parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/divider"
 
-    />
+            />
 </androidx.constraintlayout.widget.ConstraintLayout>

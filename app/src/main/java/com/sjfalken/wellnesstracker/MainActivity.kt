@@ -18,7 +18,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.*
 import androidx.navigation.ui.NavigationUI
-import androidx.viewpager.widget.ViewPager
 import com.google.android.gms.auth.api.signin.*
 import com.google.android.gms.common.api.Scope
 import com.google.android.material.tabs.TabLayout
@@ -28,7 +27,6 @@ import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.fragment_home.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -270,18 +268,18 @@ class MainActivity : AppCompatActivity() {
         unbindService(backupServiceConnection)
         super.onDestroy()
     }
-
-    override fun onStart() {
-        super.onStart()
-        val reminderType = intent.getStringExtra(BundleKeys.REMINDER_TYPE)
-        val args = Bundle().apply {
-            putString(NewEntryFragment.ArgumentKeys.ENTRY_TYPE, reminderType)
-        }
-
-        if (reminderType != null) {
-            navController.navigate(R.id.newEntryFragment, args, null)
-        }
-    }
+//
+//    override fun onStart() {
+//        super.onStart()
+//        val reminderType = intent.getStringExtra(BundleKeys.REMINDER_TYPE)
+//        val args = Bundle().apply {
+//            putString(NewEntryDialogFragment.ArgumentKeys.ENTRY_TYPE, reminderType)
+//        }
+//
+//        if (reminderType != null) {
+//            navController.navigate(R.id.newEntryFragment, args, null)
+//        }
+//    }
 
 }
 

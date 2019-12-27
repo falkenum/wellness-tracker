@@ -1,22 +1,45 @@
 package com.sjfalken.wellnesstracker
 
+import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.Dialog
 import android.app.TimePickerDialog
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentPagerAdapter
 import androidx.navigation.fragment.findNavController
+import kotlinx.android.synthetic.main.fragment_new_entry.view.*
 import java.time.*
 import java.time.format.DateTimeFormatter
 import java.util.*
 
 
-class NewEntryFragment : BaseFragment() {
+class NewEntryDialogFragment : DialogFragment() {
+
+    class TypeSelectFragment : Fragment() {
+        override fun onCreateView(
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?
+        ): View? {
+            return ListView(context!!).apply {
+                choiceMode = ListView.CHOICE_MODE_SINGLE
+                adapter = ArrayAdapter(context!!, android.R.layout.simple_list_item_single_choice,
+                    EntryTypes.getTypes())
+
+                layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT)
+            }
+        }
+    }
 
     class ArgumentKeys {
         companion object {
@@ -44,27 +67,47 @@ class NewEntryFragment : BaseFragment() {
         }
     }
 
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        return super.onCreateDialog(savedInstanceState).apply {
+            window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        }
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         rootView = inflater.inflate(R.layout.fragment_new_entry, container, false)
         fm = activity!!.supportFragmentManager
 
         val selectedType = EntryTypes.MEDITATION
 
-        rootView.findViewById<Button>(R.id.confirmButton).setOnClickListener {
+        rootView.findViewById<Button>(R.id.nextConfirmButton).setOnClickListener {
             onConfirm()
         }
 
-        rootView.findViewById<Button>(R.id.modifyTimeButton).setOnClickListener {
-            getTime()
-        }
+//        rootView.findViewById<Button>(R.id.modifyTimeButton).setOnClickListener {
+//            getTime()
+//        }
+//
+//        rootView.findViewById<Button>(R.id.modifyDateButton).setOnClickListener {
+//            getDate()
+//        }
 
-        rootView.findViewById<Button>(R.id.modifyDateButton).setOnClickListener {
-            getDate()
+        rootView.newEntryPager.apply {
+            adapter = object : FragmentPagerAdapter(
+                childFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
+                override fun getItem(position: Int): Fragment {
+                    return when (position) {
+                        0 -> TypeSelectFragment()
+                        else -> throw Exception("shouldn't get here")
+                    }
+                }
+
+                override fun getCount(): Int = 1
+            }
         }
+//        ListView(activity!!).choiceMode = ListView.CHOICE_MODE_SINGLE
 
         // set the initial data input
         updateDataInputType(selectedType)
-
         return rootView
     }
 
@@ -132,7 +175,6 @@ class NewEntryFragment : BaseFragment() {
         val localDateTime = LocalDateTime.of(selectedDate, selectedTime)
         val dateTime = ZonedDateTime.of(localDateTime, ZoneId.systemDefault())
         val newEntry = Entry(dateTime, selectedType, dataInputLayout.data)
-
         Thread {
             if (!Entry.isValidEntry(newEntry)) {
                 Utility.ErrorDialogFragment().apply {
@@ -147,6 +189,8 @@ class NewEntryFragment : BaseFragment() {
                     findNavController().navigateUp()
                 }
             }
+
+            dialog!!.cancel()
         }.start()
     }
 }

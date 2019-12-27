@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -17,8 +16,9 @@ import androidx.viewpager.widget.ViewPager
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.fragment_home.view.*
 
+
 class HomeFragmentViewModel : ViewModel() {
-    val selectedTypeIndices = MutableLiveData<List<Int>>(listOf())
+    val selectedTypeIndices = MutableLiveData<List<Int>>(List(EntryTypes.getTypes().size) {i-> i})
 }
 
 class HomeFragment : BaseFragment(), ViewPager.OnPageChangeListener {
@@ -99,7 +99,7 @@ class HomeFragment : BaseFragment(), ViewPager.OnPageChangeListener {
         }
 
         view.fab.setOnClickListener {
-            (activity!! as MainActivity).navController.navigate(R.id.newEntryFragment)
+            NewEntryDialogFragment().show(childFragmentManager, "NewEntryDialogFragment")
         }
 
         view.bottom_navigation.setOnNavigationItemSelectedListener {
