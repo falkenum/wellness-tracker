@@ -14,6 +14,8 @@ import java.time.*
 
 class HistoryFragment : BaseFragment() {
 
+
+
     class DeleteEntryDialogFragment : androidx.fragment.app.DialogFragment() {
         lateinit var messageStr : String
         lateinit var onConfirmDelete : () -> Unit
@@ -23,11 +25,10 @@ class HistoryFragment : BaseFragment() {
                 // Use the Builder class for convenient dialog construction
                 val builder = AlertDialog.Builder(it)
                 builder.setMessage(messageStr)
-                    .setPositiveButton("Yes",
-                        DialogInterface.OnClickListener { _, _ ->
+                    .setPositiveButton("Yes") { _, _ ->
                             onConfirmDelete()
-                        })
-                    .setNegativeButton("No", DialogInterface.OnClickListener { _, _ -> })
+                        }
+                    .setNegativeButton("No") { _, _ -> }
                 // Create the AlertDialog object and return it
                 builder.create()
             }
@@ -156,6 +157,8 @@ class HistoryFragment : BaseFragment() {
         (activity!! as MainActivity).apply {
             bindService(Intent(activity, TimerService::class.java), timerConnection, 0)
         }
+
+        (parentFragment as HomeFragment).addOnTypesSelectedAction { refreshFragmentView() }
         return fragmentView
     }
 
@@ -179,5 +182,6 @@ class HistoryFragment : BaseFragment() {
         activity!!.unbindService(timerConnection)
         super.onDestroyView()
     }
+
 
 }
