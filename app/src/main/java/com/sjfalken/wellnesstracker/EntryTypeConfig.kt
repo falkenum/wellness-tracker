@@ -85,7 +85,7 @@ open class EntryDataLayout(context: Context, startingData : JSONObject)
 
     init {
         orientation = VERTICAL
-        layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+        layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
 
         for (label in startingData.keys()) {
             val newRow = LinearLayout(context).apply {
@@ -232,7 +232,7 @@ class ExerciseConfig : EntryTypeConfig() {
     ))
 
     override fun getBgColor(context: Context): Int {
-        return context.resources.getColor(R.color.colorDrugUse, null)
+        return context.resources.getColor(R.color.colorExercise, null)
     }
 
     override fun getDailyReminderTimes(): List<LocalTime>? = null

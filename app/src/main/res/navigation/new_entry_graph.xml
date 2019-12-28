@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<navigation xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto" android:id="@+id/new_entry_graph"
-        app:startDestination="@id/singleTypeSelectFragment">
-    <fragment
-            android:id="@+id/singleTypeSelectFragment"
-            android:name="com.sjfalken.wellnesstracker.SingleTypeSelectFragment"
-            android:label="SingleTypeSelectFragment" />
-</navigation>

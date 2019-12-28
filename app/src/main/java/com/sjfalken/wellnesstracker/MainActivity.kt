@@ -268,18 +268,18 @@ class MainActivity : AppCompatActivity() {
         unbindService(backupServiceConnection)
         super.onDestroy()
     }
-//
-//    override fun onStart() {
-//        super.onStart()
-//        val reminderType = intent.getStringExtra(BundleKeys.REMINDER_TYPE)
-//        val args = Bundle().apply {
-//            putString(NewEntryDialogFragment.ArgumentKeys.ENTRY_TYPE, reminderType)
-//        }
-//
-//        if (reminderType != null) {
-//            navController.navigate(R.id.newEntryFragment, args, null)
-//        }
-//    }
+
+    override fun onStart() {
+        super.onStart()
+        val reminderType = intent.getStringExtra(BundleKeys.REMINDER_TYPE)
+
+        if (reminderType != null) {
+            val args = Bundle().apply {
+                putString(NewEntryFragment.ArgumentKeys.ENTRY_TYPE, reminderType)
+            }
+            navController.navigate(R.id.newEntryFragment, args, null)
+        }
+    }
 
 }
 

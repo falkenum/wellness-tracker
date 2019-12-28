@@ -1,45 +1,116 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/new_entry_dialog_bg"
-        android:orientation="vertical">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/new_entry_dialog_bg">
 
 
-    <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/new_entry_nav_host"
-            android:name="androidx.navigation.fragment.NavHostFragment"
-            android:layout_width="match_parent"
+    <View
+            android:id="@+id/divider2"
+            android:layout_width="409dp"
+            android:layout_height="1dp"
+            android:layout_marginTop="8dp"
+            android:background="?android:attr/listDivider"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/changeTimeButton" />
+
+    <TextView
+            android:id="@+id/textView11"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:navGraph="@navigation/new_entry_graph" />
+            android:layout_marginStart="@dimen/edgeMargin"
+            android:text="Date: "
+            app:layout_constraintBaseline_toBaselineOf="@+id/dateValueView"
+            app:layout_constraintStart_toStartOf="parent" />
 
-    <LinearLayout
-            android:layout_width="match_parent"
+    <TextView
+            android:id="@+id/dateValueView"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:text="Today"
+            app:layout_constraintBaseline_toBaselineOf="@+id/changeDateButton"
+            app:layout_constraintStart_toEndOf="@+id/textView8" />
 
-        <Button
-                android:id="@+id/backCancelButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/edgeMargin"
-                android:text="Cancel"
-                />
-        <Space
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1.0"/>
-        <Button
-                android:id="@+id/nextConfirmButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="@dimen/edgeMargin"
-                android:layout_marginBottom="@dimen/edgeMargin"
-                android:text="Confirm" />
-    </LinearLayout>
+    <ListView
+            android:id="@+id/singleTypeListView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/edgeMargin"
+            android:layout_marginTop="@dimen/edgeMargin"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+            android:id="@+id/confirmButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="@dimen/edgeMargin"
+            android:text="Confirm"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/dataInputHolder" />
+
+    <View
+            android:id="@+id/divider"
+            android:layout_width="409dp"
+            android:layout_height="1dp"
+            android:layout_marginTop="8dp"
+            android:background="?android:attr/listDivider"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/singleTypeListView" />
+
+    <TextView
+            android:id="@+id/textView8"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/edgeMargin"
+            android:text="Time: "
+            app:layout_constraintBaseline_toBaselineOf="@+id/timeValueView"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+            android:id="@+id/timeValueView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Now"
+            app:layout_constraintBaseline_toBaselineOf="@+id/changeTimeButton"
+            app:layout_constraintStart_toEndOf="@+id/textView8" />
+
+    <Button
+            android:id="@+id/changeDateButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="@dimen/edgeMargin"
+            android:text="Change"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/divider" />
+
+    <Button
+            android:id="@+id/changeTimeButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="@dimen/edgeMargin"
+            android:text="Change"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/changeDateButton" />
+
+    <FrameLayout
+            android:id="@+id/dataInputHolder"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/edgeMargin"
+            android:layout_marginTop="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/divider2">
+
+    </FrameLayout>
 
 
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

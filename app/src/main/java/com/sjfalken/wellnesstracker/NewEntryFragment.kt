@@ -1,11 +1,8 @@
 package com.sjfalken.wellnesstracker
 
-import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.Dialog
 import android.app.TimePickerDialog
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -13,41 +10,13 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentPagerAdapter
 import androidx.navigation.fragment.findNavController
 import kotlinx.android.synthetic.main.fragment_new_entry.view.*
 import java.time.*
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-class SingleTypeSelectFragment : Fragment() {
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return ListView(context!!).apply {
-            id = View.generateViewId()
-            choiceMode = ListView.CHOICE_MODE_SINGLE
-            adapter = ArrayAdapter(context!!, android.R.layout.simple_list_item_single_choice,
-                EntryTypes.getTypes()).apply {
-            }
-
-            layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT)
-
-            setOnItemClickListener { parent, view, position, id ->
-                findNavController().navigate
-            }
-        }
-    }
-}
-
-class NewEntryDialogFragment : DialogFragment() {
-
-
+class NewEntryFragment : BaseFragment() {
     class ArgumentKeys {
         companion object {
             const val ENTRY_TYPE = "com.sjfalken.wellnesstracker.ENTRY_TYPE"
@@ -59,38 +28,61 @@ class NewEntryDialogFragment : DialogFragment() {
 
     private var selectedTime = ZonedDateTime.now().toLocalTime()
     private var selectedDate = ZonedDateTime.now().toLocalDate()
+    private var selectedType = ""
 
-//    private fun updateDataInputType(type : String) {
-//        activity?.run {
-//            dataInputLayout = EntryTypes.getConfig(type).getDataInputLayout(this)
-//        }
-//
-//
-//        rootView.findViewById<FrameLayout>(R.id.dataInputHolder)!!.run {
-//            removeAllViews()
-//            addView(dataInputLayout)
-//        }
-//    }
+    private fun updateDataInputType(type : String) {
+        context!!.run {
+            dataInputLayout = EntryTypes.getConfig(type).getDataInputLayout(this)
+        }
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return super.onCreateDialog(savedInstanceState).apply {
-            window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+        view!!.dataInputHolder.run {
+            removeAllViews()
+            addView(dataInputLayout)
         }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val rootView = inflater.inflate(R.layout.fragment_new_entry, container, false)
+        return inflater.inflate(R.layout.fragment_new_entry, container, false)
+    }
 
-        val selectedType = EntryTypes.MEDITATION
-
-        rootView.findViewById<Button>(R.id.nextConfirmButton).setOnClickListener {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        view.confirmButton.setOnClickListener {
             onConfirm()
         }
 
+        view.changeDateButton.setOnClickListener {
+            val fm = childFragmentManager
+            EntryDatePicker().apply {
+                onDateSet = { date -> selectedDate = date }
+                dateValueView = view.findViewById(R.id.dateValueView)
+                show(fm, "DatePickerDialog")
+            }
+        }
 
-        // set the initial data input
-//        updateDataInputType(selectedType)
-        return rootView
+        view.changeTimeButton.setOnClickListener {
+            val fm = childFragmentManager
+            EntryTimePicker().apply {
+                onTimeSet = { time -> selectedTime = time}
+                timeValueView = view.findViewById(R.id.timeValueView)
+                show(fm, "TimePickerDialog")
+            }
+        }
+
+        view.singleTypeListView.apply {
+            choiceMode = ListView.CHOICE_MODE_SINGLE
+            adapter = ArrayAdapter(context!!, android.R.layout.simple_list_item_single_choice,
+                EntryTypes.getTypes())
+
+            setOnItemClickListener { _, _, position, _ ->
+                val type = EntryTypes.getTypes()[position]
+                updateDataInputType(type)
+                selectedType = type
+            }
+
+            performItemClick(this, 0, 0)
+        }
     }
 
     class EntryDatePicker : DialogFragment(), DatePickerDialog.OnDateSetListener {
@@ -114,21 +106,6 @@ class NewEntryDialogFragment : DialogFragment() {
             return DatePickerDialog(activity!!, this, year, month, day)
         }
     }
-//    private fun getDate() {
-//        EntryDatePicker().apply {
-//            onDateSet = { date -> selectedDate = date }
-//            dateValueView = rootView.findViewById(R.id.dateValueView)
-//            show(fm, "DatePickerDialog")
-//        }
-//    }
-
-//    private fun getTime() {
-//        EntryTimePicker().apply {
-//            onTimeSet = { time -> selectedTime = time}
-//            timeValueView = rootView.findViewById(R.id.timeValueView)
-//            show(fm, "TimePickerDialog")
-//        }
-//    }
 
     class EntryTimePicker : DialogFragment(), TimePickerDialog.OnTimeSetListener {
         lateinit var timeValueView : TextView
@@ -152,9 +129,7 @@ class NewEntryDialogFragment : DialogFragment() {
         }
     }
 
-
     private fun onConfirm() {
-        val selectedType = EntryTypes.MEDITATION
         val localDateTime = LocalDateTime.of(selectedDate, selectedTime)
         val dateTime = ZonedDateTime.of(localDateTime, ZoneId.systemDefault())
         val newEntry = Entry(dateTime, selectedType, dataInputLayout.data)
@@ -173,7 +148,6 @@ class NewEntryDialogFragment : DialogFragment() {
                 }
             }
 
-            dialog!!.cancel()
         }.start()
     }
 }

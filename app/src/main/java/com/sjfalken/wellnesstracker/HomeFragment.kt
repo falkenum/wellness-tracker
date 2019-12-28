@@ -12,6 +12,7 @@ import androidx.fragment.app.FragmentPagerAdapter
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.viewpager.widget.ViewPager
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.fragment_home.view.*
@@ -29,9 +30,11 @@ class HomeFragment : BaseFragment(), ViewPager.OnPageChangeListener {
         val selectedTypeIndices : List<Int>
             get() = _selectedTypeIndices.toList()
 
+        fun addIndices(indices : List<Int>) {
+            _selectedTypeIndices.addAll(indices)
+        }
+
         override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-            _selectedTypeIndices.addAll((parentFragment as HomeFragment)
-                .viewModel.selectedTypeIndices.value!!.toTypedArray())
 
             val checkedBoxes = BooleanArray(EntryTypes.getTypes().size) {i ->
                 _selectedTypeIndices.contains(i)
@@ -61,13 +64,19 @@ class HomeFragment : BaseFragment(), ViewPager.OnPageChangeListener {
         const val STATS_POS = 1
     }
 
+    private lateinit var typeDialog: EntryTypeSelectDialogFragment
     private val onTypeSelectedActions = arrayListOf<() -> Unit>()
     private val viewModel get() = ViewModelProvider(this)[HomeFragmentViewModel::class.java]
     val selectedTypes: List<String>
         get() = viewModel.selectedTypeIndices.value!!.map { i -> EntryTypes.getTypes()[i] }
 
 
+
     fun addOnTypesSelectedAction(action : () -> Unit) = onTypeSelectedActions.add(action)
+
+    private fun updateNumTypes() {
+        view!!.numEntryTypes.text = selectedTypes.size.toString()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -99,7 +108,7 @@ class HomeFragment : BaseFragment(), ViewPager.OnPageChangeListener {
         }
 
         view.fab.setOnClickListener {
-            NewEntryDialogFragment().show(childFragmentManager, "NewEntryDialogFragment")
+            findNavController().navigate(R.id.newEntryFragment)
         }
 
         view.bottom_navigation.setOnNavigationItemSelectedListener {
@@ -114,21 +123,23 @@ class HomeFragment : BaseFragment(), ViewPager.OnPageChangeListener {
             true
         }
 
-        val typeDialog = EntryTypeSelectDialogFragment().apply {
-            onConfirm = {
-                viewModel.selectedTypeIndices.value = selectedTypeIndices
-                updateNumTypes()
-                onTypeSelectedActions.forEach { it.invoke() }
-            }
-        }
-
         view.changeButton.setOnClickListener {
             typeDialog.show(childFragmentManager, "EntryTypeSelectDialogFragment")
         }
     }
 
-    private fun updateNumTypes() {
-        view!!.numEntryTypes.text = selectedTypes.size.toString()
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        typeDialog = EntryTypeSelectDialogFragment().apply {
+            onConfirm = {
+                viewModel.selectedTypeIndices.value = selectedTypeIndices
+                updateNumTypes()
+                onTypeSelectedActions.forEach { it.invoke() }
+            }
+            addIndices(viewModel.selectedTypeIndices.value!!)
+        }
+
     }
 
     override fun onPageScrollStateChanged(state: Int) = Unit

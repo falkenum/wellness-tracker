@@ -5,7 +5,7 @@
         app:startDestination="@id/homeFragment">
     <fragment android:id="@+id/timerFragment" android:name="com.sjfalken.wellnesstracker.TimerFragment"
               android:label="Timer"/>
-    <fragment android:id="@+id/newEntryFragment" android:name="com.sjfalken.wellnesstracker.NewEntryDialogFragment"
+    <fragment android:id="@+id/newEntryFragment" android:name="com.sjfalken.wellnesstracker.NewEntryFragment"
               android:label="New Log Entry"/>
     <fragment android:id="@+id/mediaFragment" android:name="com.sjfalken.wellnesstracker.MediaFragment"
               android:label="Media"/>
