@@ -3,4 +3,5 @@
     <dimen name="defaultTextSize">18dp</dimen>
     <dimen name="buttonTextSize">18dp</dimen>
     <dimen name="edgeMargin">16dp</dimen>
+    <dimen name="newEntryDialogHeight">200dp</dimen>
 </resources>

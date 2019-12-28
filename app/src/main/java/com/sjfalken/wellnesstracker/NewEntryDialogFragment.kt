@@ -21,25 +21,32 @@ import java.time.*
 import java.time.format.DateTimeFormatter
 import java.util.*
 
+class SingleTypeSelectFragment : Fragment() {
 
-class NewEntryDialogFragment : DialogFragment() {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return ListView(context!!).apply {
+            id = View.generateViewId()
+            choiceMode = ListView.CHOICE_MODE_SINGLE
+            adapter = ArrayAdapter(context!!, android.R.layout.simple_list_item_single_choice,
+                EntryTypes.getTypes()).apply {
+            }
 
-    class TypeSelectFragment : Fragment() {
-        override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
-        ): View? {
-            return ListView(context!!).apply {
-                choiceMode = ListView.CHOICE_MODE_SINGLE
-                adapter = ArrayAdapter(context!!, android.R.layout.simple_list_item_single_choice,
-                    EntryTypes.getTypes())
+            layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT)
 
-                layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT)
+            setOnItemClickListener { parent, view, position, id ->
+                findNavController().navigate
             }
         }
     }
+}
+
+class NewEntryDialogFragment : DialogFragment() {
+
 
     class ArgumentKeys {
         companion object {
@@ -49,23 +56,21 @@ class NewEntryDialogFragment : DialogFragment() {
     }
 
     private lateinit var dataInputLayout : EntryDataLayout
-    private lateinit var rootView : View
-    private lateinit var fm : FragmentManager
 
     private var selectedTime = ZonedDateTime.now().toLocalTime()
     private var selectedDate = ZonedDateTime.now().toLocalDate()
 
-    private fun updateDataInputType(type : String) {
-        activity?.run {
-            dataInputLayout = EntryTypes.getConfig(type).getDataInputLayout(this)
-        }
-
-
-        rootView.findViewById<FrameLayout>(R.id.dataInputHolder)!!.run {
-            removeAllViews()
-            addView(dataInputLayout)
-        }
-    }
+//    private fun updateDataInputType(type : String) {
+//        activity?.run {
+//            dataInputLayout = EntryTypes.getConfig(type).getDataInputLayout(this)
+//        }
+//
+//
+//        rootView.findViewById<FrameLayout>(R.id.dataInputHolder)!!.run {
+//            removeAllViews()
+//            addView(dataInputLayout)
+//        }
+//    }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return super.onCreateDialog(savedInstanceState).apply {
@@ -74,8 +79,7 @@ class NewEntryDialogFragment : DialogFragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        rootView = inflater.inflate(R.layout.fragment_new_entry, container, false)
-        fm = activity!!.supportFragmentManager
+        val rootView = inflater.inflate(R.layout.fragment_new_entry, container, false)
 
         val selectedType = EntryTypes.MEDITATION
 
@@ -83,31 +87,9 @@ class NewEntryDialogFragment : DialogFragment() {
             onConfirm()
         }
 
-//        rootView.findViewById<Button>(R.id.modifyTimeButton).setOnClickListener {
-//            getTime()
-//        }
-//
-//        rootView.findViewById<Button>(R.id.modifyDateButton).setOnClickListener {
-//            getDate()
-//        }
-
-        rootView.newEntryPager.apply {
-            adapter = object : FragmentPagerAdapter(
-                childFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
-                override fun getItem(position: Int): Fragment {
-                    return when (position) {
-                        0 -> TypeSelectFragment()
-                        else -> throw Exception("shouldn't get here")
-                    }
-                }
-
-                override fun getCount(): Int = 1
-            }
-        }
-//        ListView(activity!!).choiceMode = ListView.CHOICE_MODE_SINGLE
 
         // set the initial data input
-        updateDataInputType(selectedType)
+//        updateDataInputType(selectedType)
         return rootView
     }
 
@@ -132,13 +114,21 @@ class NewEntryDialogFragment : DialogFragment() {
             return DatePickerDialog(activity!!, this, year, month, day)
         }
     }
-    private fun getDate() {
-        EntryDatePicker().apply {
-            onDateSet = { date -> selectedDate = date }
-            dateValueView = rootView.findViewById(R.id.dateValueView)
-            show(fm, "DatePickerDialog")
-        }
-    }
+//    private fun getDate() {
+//        EntryDatePicker().apply {
+//            onDateSet = { date -> selectedDate = date }
+//            dateValueView = rootView.findViewById(R.id.dateValueView)
+//            show(fm, "DatePickerDialog")
+//        }
+//    }
+
+//    private fun getTime() {
+//        EntryTimePicker().apply {
+//            onTimeSet = { time -> selectedTime = time}
+//            timeValueView = rootView.findViewById(R.id.timeValueView)
+//            show(fm, "TimePickerDialog")
+//        }
+//    }
 
     class EntryTimePicker : DialogFragment(), TimePickerDialog.OnTimeSetListener {
         lateinit var timeValueView : TextView
@@ -162,13 +152,6 @@ class NewEntryDialogFragment : DialogFragment() {
         }
     }
 
-    private fun getTime() {
-        EntryTimePicker().apply {
-            onTimeSet = { time -> selectedTime = time}
-            timeValueView = rootView.findViewById(R.id.timeValueView)
-            show(fm, "TimePickerDialog")
-        }
-    }
 
     private fun onConfirm() {
         val selectedType = EntryTypes.MEDITATION
@@ -179,7 +162,7 @@ class NewEntryDialogFragment : DialogFragment() {
             if (!Entry.isValidEntry(newEntry)) {
                 Utility.ErrorDialogFragment().apply {
                     message = "Could not add invalid entry $newEntry"
-                }.show(fragmentManager!!, null)
+                }.show(childFragmentManager, null)
             }
             else {
                 LogEntryDatabase.instance.entryDao().insert(newEntry)

@@ -1,65 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:background="@drawable/new_entry_dialog_bg"
         android:orientation="vertical">
 
-    <Button
-            android:id="@+id/backButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/edgeMargin"
-            android:text="back"
-            android:visibility="invisible"
-            app:layout_constraintBaseline_toBaselineOf="@+id/nextConfirmButton"
-            app:layout_constraintStart_toStartOf="parent" />
 
-    <androidx.viewpager.widget.ViewPager
-            android:id="@+id/newEntryPager"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/divider"
-            />
-
-
-    <View
-            android:id="@+id/divider"
+    <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/new_entry_nav_host"
+            android:name="androidx.navigation.fragment.NavHostFragment"
             android:layout_width="match_parent"
-            android:layout_height="4dp"
-            android:layout_marginTop="16dp"
-            android:background="?android:attr/listDivider"
-            app:layout_constraintBottom_toTopOf="@id/nextConfirmButton"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/newEntryPager" />
-
-    <Button
-            android:id="@+id/nextConfirmButton"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="@dimen/edgeMargin"
-            android:layout_marginBottom="@dimen/edgeMargin"
-            android:text="Confirm"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/dataInputHolder" />
+            app:navGraph="@navigation/new_entry_graph" />
 
-    <FrameLayout
-            android:id="@+id/dataInputHolder"
-            android:layout_width="wrap_content"
+    <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/divider"
+            android:orientation="horizontal">
 
-            />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <Button
+                android:id="@+id/backCancelButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/edgeMargin"
+                android:text="Cancel"
+                />
+        <Space
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1.0"/>
+        <Button
+                android:id="@+id/nextConfirmButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/edgeMargin"
+                android:layout_marginBottom="@dimen/edgeMargin"
+                android:text="Confirm" />
+    </LinearLayout>
+
+
+</LinearLayout>
