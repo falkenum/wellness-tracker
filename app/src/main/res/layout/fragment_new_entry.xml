@@ -1,116 +1,122 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/new_entry_dialog_bg">
-
-
-    <View
-            android:id="@+id/divider2"
-            android:layout_width="409dp"
-            android:layout_height="1dp"
-            android:layout_marginTop="8dp"
-            android:background="?android:attr/listDivider"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/changeTimeButton" />
-
-    <TextView
-            android:id="@+id/textView11"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/edgeMargin"
-            android:text="Date: "
-            app:layout_constraintBaseline_toBaselineOf="@+id/dateValueView"
-            app:layout_constraintStart_toStartOf="parent" />
-
-    <TextView
-            android:id="@+id/dateValueView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Today"
-            app:layout_constraintBaseline_toBaselineOf="@+id/changeDateButton"
-            app:layout_constraintStart_toEndOf="@+id/textView8" />
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
     <ListView
             android:id="@+id/singleTypeListView"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="@dimen/edgeMargin"
-            android:layout_marginTop="@dimen/edgeMargin"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:layout_marginTop="@dimen/edgeMargin" />
 
-    <Button
-            android:id="@+id/confirmButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="@dimen/edgeMargin"
-            android:text="Confirm"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/dataInputHolder" />
-
-    <View
-            android:id="@+id/divider"
-            android:layout_width="409dp"
-            android:layout_height="1dp"
-            android:layout_marginTop="8dp"
-            android:background="?android:attr/listDivider"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/singleTypeListView" />
-
-    <TextView
-            android:id="@+id/textView8"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/edgeMargin"
-            android:text="Time: "
-            app:layout_constraintBaseline_toBaselineOf="@+id/timeValueView"
-            app:layout_constraintStart_toStartOf="parent" />
-
-    <TextView
-            android:id="@+id/timeValueView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Now"
-            app:layout_constraintBaseline_toBaselineOf="@+id/changeTimeButton"
-            app:layout_constraintStart_toEndOf="@+id/textView8" />
-
-    <Button
-            android:id="@+id/changeDateButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="@dimen/edgeMargin"
-            android:text="Change"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/divider" />
-
-    <Button
-            android:id="@+id/changeTimeButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="@dimen/edgeMargin"
-            android:text="Change"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/changeDateButton" />
-
-    <FrameLayout
-            android:id="@+id/dataInputHolder"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="@dimen/edgeMargin"
-            android:layout_marginTop="8dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/divider2">
-
-    </FrameLayout>
+    <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent" android:layout_height="wrap_content">
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/new_entry_dialog_bg">
 
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+            <View
+                    android:id="@+id/divider2"
+                    android:layout_width="409dp"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="8dp"
+                    android:background="?android:attr/listDivider"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/changeTimeButton" />
+
+            <TextView
+                    android:id="@+id/textView11"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/edgeMargin"
+                    android:text="Date: "
+                    app:layout_constraintBaseline_toBaselineOf="@+id/dateValueView"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+            <TextView
+                    android:id="@+id/dateValueView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Today"
+                    app:layout_constraintBaseline_toBaselineOf="@+id/changeDateButton"
+                    app:layout_constraintStart_toEndOf="@+id/textView8" />
+
+            <Button
+                    android:id="@+id/confirmButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="@dimen/edgeMargin"
+                    android:text="Confirm"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/dataInputHolder" />
+
+            <View
+                    android:id="@+id/divider"
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:background="?android:attr/listDivider"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                    android:id="@+id/textView8"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/edgeMargin"
+                    android:text="Time: "
+                    app:layout_constraintBaseline_toBaselineOf="@+id/timeValueView"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+            <TextView
+                    android:id="@+id/timeValueView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Now"
+                    app:layout_constraintBaseline_toBaselineOf="@+id/changeTimeButton"
+                    app:layout_constraintStart_toEndOf="@+id/textView8" />
+
+            <Button
+                    android:id="@+id/changeDateButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="@dimen/edgeMargin"
+                    android:text="Change"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/divider" />
+
+            <Button
+                    android:id="@+id/changeTimeButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="@dimen/edgeMargin"
+                    android:text="Change"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/changeDateButton" />
+
+            <FrameLayout
+                    android:id="@+id/dataInputHolder"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="@dimen/edgeMargin"
+                    android:layout_marginTop="8dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/divider2">
+
+            </FrameLayout>
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
+</LinearLayout>

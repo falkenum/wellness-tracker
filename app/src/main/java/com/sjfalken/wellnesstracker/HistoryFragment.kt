@@ -87,19 +87,29 @@ class HistoryFragment : BaseFragment() {
             return
         }
 
-        val recordsForDay = monthEntries[selectedDayOfMonth - 1]
-        Log.d("showInfoForSelectedDay", "number of records for day: ${recordsForDay.size}")
+        val entriesForDay = monthEntries[selectedDayOfMonth - 1]
+        Log.d("showInfoForSelectedDay", "number of records for day: ${entriesForDay.size}")
 
         // remove all the cards, leave the summaryLayout at the beginning
         sessionCardsLayout.removeAllViews()
 
         sessionCardsLayout.visibility = View.VISIBLE
         // generate a cardview for each session of that day
-        for (record in recordsForDay) {
-            sessionCardsLayout.addView(getEntryInfoCard(record))
-        }
+        for (entry in entriesForDay) {
+            val entryCopy = entriesList.find {
+                it.dateTime.toEpochSecond() == entry.dateTime.toEpochSecond()
+            }
 
+            if (entryCopy != null) {
+                throw Exception("entry copy found")
+            }
+            entriesList.add(entry)
+            sessionCardsLayout.addView(getEntryInfoCard(entry))
+        }
+        entriesList.removeAll { true }
     }
+
+    private val entriesList = mutableListOf<Entry>()
 
     private fun loadMonthEntries() {
         // Make an array of lists containing the records for each day of the month
@@ -114,9 +124,18 @@ class HistoryFragment : BaseFragment() {
 
             for (type in selectedTypes) {
                 val date = LocalDate.of(year, month, dayOfMonth)
-                val records = entryDao.getAllForDateAndType(date, type)
-                assert(monthEntries[dayOfMonth - 1].size == 0)
-                monthEntries[dayOfMonth - 1].addAll(records)
+                val entries = entryDao.getAllForDateAndType(date, type)
+                val dayOfMonthIndex = dayOfMonth - 1
+                assert(monthEntries[dayOfMonthIndex].size == 0)
+
+                for ((i, a) in entries.withIndex()) {
+                    for ((j, b) in entries.withIndex()) {
+                        if (i != j && a.dateTime.toEpochSecond() == b.dateTime.toEpochSecond())
+                            throw java.lang.Exception("copy found")
+                    }
+                }
+
+                monthEntries[dayOfMonthIndex].addAll(entries)
             }
         }
     }
@@ -167,10 +186,13 @@ class HistoryFragment : BaseFragment() {
         refreshFragmentView()
     }
 
+    private val lock = HistoryFragment::class
     private fun refreshFragmentView() {
         if (activity == null) return
         Thread {
-            loadMonthEntries()
+            synchronized(lock) {
+                loadMonthEntries()
+            }
             activity?.runOnUiThread {
                 fillCalendarDays()
                 showInfoForSelectedDay()

@@ -74,6 +74,7 @@ class NewEntryFragment : BaseFragment() {
             choiceMode = ListView.CHOICE_MODE_SINGLE
             adapter = ArrayAdapter(context!!, android.R.layout.simple_list_item_single_choice,
                 EntryTypes.getTypes())
+            divider = null
 
             setOnItemClickListener { _, _, position, _ ->
                 val type = EntryTypes.getTypes()[position]
@@ -81,7 +82,9 @@ class NewEntryFragment : BaseFragment() {
                 selectedType = type
             }
 
-            performItemClick(this, 0, 0)
+            val type = arguments?.getString(ArgumentKeys.ENTRY_TYPE)
+            val pos = if (type == null) 0 else EntryTypes.getTypes().indexOf(type)
+            performItemClick(this, pos, 0)
         }
     }
 

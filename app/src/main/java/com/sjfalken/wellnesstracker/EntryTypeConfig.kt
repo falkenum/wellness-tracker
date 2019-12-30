@@ -185,14 +185,9 @@ class MoodConfig : EntryTypeConfig() {
     }
 
     override fun getDailyReminderTimes(): List<LocalTime>? {
-        // 10am and 6pm
-        return List(1) {
-            when (it) {
-                0 -> LocalTime.of(18, 0)
-//                1 -> LocalTime.of(18, 0)
-                else -> throw Exception("shouldn't happen")
-            }
-        }
+        return listOf(
+            LocalTime.of(18, 0)
+        )
     }
 
     override fun getDataInputLayout(context: Context): EntryDataLayout {
@@ -217,7 +212,10 @@ class DrugUseConfig : EntryTypeConfig() {
         return context.resources.getColor(R.color.colorDrugUse, null)
     }
 
-    override fun getDailyReminderTimes(): List<LocalTime>? = null
+    override fun getDailyReminderTimes(): List<LocalTime>? = listOf(
+            LocalTime.of(20, 0)
+        )
+
 }
 
 class ExerciseConfig : EntryTypeConfig() {

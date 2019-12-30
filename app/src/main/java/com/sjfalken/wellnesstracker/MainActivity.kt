@@ -32,8 +32,9 @@ import kotlinx.android.synthetic.main.activity_main.*
 class MainActivity : AppCompatActivity() {
     class BundleKeys {
         companion object {
-            const val REMINDER_TYPE = "reminder type"
-            const val REMINDER_ID = "reminder filename"
+            const val REMINDER_TYPE = "com.sjfalken.wellnesstracker.REMINDER_TYPE"
+            const val ENTRY_TYPE = "com.sjfalken.wellnesstracker.ENTRY_TYPE"
+            const val REMINDER_ID = "com.sjfalken.wellnesstracker.REMINDER_ID"
         }
     }
     val backupServiceConnectedCV = ConditionVariable()
@@ -269,13 +270,13 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
-    override fun onStart() {
-        super.onStart()
-        val reminderType = intent.getStringExtra(BundleKeys.REMINDER_TYPE)
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        val entryType = intent?.getStringExtra(BundleKeys.ENTRY_TYPE)
 
-        if (reminderType != null) {
+        if (entryType != null) {
             val args = Bundle().apply {
-                putString(NewEntryFragment.ArgumentKeys.ENTRY_TYPE, reminderType)
+                putString(NewEntryFragment.ArgumentKeys.ENTRY_TYPE, entryType)
             }
             navController.navigate(R.id.newEntryFragment, args, null)
         }

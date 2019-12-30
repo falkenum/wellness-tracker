@@ -21,7 +21,7 @@ class ReminderReceiver : BroadcastReceiver() {
 
         val reminderType = (intent.extras?.get(MainActivity.BundleKeys.REMINDER_TYPE) as? String) ?: "[Empty]"
         val notifIntent = Intent(context, MainActivity::class.java).apply {
-            putExtra(MainActivity.BundleKeys.REMINDER_TYPE, reminderType)
+            putExtra(MainActivity.BundleKeys.ENTRY_TYPE, reminderType)
         }
 
         val reminderId = (intent.extras?.get(MainActivity.BundleKeys.REMINDER_ID) as? Int) ?: 0
