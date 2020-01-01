@@ -1,5 +1,6 @@
 package com.sjfalken.wellnesstracker
 
+import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.Dialog
 import android.app.TimePickerDialog
@@ -9,7 +10,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import kotlinx.android.synthetic.main.fragment_new_entry.view.*
 import java.time.*
@@ -19,8 +19,23 @@ import java.util.*
 class NewEntryFragment : BaseFragment() {
     class ArgumentKeys {
         companion object {
-            const val ENTRY_TYPE = "com.sjfalken.wellnesstracker.ENTRY_TYPE"
+            const val NEW_ENTRY_TYPE = "com.sjfalken.wellnesstracker.ENTRY_TYPE"
             const val DATE_TIME = "com.sjfalken.wellnesstracker.DATE_TIME"
+        }
+    }
+
+    class SingleTypeDialogFragment: DialogFragment() {
+        lateinit var onConfirm: (Int) -> Unit
+        var selectedPos = 0
+        override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+            return AlertDialog.Builder(context!!)
+                .setSingleChoiceItems(EntryTypes.getTypes().toTypedArray(), selectedPos) { _, which ->
+                    selectedPos = which
+                }
+                .setPositiveButton("Ok") { _, _ ->
+                    onConfirm(selectedPos)
+                }
+                .create()
         }
     }
 
@@ -31,6 +46,8 @@ class NewEntryFragment : BaseFragment() {
     private var selectedType = ""
 
     private fun updateDataInputType(type : String) {
+        selectedType = type
+
         context!!.run {
             dataInputLayout = EntryTypes.getConfig(type).getDataInputLayout(this)
         }
@@ -40,6 +57,8 @@ class NewEntryFragment : BaseFragment() {
             removeAllViews()
             addView(dataInputLayout)
         }
+
+        view!!.typeValueView.text = type
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -70,22 +89,21 @@ class NewEntryFragment : BaseFragment() {
             }
         }
 
-        view.singleTypeListView.apply {
-            choiceMode = ListView.CHOICE_MODE_SINGLE
-            adapter = ArrayAdapter(context!!, android.R.layout.simple_list_item_single_choice,
-                EntryTypes.getTypes())
-            divider = null
-
-            setOnItemClickListener { _, _, position, _ ->
-                val type = EntryTypes.getTypes()[position]
-                updateDataInputType(type)
-                selectedType = type
-            }
-
-            val type = arguments?.getString(ArgumentKeys.ENTRY_TYPE)
-            val pos = if (type == null) 0 else EntryTypes.getTypes().indexOf(type)
-            performItemClick(this, pos, 0)
+        (arguments?.getString(ArgumentKeys.NEW_ENTRY_TYPE) ?: EntryTypes.getTypes()[0]).run {
+            updateDataInputType(this)
         }
+
+        view.changeTypeButton.setOnClickListener {
+            SingleTypeDialogFragment().apply {
+                onConfirm = { position ->
+                    val type = EntryTypes.getTypes()[position]
+                    updateDataInputType(type)
+                }
+
+                selectedPos = EntryTypes.getTypes().indexOf(selectedType)
+            }.show(childFragmentManager, "SingleTypeDialogFragment")
+        }
+
     }
 
     class EntryDatePicker : DialogFragment(), DatePickerDialog.OnDateSetListener {

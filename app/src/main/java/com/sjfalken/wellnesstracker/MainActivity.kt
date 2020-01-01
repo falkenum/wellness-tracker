@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
     class BundleKeys {
         companion object {
             const val REMINDER_TYPE = "com.sjfalken.wellnesstracker.REMINDER_TYPE"
-            const val ENTRY_TYPE = "com.sjfalken.wellnesstracker.ENTRY_TYPE"
+            const val NEW_ENTRY_TYPE = "com.sjfalken.wellnesstracker.ENTRY_TYPE"
             const val REMINDER_ID = "com.sjfalken.wellnesstracker.REMINDER_ID"
         }
     }
@@ -272,11 +272,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
-        val entryType = intent?.getStringExtra(BundleKeys.ENTRY_TYPE)
+        val entryType = intent?.getStringExtra(BundleKeys.NEW_ENTRY_TYPE)
 
         if (entryType != null) {
             val args = Bundle().apply {
-                putString(NewEntryFragment.ArgumentKeys.ENTRY_TYPE, entryType)
+                putString(NewEntryFragment.ArgumentKeys.NEW_ENTRY_TYPE, entryType)
             }
             navController.navigate(R.id.newEntryFragment, args, null)
         }

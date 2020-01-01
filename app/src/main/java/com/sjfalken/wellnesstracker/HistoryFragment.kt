@@ -96,20 +96,10 @@ class HistoryFragment : BaseFragment() {
         sessionCardsLayout.visibility = View.VISIBLE
         // generate a cardview for each session of that day
         for (entry in entriesForDay) {
-            val entryCopy = entriesList.find {
-                it.dateTime.toEpochSecond() == entry.dateTime.toEpochSecond()
-            }
-
-            if (entryCopy != null) {
-                throw Exception("entry copy found")
-            }
-            entriesList.add(entry)
             sessionCardsLayout.addView(getEntryInfoCard(entry))
         }
-        entriesList.removeAll { true }
     }
 
-    private val entriesList = mutableListOf<Entry>()
 
     private fun loadMonthEntries() {
         // Make an array of lists containing the records for each day of the month
@@ -127,13 +117,6 @@ class HistoryFragment : BaseFragment() {
                 val entries = entryDao.getAllForDateAndType(date, type)
                 val dayOfMonthIndex = dayOfMonth - 1
                 assert(monthEntries[dayOfMonthIndex].size == 0)
-
-                for ((i, a) in entries.withIndex()) {
-                    for ((j, b) in entries.withIndex()) {
-                        if (i != j && a.dateTime.toEpochSecond() == b.dateTime.toEpochSecond())
-                            throw java.lang.Exception("copy found")
-                    }
-                }
 
                 monthEntries[dayOfMonthIndex].addAll(entries)
             }
@@ -186,11 +169,11 @@ class HistoryFragment : BaseFragment() {
         refreshFragmentView()
     }
 
-    private val lock = HistoryFragment::class
+    private val monthEntriesLock = HistoryFragment::class
     private fun refreshFragmentView() {
         if (activity == null) return
         Thread {
-            synchronized(lock) {
+            synchronized(monthEntriesLock) {
                 loadMonthEntries()
             }
             activity?.runOnUiThread {
@@ -204,6 +187,4 @@ class HistoryFragment : BaseFragment() {
         activity!!.unbindService(timerConnection)
         super.onDestroyView()
     }
-
-
 }

@@ -204,8 +204,8 @@ class DrugUseConfig : EntryTypeConfig() {
 
     override val defaultData : JSONObject = JSONObject(mapOf(
         SUBSTANCE to "Cannabis",
-        FORM to "Wax",
-        QUANTITY_GRAMS to "0.1"
+        FORM to "bowl",
+        QUANTITY_GRAMS to "0.3"
     ))
 
     override fun getBgColor(context: Context): Int {

@@ -7,7 +7,6 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Bundle
 
 class ReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -21,7 +20,7 @@ class ReminderReceiver : BroadcastReceiver() {
 
         val reminderType = (intent.extras?.get(MainActivity.BundleKeys.REMINDER_TYPE) as? String) ?: "[Empty]"
         val notifIntent = Intent(context, MainActivity::class.java).apply {
-            putExtra(MainActivity.BundleKeys.ENTRY_TYPE, reminderType)
+            putExtra(MainActivity.BundleKeys.NEW_ENTRY_TYPE, reminderType)
         }
 
         val reminderId = (intent.extras?.get(MainActivity.BundleKeys.REMINDER_ID) as? Int) ?: 0
@@ -31,7 +30,7 @@ class ReminderReceiver : BroadcastReceiver() {
             .setContentIntent(
                 PendingIntent.getActivity(context, 0, notifIntent, 0)
             )
-            .setContentText("Reminder to record a $reminderType")
+            .setContentText("Time to record a $reminderType")
             .setAutoCancel(true)
             .build()
 
