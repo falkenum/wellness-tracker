@@ -74,7 +74,7 @@ class NewEntryFragment : BaseFragment() {
         view.changeDateButton.setOnClickListener {
             val fm = childFragmentManager
             EntryDatePicker().apply {
-                onDateSet = { date -> selectedDate = date }
+                onConfirm = { date -> selectedDate = date }
                 dateValueView = view.findViewById(R.id.dateValueView)
                 show(fm, "DatePickerDialog")
             }
@@ -94,6 +94,7 @@ class NewEntryFragment : BaseFragment() {
         }
 
         view.changeTypeButton.setOnClickListener {
+            val fm = childFragmentManager
             SingleTypeDialogFragment().apply {
                 onConfirm = { position ->
                     val type = EntryTypes.getTypes()[position]
@@ -101,18 +102,19 @@ class NewEntryFragment : BaseFragment() {
                 }
 
                 selectedPos = EntryTypes.getTypes().indexOf(selectedType)
-            }.show(childFragmentManager, "SingleTypeDialogFragment")
+                show(fm, "SingleTypeDialogFragment")
+            }
         }
 
     }
 
     class EntryDatePicker : DialogFragment(), DatePickerDialog.OnDateSetListener {
         lateinit var dateValueView : TextView
-        lateinit var onDateSet : (date : LocalDate) -> Unit
+        lateinit var onConfirm : (date : LocalDate) -> Unit
         override fun onDateSet(view: DatePicker?, year: Int, monthIndex: Int, dayOfMonth: Int) {
             val month = monthIndex + 1
             val date = LocalDate.of(year, month, dayOfMonth)
-            onDateSet(date)
+            onConfirm(date)
             dateValueView.text = date.format(DateTimeFormatter.ofPattern("MMM dd, uuuu"))
         }
 
@@ -124,7 +126,7 @@ class NewEntryFragment : BaseFragment() {
             val day = c.get(Calendar.DAY_OF_MONTH)
 
             // Create a new instance of DatePickerDialog and return it
-            return DatePickerDialog(activity!!, this, year, month, day)
+            return DatePickerDialog(context!!, this, year, month, day)
         }
     }
 

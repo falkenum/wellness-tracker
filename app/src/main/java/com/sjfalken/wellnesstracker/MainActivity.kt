@@ -45,10 +45,8 @@ class MainActivity : AppCompatActivity() {
     lateinit var navController: NavController
         private set
 
-    private val onTabSelectedActions = mutableListOf<(TabLayout.Tab) -> Unit>()
     private val onSignInActions = mutableListOf<(googleAccount : GoogleSignInAccount?) -> Unit>()
 
-    private val fragmentsToShowTabs = listOf(R.id.homeFragment, R.id.newEntryFragment)
     private lateinit var googleSignInClient : GoogleSignInClient
     private var backupService: BackupService? = null
     private val appDataScope = DriveScopes.DRIVE_APPDATA
@@ -67,10 +65,6 @@ class MainActivity : AppCompatActivity() {
 
     private companion object {
         const val RC_SIGN_IN = 1
-    }
-
-    fun addOnTabSelectedAction(action : (TabLayout.Tab) -> Unit) {
-        onTabSelectedActions.add(action)
     }
 
     fun addOnSignInAction(action : (googleAccount : GoogleSignInAccount?) -> Unit) {

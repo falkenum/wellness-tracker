@@ -7,16 +7,17 @@
               android:gravity="center_horizontal">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="start"
-            android:layout_margin="@dimen/edgeMargin">
+            android:layout_marginHorizontal="@dimen/edgeMargin"
+            android:layout_marginTop="@dimen/edgeMargin">
 
         <TextView
                 android:id="@+id/textView3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Show stats for the last "
+                android:text="Time period for stats:"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -24,18 +25,30 @@
                 android:id="@+id/periodLengthSpinner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:layout_constraintStart_toEndOf="@+id/textView3"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-        <FrameLayout
-                android:id="@+id/averageValuesHolder"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="start"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/periodLengthSpinner" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <View
+            android:id="@+id/divider3"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="@dimen/separationMargin"
+            android:background="?android:attr/listDivider" />
 
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <LinearLayout
+                android:id="@+id/statsHolder"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:layout_marginHorizontal="@dimen/edgeMargin"
+                android:layout_marginTop="@dimen/separationMargin"
+                android:orientation="vertical" />
+    </ScrollView>
 </LinearLayout>
 

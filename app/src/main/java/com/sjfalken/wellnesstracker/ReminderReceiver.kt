@@ -18,14 +18,16 @@ class ReminderReceiver : BroadcastReceiver() {
         val notifManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notifManager.createNotificationChannel(channel)
 
-        val reminderType = (intent.extras?.get(MainActivity.BundleKeys.REMINDER_TYPE) as? String) ?: "[Empty]"
+        val reminderType = intent.extras?.run {
+            getString(MainActivity.BundleKeys.REMINDER_TYPE) ?: "[extras but no reminderType]"
+        } ?: "[no extras]"
         val notifIntent = Intent(context, MainActivity::class.java).apply {
             putExtra(MainActivity.BundleKeys.NEW_ENTRY_TYPE, reminderType)
         }
 
-        val reminderId = (intent.extras?.get(MainActivity.BundleKeys.REMINDER_ID) as? Int) ?: 0
+        val reminderId = intent.extras?.getInt(MainActivity.BundleKeys.REMINDER_ID) ?: 0
         val notification = Notification.Builder(context, channelId)
-            .setSmallIcon(R.drawable.ic_timer_notif)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle("Wellness Reminder")
             .setContentIntent(
                 PendingIntent.getActivity(context, 0, notifIntent, 0)

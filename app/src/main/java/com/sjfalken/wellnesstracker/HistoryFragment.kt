@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import kotlinx.android.synthetic.main.fragment_home.view.*
 import java.time.*
 
 class HistoryFragment : BaseFragment() {
@@ -21,7 +22,7 @@ class HistoryFragment : BaseFragment() {
         lateinit var onConfirmDelete : () -> Unit
 
         override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-            return activity!!.let {
+            return context!!.let {
                 // Use the Builder class for convenient dialog construction
                 val builder = AlertDialog.Builder(it)
                 builder.setMessage(messageStr)
@@ -40,7 +41,6 @@ class HistoryFragment : BaseFragment() {
     private lateinit var calendarView : CalendarView
     private lateinit var sessionCardsLayout : LinearLayout
     private lateinit var inflater: LayoutInflater
-    private lateinit var fm: androidx.fragment.app.FragmentManager
     private lateinit var entryDao: EntryDao
 
 
@@ -59,9 +59,9 @@ class HistoryFragment : BaseFragment() {
 
     private fun getEntryInfoCard(entry : Entry) : EntryCardView {
 
-       return EntryCardView(activity!!).apply {
+       return EntryCardView(context!!).apply {
            insertEntryData(entry)
-           setBackgroundColor(activity!!.getColor(R.color.appBackground))
+           setBackgroundColor(context!!.getColor(android.R.color.transparent))
            setOnDelete {
                val deleteAction = {
                    Thread {
@@ -74,7 +74,7 @@ class HistoryFragment : BaseFragment() {
                DeleteEntryDialogFragment().apply {
                    messageStr = "Delete?"
                    onConfirmDelete = deleteAction
-               }.show(fm, "DeleteEntryConfirmation")
+               }.show(childFragmentManager, "DeleteEntryConfirmation")
            }
 
         }
@@ -98,6 +98,13 @@ class HistoryFragment : BaseFragment() {
         for (entry in entriesForDay) {
             sessionCardsLayout.addView(getEntryInfoCard(entry))
         }
+
+        // leave room for fab
+        sessionCardsLayout.addView(Space(context).apply {
+            minimumHeight = parentFragment!!.view!!.fab.run {
+                measuredHeight * 2
+            }
+        })
     }
 
 
@@ -140,7 +147,6 @@ class HistoryFragment : BaseFragment() {
 
         calendarView = fragmentView.findViewById(R.id.calendarView)
         sessionCardsLayout = fragmentView.findViewById(R.id.sessionCardsLayout)
-        fm = activity!!.supportFragmentManager
 
         // setting up calendar callbacks
         calendarView.onDaySelect = {

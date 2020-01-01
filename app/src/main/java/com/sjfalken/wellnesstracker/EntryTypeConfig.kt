@@ -6,10 +6,8 @@ import android.text.InputType
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.*
 import org.json.JSONObject
-import java.lang.Exception
 import java.lang.String.format
 import java.time.*
 import java.time.format.DateTimeFormatter
@@ -273,7 +271,7 @@ class EntryCardView(context: Context) : androidx.cardview.widget.CardView(contex
         val bgColor = EntryTypes.getConfig(entry.type).getBgColor(context)
         val dataView = EntryTypes.getConfig(entry.type).getDataLayout(entry, context)
 
-        findViewById<TextView>(R.id.recordTitle).text = titleStr
+        findViewById<TextView>(R.id.entryTitle).text = titleStr
         findViewById<LinearLayout>(R.id.recordDataLayout).addView(dataView)
 
         (getChildAt(0) as androidx.cardview.widget.CardView).apply {

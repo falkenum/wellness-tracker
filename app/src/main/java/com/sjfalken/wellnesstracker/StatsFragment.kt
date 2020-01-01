@@ -1,10 +1,13 @@
 package com.sjfalken.wellnesstracker
 
+import android.graphics.Typeface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.cardview.widget.CardView
+import kotlinx.android.synthetic.main.fragment_home.view.*
 import kotlinx.android.synthetic.main.fragment_stats.view.*
 import org.json.JSONObject
 import java.time.Duration
@@ -31,7 +34,7 @@ class StatsFragment : BaseFragment() {
 
     private val selectedTimePeriod : String
         get() {
-            return when (rootView.periodLengthSpinner.selectedItemPosition) {
+            return when (view!!.periodLengthSpinner.selectedItemPosition) {
                 0 -> YEAR
                 1 -> MONTH
                 2 -> WEEK
@@ -40,47 +43,53 @@ class StatsFragment : BaseFragment() {
             }
         }
 
-    private lateinit var rootView : View
 
     //TODO
     private val selectedType = EntryTypes.MEDITATION
 
-    private fun updateStats() {
+    private fun getStatsViewForType(entryType : String, entries : List<Entry>): View {
 
-        // to be called after accessing the database
-        // entries is a list with all entries of the type passed in
-        val processEntries = { entries : List<Entry> ->
-            rootView.findViewById<FrameLayout>(R.id.averageValuesHolder).apply {
+        val entriesForType = entries.filter { entry -> entry.type == entryType }
 
-                // find which values are numeric and can be processed
-                val defaultData = EntryTypes.getConfig(selectedType).defaultData
-                val averageValues = JSONObject().apply {
-                    put("entry count", entries.size)
+        // find which values are numeric and can be processed
+        val defaultData = EntryTypes.getConfig(entryType).defaultData
+        val averageValues = JSONObject().apply {
+            put("entry count", entriesForType.size)
+        }
+
+        for (key in defaultData.keys()) {
+            val defaultValue = defaultData.get(key).toString()
+
+            if (defaultValue.toDoubleOrNull() != null) {
+                val total = entriesForType.sumByDouble {
+                    it.data.getDouble(key)
                 }
 
-                for (key in defaultData.keys()) {
-                    val defaultValue = defaultData.get(key).toString()
+                val average =
+                    if (entriesForType.isNotEmpty()) total / entriesForType.size
+                    else 0.0
 
-                    if (defaultValue.toDoubleOrNull() != null) {
-                        val total = entries.sumByDouble {
-                                it.data.getDouble(key)
-                        }
-
-                        val average =
-                            if (entries.isNotEmpty()) total / entries.size
-                            else 0.0
-
-                        averageValues.put("total $key", total)
-                        averageValues.put("average $key", average)
-                    }
-                }
-
-                val averageValuesView = EntryDataLayout(context, averageValues)
-
-                removeAllViews()
-                addView(averageValuesView)
+                averageValues.put("total $key", total)
+                averageValues.put("average $key", average)
             }
         }
+
+
+        return LinearLayout(context!!).apply {
+            orientation = LinearLayout.VERTICAL
+
+            val statsView = EntryDataLayout(context!!, averageValues)
+            val titleView = TextView(context).apply {
+                text = entryType
+                setTypeface(null, Typeface.BOLD)
+            }
+
+            addView(titleView)
+            addView(statsView)
+        }
+    }
+
+    private fun updateStats() {
 
         val startEpochSecond = Instant
             .now()
@@ -92,10 +101,24 @@ class StatsFragment : BaseFragment() {
         // updating the statistics view
         Thread {
             val entries = LogEntryDatabase.instance.entryDao()
-                .getAllWithinDurationAndType(startEpochSecond, endEpochSecond, selectedType)
+                .getAllWithinDuration(startEpochSecond, endEpochSecond)
 
             activity!!.runOnUiThread {
-                processEntries(entries)
+                view!!.statsHolder.run {
+                    removeAllViews()
+
+                    for (type in (parentFragment as HomeFragment).selectedTypes) {
+                        addView(getStatsViewForType(type, entries))
+                    }
+
+                    // leave room for fab
+                    addView(Space(context).apply {
+                        minimumHeight = parentFragment!!.view!!.fab.run {
+                            measuredHeight * 2
+                        }
+                    })
+                }
+
             }
         }.start()
     }
@@ -103,16 +126,9 @@ class StatsFragment : BaseFragment() {
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        rootView = inflater.inflate(R.layout.fragment_stats, container, false)
+        val rootView = inflater.inflate(R.layout.fragment_stats, container, false)
 
         val mainActivity = (activity!! as MainActivity)
-
-        mainActivity.apply {
-            addOnTabSelectedAction {
-                if (isVisible)
-                    updateStats()
-            }
-        }
 
         rootView.periodLengthSpinner.apply {
             adapter = ArrayAdapter.createFromResource(
