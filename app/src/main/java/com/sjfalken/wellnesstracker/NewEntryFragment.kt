@@ -20,7 +20,7 @@ class NewEntryFragment : BaseFragment() {
     class ArgumentKeys {
         companion object {
             const val NEW_ENTRY_TYPE = "com.sjfalken.wellnesstracker.ENTRY_TYPE"
-            const val DATE_TIME = "com.sjfalken.wellnesstracker.DATE_TIME"
+            const val DATE = "com.sjfalken.wellnesstracker.DATE"
         }
     }
 
@@ -71,13 +71,19 @@ class NewEntryFragment : BaseFragment() {
             onConfirm()
         }
 
-        view.changeDateButton.setOnClickListener {
-            val fm = childFragmentManager
-            EntryDatePicker().apply {
-                onConfirm = { date -> selectedDate = date }
-                dateValueView = view.findViewById(R.id.dateValueView)
-                show(fm, "DatePickerDialog")
+        val dateStrArg = arguments?.getString(ArgumentKeys.DATE)
+        val entryDatePicker = EntryDatePicker().apply {
+            onConfirm = { date -> selectedDate = date }
+            dateValueView = view.findViewById(R.id.dateValueView)
+
+
+            if (dateStrArg != null) {
+                val date = LocalDate.parse(dateStrArg)
+                onDateSet(null, date.year, date.monthValue - 1, date.dayOfMonth)
             }
+        }
+        view.changeDateButton.setOnClickListener {
+            entryDatePicker.show(childFragmentManager, "DatePickerDialog")
         }
 
         view.changeTimeButton.setOnClickListener {

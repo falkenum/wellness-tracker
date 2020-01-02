@@ -14,8 +14,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.viewpager.widget.ViewPager
+import kotlinx.android.synthetic.main.fragment_history.view.*
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.fragment_home.view.*
+import java.time.LocalDate
 
 
 class HomeFragmentViewModel : ViewModel() {
@@ -108,7 +110,13 @@ class HomeFragment : BaseFragment(), ViewPager.OnPageChangeListener {
         }
 
         view.fab.setOnClickListener {
-            findNavController().navigate(R.id.newEntryFragment)
+
+            val args = Bundle()
+            val date = view.calendarView.selectedDate
+            if (view.homePager.currentItem == HISTORY_POS && date != null) {
+                args.putString(NewEntryFragment.ArgumentKeys.DATE, date.toString())
+            }
+            findNavController().navigate(R.id.newEntryFragment, args, null)
         }
 
         view.bottom_navigation.setOnNavigationItemSelectedListener {

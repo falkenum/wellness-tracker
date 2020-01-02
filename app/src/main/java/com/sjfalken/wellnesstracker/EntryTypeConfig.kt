@@ -37,17 +37,15 @@ open class EntryDataLayout(context: Context, private val startingData : JSONObje
     val data : JSONObject
         get() {
             return JSONObject().apply {
-
+                val keys = startingData.keys()
+                var key = keys.next()
                 for (rowIndex in 0 until childCount) {
                     val row = getChildAt(rowIndex) as LinearLayout
-
-                    val labelView = row.getChildAt(labelIndex) as TextView
                     val valueView = row.getChildAt(valueIndex) as EntryDatumHolder
-                    // remove suffix
-                    val label = labelView.text.toString().removeSuffix(labelSuffix)
                     val value = valueView.value
 
-                    put(label, value)
+                    put(key, value)
+                    if (keys.hasNext()) key = keys.next()
                 }
             }
         }
