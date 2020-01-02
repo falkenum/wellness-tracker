@@ -52,7 +52,7 @@ class StatsFragment : BaseFragment() {
         val entriesForType = entries.filter { entry -> entry.type == entryType }
 
         // find which values are numeric and can be processed
-        val defaultData = EntryTypes.getConfig(entryType).defaultData
+        val defaultData = EntryTypes.getConfig(entryType)!!.defaultData
         val averageValues = JSONObject().apply {
             put("entry count", entriesForType.size)
         }

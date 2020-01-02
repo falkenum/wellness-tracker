@@ -49,7 +49,7 @@ class NewEntryFragment : BaseFragment() {
         selectedType = type
 
         context!!.run {
-            dataInputLayout = EntryTypes.getConfig(type).getDataInputLayout(this)
+            dataInputLayout = EntryTypes.getConfig(type)!!.getDataInputLayout(this)
         }
 
 

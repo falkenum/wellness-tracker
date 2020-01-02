@@ -93,7 +93,7 @@ class MainActivity : AppCompatActivity() {
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         var requestCode = 0
         for (type in EntryTypes.getTypes()) {
-            val times = EntryTypes.getConfig(type).getDailyReminderTimes()
+            val times = EntryTypes.getConfig(type)!!.getDailyReminderTimes()
             val receiverIntent = Intent(applicationContext, ReminderReceiver::class.java)
                 .putExtra(BundleKeys.REMINDER_TYPE, type)
 

@@ -7,6 +7,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.*
+import org.json.JSONArray
 import org.json.JSONObject
 import java.lang.String.format
 import java.time.*
@@ -15,8 +16,6 @@ import java.time.format.DateTimeFormatter
 interface EntryDatumHolder{
     val value : String
 }
-
-//abstract class EntryDatumView(context: Context) : View(context), EntryDatumInput
 
 class EntryDatumTextView(context: Context) : TextView(context), EntryDatumHolder {
     override val value: String
@@ -28,7 +27,7 @@ class EntryDatumEditText(context: Context) : EditText(context), EntryDatumHolder
         get() = text.toString()
 }
 
-open class EntryDataLayout(context: Context, startingData : JSONObject)
+open class EntryDataLayout(context: Context, private val startingData : JSONObject)
     : LinearLayout(context) {
 
     private val labelSuffix = ": "
@@ -69,15 +68,10 @@ open class EntryDataLayout(context: Context, startingData : JSONObject)
 
     protected open fun getValueView(value : String) : EntryDatumHolder {
         return EntryDatumTextView(context).apply {
-            val valueNumeric = value.toDoubleOrNull()
 
-            //if it's a floating point, limit decimal places
-            text = if (valueNumeric != null) {
-                format("%.2f", valueNumeric)
-            }
-            else {
-                value
-            }
+            text = if (value.toIntOrNull() != null) value
+            else if (value.toDoubleOrNull() != null) format("%.2f", value.toDouble())
+            else value
         }
     }
 
@@ -92,7 +86,7 @@ open class EntryDataLayout(context: Context, startingData : JSONObject)
                 layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
 
                 val spaceView = Space(context).apply {
-                    layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
+                    layoutParams = LayoutParams(0, LayoutParams.WRAP_CONTENT).apply {
                         weight = 1f
                     }
                 }
@@ -136,7 +130,7 @@ abstract class EntryTypeConfig {
         }
     }
 
-    fun getDataLayout(entry: Entry, context: Context): EntryDataLayout {
+    open fun getDataLayout(entry: Entry, context: Context): EntryDataLayout {
         return EntryDataLayout(context, entry.data)
     }
 
@@ -216,19 +210,74 @@ class DrugUseConfig : EntryTypeConfig() {
 
 }
 
-class ExerciseConfig : EntryTypeConfig() {
+// list of exercises: exercise name, list of sets (number of reps, duration and weight added for each)
+class WorkoutConfig : EntryTypeConfig() {
     companion object {
-        const val TYPE = "type"
-        const val DURATION_MIN = "duration"
+        const val DURATION = "duration"
+        const val EXERCISES = "exercises"
+    }
+
+    class ExerciseConfig {
+        companion object {
+            const val NAME = "name"
+            const val SETS = "sets"
+        }
+
+        class SetConfig {
+            companion object {
+                const val REPS = "reps"
+                const val DURATION = "duration"
+                const val WEIGHT = "weight"
+            }
+        }
     }
 
     override val defaultData : JSONObject = JSONObject(mapOf(
-        TYPE to "Lifting",
-        DURATION_MIN to "60"
+        DURATION to 60,
+        EXERCISES to JSONArray(listOf(
+            JSONObject(mapOf(
+                ExerciseConfig.NAME to "running",
+                ExerciseConfig.SETS to JSONArray(listOf(
+                    JSONObject(mapOf(
+                        ExerciseConfig.SetConfig.REPS to 1,
+                        ExerciseConfig.SetConfig.DURATION to Duration.ofMinutes(10).toString(),
+                        ExerciseConfig.SetConfig.WEIGHT to JSONObject.NULL
+                    ))
+                ))
+            )),
+            JSONObject(mapOf(
+                ExerciseConfig.NAME to "pullups",
+                ExerciseConfig.SETS to JSONArray(listOf(
+                    JSONObject(mapOf(
+                        ExerciseConfig.SetConfig.REPS to 5,
+                        ExerciseConfig.SetConfig.DURATION to JSONObject.NULL,
+                        ExerciseConfig.SetConfig.WEIGHT to 0
+                    )),
+                    JSONObject(mapOf(
+                        ExerciseConfig.SetConfig.REPS to 5,
+                        ExerciseConfig.SetConfig.DURATION to JSONObject.NULL,
+                        ExerciseConfig.SetConfig.WEIGHT to 0
+                    )),
+                    JSONObject(mapOf(
+                        ExerciseConfig.SetConfig.REPS to 5,
+                        ExerciseConfig.SetConfig.DURATION to JSONObject.NULL,
+                        ExerciseConfig.SetConfig.WEIGHT to 0
+                    ))
+                ))
+            ))
+        ))
     ))
 
     override fun getBgColor(context: Context): Int {
-        return context.resources.getColor(R.color.colorExercise, null)
+        return context.resources.getColor(R.color.colorWorkout, null)
+    }
+
+    override fun getDataLayout(entry: Entry, context: Context): EntryDataLayout {
+        val startingData = JSONObject(mapOf(
+            "$DURATION (min)" to defaultData[DURATION] as Int,
+            "exercise count" to (defaultData[EXERCISES] as JSONArray).length()
+        ))
+        return EntryDataLayout(context, startingData)
     }
 
     override fun getDailyReminderTimes(): List<LocalTime>? = null
@@ -240,21 +289,21 @@ class EntryTypes {
         const val MEDITATION = "Meditation"
         const val MOOD = "Mood"
         const val DRUG_USE = "Drug use"
-        const val EXERCISE = "Exercise"
+        const val WORKOUT = "Workout"
 
         private val ENTRY_TYPE_CONFIGS : HashMap<String, EntryTypeConfig> = hashMapOf(
             MEDITATION to MeditationConfig(),
             MOOD to MoodConfig(),
             DRUG_USE to DrugUseConfig(),
-            EXERCISE to ExerciseConfig()
+            WORKOUT to WorkoutConfig()
         )
 
         fun getTypes() : List<String> {
             return ENTRY_TYPE_CONFIGS.keys.toList().sorted()
         }
 
-        fun getConfig(type : String) : EntryTypeConfig {
-            return ENTRY_TYPE_CONFIGS[type]!!
+        fun getConfig(type : String) : EntryTypeConfig? {
+            return ENTRY_TYPE_CONFIGS[type]
         }
     }
 }
@@ -268,8 +317,8 @@ class EntryCardView(context: Context) : androidx.cardview.widget.CardView(contex
     fun insertEntryData(entry : Entry) {
         val timeStamp = entry.dateTime.format(DateTimeFormatter.ofPattern("hh:mm a"))
         val titleStr = "${entry.type} at $timeStamp"
-        val bgColor = EntryTypes.getConfig(entry.type).getBgColor(context)
-        val dataView = EntryTypes.getConfig(entry.type).getDataLayout(entry, context)
+        val bgColor = EntryTypes.getConfig(entry.type)!!.getBgColor(context)
+        val dataView = EntryTypes.getConfig(entry.type)!!.getDataLayout(entry, context)
 
         findViewById<TextView>(R.id.entryTitle).text = titleStr
         findViewById<LinearLayout>(R.id.recordDataLayout).addView(dataView)
