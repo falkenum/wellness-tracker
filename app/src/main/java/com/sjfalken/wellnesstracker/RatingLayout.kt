@@ -13,8 +13,8 @@ class RatingLayout(context: Context) : LinearLayout(context), EntryDatumHolder {
         const val HIGHLIGHTED = 99
         const val NOT_HIGHLIGHTED = 0
     }
-    override val value: String
-        get() = getChildAt(selectedIndex).id.toString()
+    override val value: Int
+        get() = getChildAt(selectedIndex).id
 
     inner class NumberView(shownNum : Int) : TextView(context) {
         var highlighted = false

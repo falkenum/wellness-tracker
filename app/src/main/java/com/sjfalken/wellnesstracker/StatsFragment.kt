@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.cardview.widget.CardView
 import kotlinx.android.synthetic.main.fragment_home.view.*
 import kotlinx.android.synthetic.main.fragment_stats.view.*
 import org.json.JSONObject
@@ -52,7 +51,7 @@ class StatsFragment : BaseFragment() {
         val entriesForType = entries.filter { entry -> entry.type == entryType }
 
         // find which values are numeric and can be processed
-        val defaultData = EntryTypes.getConfig(entryType)!!.defaultData
+        val defaultData = EntryTypes.getConfig(entryType)!!.presets[0].data
         val averageValues = JSONObject().apply {
             put("entry count", entriesForType.size)
         }

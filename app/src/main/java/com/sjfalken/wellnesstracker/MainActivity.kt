@@ -238,12 +238,12 @@ class MainActivity : AppCompatActivity() {
             for (entry in entries)
                 if (!Entry.isValidEntry(entry)) {
                     invalidEntries.add(entry)
-                    entryDao.delete(entry)
+//                    entryDao.delete(entry)
                 }
 
             if (invalidEntries.size > 0) {
                 Utility.DebugDialogFragment().apply {
-                    message = "Deleted ${invalidEntries.size} invalid entries: "
+                    message = "Found ${invalidEntries.size} invalid entries: "
                     for (entry in invalidEntries) {
                         message = message + "; " + entry.toString()
                     }

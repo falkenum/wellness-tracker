@@ -49,18 +49,7 @@ data class Entry(val dateTime : ZonedDateTime,
         fun isValidEntry(entry : Entry) : Boolean {
             if (EntryTypes.getConfig(entry.type) == null)
                 return false
-            for (key in entry.data.keys()) {
-                // if key is empty
-                if (key == "")
-                    return false
-
-                // if key isn't valid for the given type
-                if (EntryTypes.getConfig(entry.type)!!.defaultData.isNull(key))
-                    return false
-            }
-
-
-            return true
+            return EntryTypes.getConfig(entry.type)!!.isValidData(entry.data)
         }
 
     }
@@ -71,8 +60,6 @@ data class Entry(val dateTime : ZonedDateTime,
 interface EntryDao{
     @Query("SELECT * FROM Entry")
     fun getAll() : List<Entry>
-
-
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insert(entry: Entry)
