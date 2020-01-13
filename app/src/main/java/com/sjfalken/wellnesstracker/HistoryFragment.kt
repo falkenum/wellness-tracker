@@ -10,7 +10,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.fragment.app.DialogFragment
 import kotlinx.android.synthetic.main.fragment_home.view.*
+import java.io.Externalizable
 import java.time.*
 
 class HistoryFragment : BaseFragment() {
@@ -57,9 +59,22 @@ class HistoryFragment : BaseFragment() {
         }
     }
 
+    class ExtendedEntryInfoDialogFragment : DialogFragment() {
+        lateinit var entry : Entry
+        override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+
+            val dialogContent = EntryTypes.getConfig(entry.type)!!
+                .getExpandedDataLayout(context!!, entry)
+
+            return AlertDialog.Builder(context!!)
+                .setView(dialogContent)
+                .setPositiveButton("Ok"){_, _ ->}
+                .create()
+        }
+    }
     private fun getEntryInfoCard(entry : Entry) : EntryCardView {
 
-       return EntryCardView(context!!).apply {
+        return EntryCardView(context!!).apply {
            insertEntryData(entry)
            setBackgroundColor(context!!.getColor(android.R.color.transparent))
            setOnDelete {
@@ -77,6 +92,11 @@ class HistoryFragment : BaseFragment() {
                }.show(childFragmentManager, "DeleteEntryConfirmation")
            }
 
+           setOnClickListener {
+               ExtendedEntryInfoDialogFragment().apply {
+                   this.entry = entry
+               }.show(childFragmentManager, "EntryInfoDialog")
+           }
         }
     }
 

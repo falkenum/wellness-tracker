@@ -39,7 +39,7 @@ class NewEntryFragment : BaseFragment() {
         }
     }
 
-    private lateinit var dataInputLayout : EntryDataLayout
+    private lateinit var dataInputLayout : JSONObjectLayout
 
     private var selectedTime = ZonedDateTime.now().toLocalTime()
     private var selectedDate = ZonedDateTime.now().toLocalDate()

@@ -77,7 +77,7 @@ class StatsFragment : BaseFragment() {
         return LinearLayout(context!!).apply {
             orientation = LinearLayout.VERTICAL
 
-            val statsView = EntryDataLayout(context!!, averageValues)
+            val statsView = JSONObjectLayout(context!!, averageValues)
             val titleView = TextView(context).apply {
                 text = entryType
                 setTypeface(null, Typeface.BOLD)
