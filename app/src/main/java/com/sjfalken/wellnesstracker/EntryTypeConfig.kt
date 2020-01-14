@@ -346,7 +346,7 @@ class WorkoutConfig : EntryTypeConfig() {
             sets.put(pullupsSet)
             sets.put(dipsSet)
 
-            put(DURATION_MIN, 60)
+            put(DURATION_MIN, 30)
             put(SETS, sets)
         })
     )
@@ -360,8 +360,8 @@ class WorkoutConfig : EntryTypeConfig() {
         entry: Entry
     ): JSONObjectLayout {
         val startingData = JSONObject(mapOf(
-            "$DURATION_MIN (min)" to presets[0].data[DURATION_MIN] as Int,
-            "set count" to (presets[0].data[SETS] as JSONArray).length()
+            "$DURATION_MIN (min)" to entry.data[DURATION_MIN] as Int,
+            "set count" to (entry.data[SETS] as JSONArray).length()
         ))
         return JSONObjectLayout(context, startingData)
     }
@@ -390,7 +390,7 @@ class WorkoutConfig : EntryTypeConfig() {
         }
     }
 
-    class SetsInputLayout(context: Context, defaultSets: JSONArray)
+    class SetsLayout(context: Context, defaultSets: JSONArray, private val inputMode: Boolean)
         : LinearLayout(context), EntryDatumHolder {
 
         private fun getSetCard(set : JSONObject) : CardView {
@@ -402,11 +402,19 @@ class WorkoutConfig : EntryTypeConfig() {
                 val cardView = this
                 id = View.generateViewId()
                 addView(setCardContent)
-                setOnClickListener {
+                if (inputMode) setOnClickListener {
                     val fm = findFragment<BaseFragment>().childFragmentManager
                     SetInputDialogFragment().apply {
                         setToEdit = set
-                        onDelete = { this@SetsInputLayout.removeView(cardView) }
+                        onDelete = { this@SetsLayout.removeView(cardView) }
+                        onConfirm = {
+                            this@SetsLayout.run {
+                                val cardViewIndex = indexOfChild(cardView)
+                                removeView(cardView)
+                                addView(getSetCard(it), cardViewIndex)
+                            }
+
+                        }
                         show(fm, "SetInput")
                     }
                 }
@@ -431,14 +439,14 @@ class WorkoutConfig : EntryTypeConfig() {
                 val spaceLayoutParams = LayoutParams(0, LayoutParams.WRAP_CONTENT).apply {
                     weight = 1f
                 }
-                addView(Space(context).apply { layoutParams = spaceLayoutParams })
+                if (inputMode) addView(Space(context).apply { layoutParams = spaceLayoutParams })
 
-                addView(Button(context).apply {
+                if (inputMode) addView(Button(context).apply {
                     text = "add"
                     setOnClickListener {
                         val fm = findFragment<BaseFragment>().childFragmentManager
                         setInputDialogFragment.apply {
-                            onConfirm = { this@SetsInputLayout.addView(getSetCard(it)) }
+                            onConfirm = { this@SetsLayout.addView(getSetCard(it)) }
                             show(fm, setInputDialogFragmentTag)
                         }
                     }
@@ -469,8 +477,21 @@ class WorkoutConfig : EntryTypeConfig() {
 
             override fun getRowLayout(key: String, value: Any): View {
                 return if (key != SETS) KeyValueLinearLayout(context, key, value, true)
-                else SetsInputLayout(context, value as JSONArray)
+                else SetsLayout(context, value as JSONArray, true)
             }
+        }
+    }
+
+    override fun getExpandedDataLayout(context: Context, entry: Entry): View {
+        return ScrollView(context).apply {
+            val dataLayout = object : JSONObjectLayout(context, entry.data) {
+
+                override fun getRowLayout(key: String, value: Any): View {
+                    return if (key != SETS) KeyValueLinearLayout(context, key, value, false)
+                    else SetsLayout(context, value as JSONArray, false)
+                }
+            }
+            addView(dataLayout)
         }
     }
 
